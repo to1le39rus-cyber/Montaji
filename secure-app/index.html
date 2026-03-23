@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Монтажи дверей</title>
+  <meta name="theme-color" content="#111827" />
+  <meta name="description" content="Закрытый планировщик монтажей дверей" />
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="./icon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <section id="authScreen" class="auth-screen">
+    <div class="auth-card">
+      <div class="eyebrow">Закрытый доступ</div>
+      <h1>Монтажи дверей</h1>
+      <p class="muted auth-text">Доступ только для двух пользователей. Без входа данные не открываются.</p>
+      <form id="authForm" class="form-grid auth-form">
+        <div class="field field--full">
+          <label for="authEmail">Email</label>
+          <input id="authEmail" type="email" autocomplete="username" placeholder="you@example.com" required />
+        </div>
+        <div class="field field--full">
+          <label for="authPassword">Пароль</label>
+          <input id="authPassword" type="password" autocomplete="current-password" placeholder="••••••••" required />
+        </div>
+        <div class="actions-row field--full">
+          <button type="submit" class="primary-btn">Войти</button>
+          <button type="button" id="signUpBtn" class="ghost-btn">Создать доступ</button>
+        </div>
+      </form>
+      <div id="authMessage" class="auth-message muted"></div>
+      <div class="panel panel--soft auth-note">
+        <strong>Важно:</strong>
+        <div class="muted">Если email не внесён в белый список, доступ к данным не откроется.</div>
+      </div>
+    </div>
+  </section>
+
+  <div id="appShell" class="app-shell hidden">
+    <header class="topbar">
+      <div class="topbar__title">
+        <div class="eyebrow">Планировщик</div>
+        <h1>Монтажи дверей</h1>
+      </div>
+      <div class="topbar__actions">
+        <div class="user-chip">
+          <div id="userEmail" class="user-chip__email"></div>
+          <div id="userRole" class="user-chip__role"></div>
+        </div>
+        <button class="icon-btn" id="openFiltersBtn" aria-label="Открыть фильтры">☰</button>
+        <button class="icon-btn" id="logoutBtn" aria-label="Выйти">⇥</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <section id="calendarScreen" class="screen screen--active">
+        <div class="panel panel--search">
+          <input id="searchInput" class="search-input" type="search" placeholder="Поиск: ФИО, телефон, адрес" />
+        </div>
+        <div class="panel calendar-toolbar">
+          <button class="nav-btn" id="prevMonthBtn" aria-label="Предыдущий месяц">‹</button>
+          <div class="month-title" id="monthTitle"></div>
+          <button class="nav-btn" id="nextMonthBtn" aria-label="Следующий месяц">›</button>
+        </div>
+        <div class="calendar-legend panel">
+          <span><i class="dot dot--free"></i> свободно</span>
+          <span><i class="dot dot--partial"></i> частично</span>
+          <span><i class="dot dot--busy"></i> почти занято</span>
+          <span><i class="dot dot--full"></i> всё занято</span>
+        </div>
+        <div class="calendar panel">
+          <div class="weekdays"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div>
+          <div id="calendarGrid" class="calendar-grid"></div>
+        </div>
+      </section>
+
+      <section id="reportsScreen" class="screen">
+        <div class="panel report-controls">
+          <div class="field"><label for="reportMonth">Месяц</label><select id="reportMonth"></select></div>
+          <div class="field"><label for="reportYear">Год</label><select id="reportYear"></select></div>
+        </div>
+        <div class="stats-grid" id="statsGrid"></div>
+        <div class="panel export-panel">
+          <button class="primary-btn" id="exportMonthBtn">Скачать месяц CSV</button>
+          <button class="ghost-btn" id="exportYearBtn">Скачать год CSV</button>
+        </div>
+        <div class="panel archive-panel">
+          <div class="panel-head"><h3>Архив по годам</h3></div>
+          <div id="archiveList" class="archive-list"></div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav">
+      <button class="nav-item nav-item--active" data-screen="calendarScreen">Календарь</button>
+      <button class="nav-item" data-screen="reportsScreen">Отчёты</button>
+    </nav>
+
+    <button class="fab" id="addJobBtn" aria-label="Добавить монтаж">＋</button>
+  </div>
+
+  <div class="sheet" id="jobSheet" aria-hidden="true">
+    <div class="sheet__overlay" data-close="jobSheet"></div>
+    <div class="sheet__body">
+      <div class="sheet__handle"></div>
+      <div class="sheet__header">
+        <h2 id="jobSheetTitle">Новый монтаж</h2>
+        <button class="icon-btn" data-close="jobSheet">✕</button>
+      </div>
+      <form id="jobForm" class="form-grid">
+        <input type="hidden" id="jobId" />
+        <div class="field"><label for="jobDate">Дата</label><input id="jobDate" type="date" required /></div>
+        <div class="field"><label for="jobSlot">Слот</label><select id="jobSlot" required></select></div>
+        <div class="field field--full"><label for="jobClient">Клиент (ФИО)</label><input id="jobClient" type="text" placeholder="Иванов Иван" required /></div>
+        <div class="field"><label for="jobPhone">Телефон</label><input id="jobPhone" type="tel" placeholder="+7..." /></div>
+        <div class="field field--full"><label for="jobAddress">Адрес монтажа</label><textarea id="jobAddress" rows="2" placeholder="Улица, дом, подъезд"></textarea></div>
+        <div class="field"><label for="jobStore">Магазин</label><select id="jobStore"></select></div>
+        <div class="field"><label for="jobPrice">Цена монтажа</label><input id="jobPrice" type="number" min="0" step="1" placeholder="0" /></div>
+        <div class="field"><label for="jobStatus">Статус</label><select id="jobStatus"></select></div>
+        <div class="field"><label for="jobPayment">Оплата</label><select id="jobPayment"></select></div>
+        <div class="field field--full"><label for="jobComment">Комментарий</label><textarea id="jobComment" rows="3" placeholder="Старый фонд, созвон за час и т.д."></textarea></div>
+        <div class="form-actions field--full"><button type="submit" class="primary-btn">Сохранить</button><button type="button" class="ghost-btn" id="deleteJobBtn" hidden>Удалить</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="sheet" id="daySheet" aria-hidden="true">
+    <div class="sheet__overlay" data-close="daySheet"></div>
+    <div class="sheet__body sheet__body--wide">
+      <div class="sheet__handle"></div>
+      <div class="sheet__header"><div><div class="eyebrow">День</div><h2 id="daySheetTitle">—</h2></div><button class="icon-btn" data-close="daySheet">✕</button></div>
+      <div class="day-expense panel panel--soft">
+        <div class="field"><label for="dayExpenseInput">Расходка за день</label><input id="dayExpenseInput" type="number" min="0" step="1" placeholder="0" /></div>
+        <div class="field field--full"><label for="dayExpenseComment">Комментарий к расходке</label><input id="dayExpenseComment" type="text" placeholder="Клей, пена, анкера..." /></div>
+        <button class="ghost-btn" id="saveDayExpenseBtn">Сохранить расходку</button>
+      </div>
+      <div id="daySlots" class="day-slots"></div>
+      <div class="panel panel--soft"><h3>Итог по дню</h3><div class="mini-stats" id="dayStats"></div></div>
+    </div>
+  </div>
+
+  <div class="sheet" id="filtersSheet" aria-hidden="true">
+    <div class="sheet__overlay" data-close="filtersSheet"></div>
+    <div class="sheet__body">
+      <div class="sheet__handle"></div>
+      <div class="sheet__header"><h2>Фильтры</h2><button class="icon-btn" data-close="filtersSheet">✕</button></div>
+      <div class="form-grid">
+        <div class="field"><label for="filterStore">Магазин</label><select id="filterStore"></select></div>
+        <div class="field"><label for="filterStatus">Статус</label><select id="filterStatus"></select></div>
+        <div class="field"><label for="filterPayment">Оплата</label><select id="filterPayment"></select></div>
+        <div class="field"><label for="filterFill">Загрузка дня</label><select id="filterFill"><option value="all">Все</option><option value="free">Свободные</option><option value="partial">Частично занятые</option><option value="full">Полностью занятые</option></select></div>
+        <div class="actions-row field--full"><button class="primary-btn" id="applyFiltersBtn">Применить</button><button class="ghost-btn" id="resetFiltersBtn">Сбросить</button></div>
+      </div>
+    </div>
+  </div>
+
+  <template id="jobCardTemplate">
+    <article class="job-card">
+      <div class="job-card__top"><div><h4 class="job-card__client"></h4><div class="job-card__meta"></div></div><span class="pill job-card__status"></span></div>
+      <div class="job-card__details"></div>
+      <div class="job-card__actions"></div>
+    </article>
+  </template>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+</body>
+</html>
