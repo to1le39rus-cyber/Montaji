@@ -110,8 +110,34 @@ const els = {
   filterPayment: $('filterPayment'),
   filterFill: $('filterFill'),
   applyFiltersBtn: $('applyFiltersBtn'),
-  resetFiltersBtn: $('resetFiltersBtn')
+  resetFiltersBtn: $('resetFiltersBtn'),
+
+  themeToggleBtn: $('themeToggleBtn')
 };
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  if (els.themeToggleBtn) {
+    els.themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  }
+}
+
+function initTheme() {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'dark' || saved === 'light') {
+    applyTheme(saved);
+  } else {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(prefersDark ? 'dark' : 'light');
+  }
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('theme', next);
+  applyTheme(next);
+}
 
 init().catch((error) => {
   console.error('init error', error);
@@ -119,6 +145,7 @@ init().catch((error) => {
 });
 
 async function init() {
+  initTheme();
   populateStaticFields();
   bindEvents();
 
@@ -196,6 +223,10 @@ function bindEvents() {
   els.exportYearBtn.addEventListener('click', () => exportCsv(true));
 
   els.openFiltersBtn.addEventListener('click', () => openSheet('filtersSheet'));
+
+  if (els.themeToggleBtn) {
+    els.themeToggleBtn.addEventListener('click', toggleTheme);
+  }
 
   els.applyFiltersBtn.addEventListener('click', () => {
     state.filters = {
