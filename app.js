@@ -63,11 +63,37 @@ const els = {
   exportYearBtn: document.getElementById('exportYearBtn'),
   backupBtn: document.getElementById('backupBtn'),
   importFileInput: document.getElementById('importFileInput'),
+  themeToggleBtn: document.getElementById('themeToggleBtn'),
 };
+
+const THEME_KEY = 'montage-theme';
+
+function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const isDark = saved ? saved === 'dark' : prefersDark;
+  applyTheme(isDark);
+}
+
+function applyTheme(isDark) {
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  if (els.themeToggleBtn) {
+    els.themeToggleBtn.textContent = isDark ? '☀️' : '🌙';
+    els.themeToggleBtn.setAttribute('aria-label', isDark ? 'Переключить на светлую тему' : 'Переключить на тёмную тему');
+  }
+}
+
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const next = !isDark;
+  localStorage.setItem(THEME_KEY, next ? 'dark' : 'light');
+  applyTheme(next);
+}
 
 bootstrap();
 
 function bootstrap() {
+  initTheme();
   populateStaticInputs();
   bindEvents();
   render();
@@ -160,6 +186,7 @@ function bindEvents() {
   els.saveDayExpenseBtn.addEventListener('click', saveDayExpense);
   els.searchInput.addEventListener('input', e => { state.search = e.target.value.trim().toLowerCase(); renderCalendar(); });
   els.openFiltersBtn.addEventListener('click', () => openSheet('filtersSheet'));
+  els.themeToggleBtn.addEventListener('click', toggleTheme);
   els.applyFiltersBtn.addEventListener('click', () => {
     state.filters = {
       store: els.filterStore.value,
