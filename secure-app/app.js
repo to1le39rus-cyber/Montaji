@@ -1,3 +1,11 @@
+if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+  const node = document.getElementById('authMessage');
+  if (node) {
+    node.textContent = 'Не загрузилась библиотека Supabase. Обнови страницу через Ctrl+F5.';
+    node.className = 'auth-message muted auth-message--error';
+  }
+  throw new Error('Supabase client not loaded');
+}
 const SUPABASE_URL =
   (window.APP_CONFIG && window.APP_CONFIG.supabaseUrl) ||
   ['https://', 'ijiekvurwnwrpvaxkdvn', '.supabase.co'].join('');
