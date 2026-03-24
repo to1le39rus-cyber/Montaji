@@ -6,6 +6,7 @@ if (!window.supabase || typeof window.supabase.createClient !== 'function') {
   }
   throw new Error('Supabase client not loaded');
 }
+
 const SUPABASE_URL =
   (window.APP_CONFIG && window.APP_CONFIG.supabaseUrl) ||
   ['https://', 'ijiekvurwnwrpvaxkdvn', '.supabase.co'].join('');
@@ -18,7 +19,7 @@ const SUPABASE_KEY =
     'qOkchV3RDmkDfAK8IrH1PCynPYy8KBUM5C9oIT0UdWE'
   ].join('.');
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const STATUS_OPTIONS = ['Бронь', 'Подтверждён', 'Выполнен', 'Перенос', 'Отменён'];
 const PAYMENT_OPTIONS = ['Не оплачено', 'Частично', 'Оплачено'];
@@ -121,12 +122,12 @@ async function init() {
   populateStaticFields();
   bindEvents();
 
-  const { data } = await supabase.auth.getSession();
+  const { data } = await sbClient.auth.getSession();
   state.session = data.session;
 
   await safeHandleSession();
 
-  supabase.auth.onAuthStateChange(async (_event, session) => {
+  sbClient.auth.onAuthStateChange(async (_event, session) => {
     state.session = session;
     await safeHandleSession();
   });
@@ -164,7 +165,7 @@ function bindEvents() {
   els.authForm.addEventListener('submit', signIn);
   els.signUpBtn.addEventListener('click', signUp);
   els.logoutBtn.addEventListener('click', async () => {
-    await supabase.auth.signOut();
+    await sbClient.auth.signOut();
   });
 
   els.prevMonthBtn.addEventListener('click', () => shiftMonth(-1));
@@ -250,7 +251,7 @@ async function handleSession() {
 }
 
 async function loadProfile() {
-  const { data, error } = await supabase
+  const { data, error } = await sbClient
     .from('profiles')
     .select('id,email,role')
     .eq('id', state.session.user.id)
@@ -258,7 +259,7 @@ async function loadProfile() {
 
   if (error || !data) {
     showAuthMessage('Доступ не разрешён для этого email.', true);
-    await supabase.auth.signOut();
+    await sbClient.auth.signOut();
     return false;
   }
 
@@ -268,19 +269,19 @@ async function loadProfile() {
 
 async function loadData() {
   const [storesResult, jobsResult, expensesResult] = await Promise.all([
-    supabase
+    sbClient
       .from('stores')
       .select('id,name,sort_order')
       .eq('is_active', true)
       .order('sort_order'),
 
-    supabase
+    sbClient
       .from('jobs')
       .select('id,job_date,slot,client_name,phone,address,mount_price,status,payment_status,comment,store_id,stores(name)')
       .order('job_date')
       .order('slot'),
 
-    supabase
+    sbClient
       .from('day_expenses')
       .select('day_date,amount,comment')
   ]);
@@ -325,7 +326,7 @@ async function signIn(event) {
 
   showAuthMessage('Вход...');
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { error } = await sbClient.auth.signInWithPassword({
     email: els.authEmail.value.trim(),
     password: els.authPassword.value
   });
@@ -340,7 +341,7 @@ async function signIn(event) {
 async function signUp() {
   showAuthMessage('Создание доступа...');
 
-  const { error } = await supabase.auth.signUp({
+  const { error } = await sbClient.auth.signUp({
     email: els.authEmail.value.trim(),
     password: els.authPassword.value,
     options: {
@@ -357,7 +358,8 @@ async function signUp() {
 
 function showAuthMessage(text, isError = false) {
   els.authMessage.textContent = text || '';
-  els.authMessage.className = 'auth-message muted' + (isError ? ' auth-message--error' : ' auth-message--success');
+  els.authMessage.className =
+    'auth-message muted' + (isError ? ' auth-message--error' : ' auth-message--success');
 }
 
 function renderAll() {
@@ -478,6 +480,10 @@ function renderDayCell(date, muted) {
   const jobs = getJobsForDate(key).filter(matchesFiltersAndSearch);
   const count = jobs.length;
 
+  if (!matchesFillFilter(count)) {
+    return '<div class="calendar-day hidden"></div>';
+  }
+
   const fillClass =
     count >= 4 ? 'full' :
     count === 3 ? 'busy' :
@@ -513,8 +519,13 @@ function matchesFiltersAndSearch(job) {
   if (state.filters.status !== 'all' && job.status !== state.filters.status) return false;
   if (state.filters.payment !== 'all' && job.payment !== state.filters.payment) return false;
 
-  if (state.filters.fill === 'free') return false;
+  return true;
+}
 
+function matchesFillFilter(count) {
+  if (state.filters.fill === 'free') return count === 0;
+  if (state.filters.fill === 'partial') return count > 0 && count < 4;
+  if (state.filters.fill === 'full') return count === 4;
   return true;
 }
 
@@ -578,7 +589,8 @@ async function saveJob(event) {
     mount_price: Number(els.jobPrice.value || 0),
     status: els.jobStatus.value,
     payment_status: els.jobPayment.value,
-    comment: els.jobComment.value.trim() || null
+    comment: els.jobComment.value.trim() || null,
+    updated_by: state.profile?.id || null
   };
 
   const collision = state.jobs.find((job) => {
@@ -599,16 +611,19 @@ async function saveJob(event) {
     let result;
 
     if (els.jobId.value) {
-      result = await supabase
+      result = await sbClient
         .from('jobs')
         .update(payload)
         .eq('id', els.jobId.value)
         .select('id')
         .single();
     } else {
-      result = await supabase
+      result = await sbClient
         .from('jobs')
-        .insert(payload)
+        .insert({
+          ...payload,
+          created_by: state.profile?.id || null
+        })
         .select('id')
         .single();
     }
@@ -622,8 +637,10 @@ async function saveJob(event) {
   } catch (error) {
     console.error('saveJob error', error);
 
-    if (String(error.message || '').toLowerCase().includes('duplicate') ||
-        String(error.message || '').toLowerCase().includes('unique')) {
+    if (
+      String(error.message || '').toLowerCase().includes('duplicate') ||
+      String(error.message || '').toLowerCase().includes('unique')
+    ) {
       alert('Этот слот уже занят.');
       return;
     }
@@ -636,7 +653,7 @@ async function deleteJob() {
   if (state.profile?.role !== 'admin' || !els.jobId.value) return;
   if (!confirm('Удалить запись?')) return;
 
-  const { error } = await supabase
+  const { error } = await sbClient
     .from('jobs')
     .delete()
     .eq('id', els.jobId.value);
@@ -778,19 +795,35 @@ async function saveExpense() {
   if (state.profile?.role !== 'admin') return;
 
   const date = state.selectedDate;
-
-  const payload = {
-    day_date: date,
-    amount: Number(els.dayExpenseInput.value || 0),
-    comment: els.dayExpenseComment.value.trim() || null
-  };
+  const exists = Boolean(state.expenses[date]);
 
   try {
-    const result = await supabase
-      .from('day_expenses')
-      .upsert(payload, { onConflict: 'day_date' })
-      .select('day_date')
-      .single();
+    let result;
+
+    if (exists) {
+      result = await sbClient
+        .from('day_expenses')
+        .update({
+          amount: Number(els.dayExpenseInput.value || 0),
+          comment: els.dayExpenseComment.value.trim() || null,
+          updated_by: state.profile?.id || null
+        })
+        .eq('day_date', date)
+        .select('day_date')
+        .single();
+    } else {
+      result = await sbClient
+        .from('day_expenses')
+        .insert({
+          day_date: date,
+          amount: Number(els.dayExpenseInput.value || 0),
+          comment: els.dayExpenseComment.value.trim() || null,
+          created_by: state.profile?.id || null,
+          updated_by: state.profile?.id || null
+        })
+        .select('day_date')
+        .single();
+    }
 
     if (result.error) throw result.error;
 
@@ -818,9 +851,7 @@ function renderReports() {
   });
 
   const monthExpenses = Object.entries(state.expenses)
-    .filter(([date]) => {
-      return Number(date.slice(0, 4)) === year && Number(date.slice(5, 7)) === month;
-    })
+    .filter(([date]) => Number(date.slice(0, 4)) === year && Number(date.slice(5, 7)) === month)
     .reduce((sum, [, value]) => sum + Number(value.amount || 0), 0);
 
   const monthRevenue = monthJobs.reduce((sum, job) => sum + job.price, 0);
