@@ -9,7 +9,7 @@
   <meta name="robots" content="noindex,nofollow,noarchive,nosnippet" />
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="./icon.svg" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=10" />
 </head>
 <body>
   <section id="authScreen" class="auth-screen">
@@ -57,9 +57,10 @@
           <div id="userRole" class="user-chip__role"></div>
         </div>
 
-        <button class="icon-btn" id="themeToggleBtn" aria-label="Переключить тему">🌙</button>
-        <button class="icon-btn" id="openFiltersBtn" aria-label="Открыть фильтры">☰</button>
-        <button class="icon-btn" id="logoutBtn" aria-label="Выйти">⇥</button>
+        <button type="button" class="icon-btn" id="themeToggleBtn" aria-label="Переключить тему">☾</button>
+        <button type="button" class="icon-btn" id="refreshBtn" aria-label="Обновить">↻</button>
+        <button type="button" class="icon-btn" id="openFiltersBtn" aria-label="Открыть фильтры">☰</button>
+        <button type="button" class="icon-btn" id="logoutBtn" aria-label="Выйти">⇥</button>
       </div>
     </header>
 
@@ -124,77 +125,6 @@
     <button type="button" class="fab" id="addJobBtn" aria-label="Добавить монтаж">＋</button>
   </div>
 
-  <div class="sheet" id="jobSheet" aria-hidden="true">
-    <div class="sheet__overlay" data-close="jobSheet"></div>
-    <div class="sheet__body">
-      <div class="sheet__handle"></div>
-
-      <div class="sheet__header">
-        <h2 id="jobSheetTitle">Новый монтаж</h2>
-        <button type="button" class="icon-btn" data-close="jobSheet">✕</button>
-      </div>
-
-      <form id="jobForm" class="form-grid">
-        <input type="hidden" id="jobId" />
-
-        <div class="field">
-          <label for="jobDate">Дата</label>
-          <input id="jobDate" type="date" required />
-        </div>
-
-        <div class="field">
-          <label for="jobSlot">Слот</label>
-          <select id="jobSlot" required></select>
-        </div>
-
-        <div class="field field--full">
-          <label for="jobClient">Клиент (ФИО)</label>
-          <input id="jobClient" type="text" placeholder="Иванов Иван" required />
-        </div>
-
-        <div class="field">
-          <label for="jobPhone">Телефон</label>
-          <input id="jobPhone" type="tel" placeholder="+7..." />
-        </div>
-
-        <div class="field field--full">
-          <label for="jobAddress">Адрес монтажа</label>
-          <textarea id="jobAddress" rows="2" placeholder="Улица, дом, подъезд"></textarea>
-        </div>
-
-        <div class="field">
-          <label for="jobStore">Магазин</label>
-          <select id="jobStore"></select>
-        </div>
-
-        <div class="field">
-          <label for="jobPrice">Цена монтажа</label>
-          <input id="jobPrice" type="number" min="0" step="1" placeholder="0" />
-        </div>
-
-        <div class="field">
-          <label for="jobStatus">Статус</label>
-          <select id="jobStatus"></select>
-        </div>
-
-        <div class="field">
-          <label for="jobPayment">Оплата</label>
-          <select id="jobPayment"></select>
-        </div>
-
-        <div class="field field--full">
-          <label for="jobComment">Комментарий</label>
-          <textarea id="jobComment" rows="3" placeholder="Старый фонд, созвон за час и т.д."></textarea>
-        </div>
-
-        <div class="form-actions field--full">
-          <button type="submit" class="primary-btn">Сохранить</button>
-          <button type="button" class="ghost-btn" id="deleteJobBtn" hidden>Удалить</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <div class="sheet" id="daySheet" aria-hidden="true">
     <div class="sheet__overlay" data-close="daySheet"></div>
     <div class="sheet__body sheet__body--wide">
@@ -228,6 +158,77 @@
         <h3>Итог по дню</h3>
         <div id="dayStats" class="mini-stats"></div>
       </div>
+    </div>
+  </div>
+
+  <div class="sheet sheet--modal" id="jobSheet" aria-hidden="true">
+    <div class="sheet__overlay" data-close="jobSheet"></div>
+    <div class="sheet__body sheet__body--modal">
+      <div class="sheet__handle"></div>
+
+      <div class="sheet__header">
+        <h2 id="jobSheetTitle">Новый монтаж</h2>
+        <button type="button" class="icon-btn" data-close="jobSheet">✕</button>
+      </div>
+
+      <form id="jobForm" class="form-grid" novalidate>
+        <input type="hidden" id="jobId" />
+
+        <div class="field">
+          <label for="jobDate">Дата</label>
+          <input id="jobDate" type="date" required />
+        </div>
+
+        <div class="field">
+          <label for="jobSlot">Слот</label>
+          <select id="jobSlot" required></select>
+        </div>
+
+        <div class="field field--full">
+          <label for="jobClient">Клиент (ФИО)</label>
+          <input id="jobClient" type="text" placeholder="Иванов Иван" required />
+        </div>
+
+        <div class="field">
+          <label for="jobPhone">Телефон</label>
+          <input id="jobPhone" type="text" placeholder="+7..." />
+        </div>
+
+        <div class="field field--full">
+          <label for="jobAddress">Адрес монтажа</label>
+          <textarea id="jobAddress" rows="2" placeholder="Улица, дом, подъезд"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="jobStore">Магазин</label>
+          <select id="jobStore"></select>
+        </div>
+
+        <div class="field">
+          <label for="jobPrice">Цена монтажа</label>
+          <input id="jobPrice" type="number" min="0" step="1" placeholder="0" />
+        </div>
+
+        <div class="field">
+          <label for="jobStatus">Статус</label>
+          <select id="jobStatus"></select>
+        </div>
+
+        <div class="field">
+          <label for="jobPayment">Оплата</label>
+          <select id="jobPayment"></select>
+        </div>
+
+        <div class="field field--full">
+          <label for="jobComment">Комментарий</label>
+          <textarea id="jobComment" rows="3" placeholder="Старый фонд, созвон за час и т.д."></textarea>
+        </div>
+
+        <div class="form-actions field--full">
+          <button type="button" class="primary-btn" id="saveJobBtn">Сохранить</button>
+          <button type="button" class="ghost-btn" id="deleteJobBtn" hidden>Удалить</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -275,13 +276,15 @@
     </div>
   </div>
 
- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  if (!window.supabase) {
-    document.write('<script src="https://unpkg.com/@supabase/supabase-js@2"><\/script>');
-  }
-</script>
-<script src="config.js?v=4"></script>
-<script src="app.js?v=4"></script>
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    if (!window.supabase) {
+      document.write('<script src="https://unpkg.com/@supabase/supabase-js@2"><\\/script>');
+    }
+  </script>
+  <script src="config.js?v=10"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>
