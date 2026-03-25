@@ -1,7 +1,7 @@
 if (!window.supabase || typeof window.supabase.createClient !== 'function') {
   const node = document.getElementById('authMessage');
   if (node) {
-    node.textContent = 'Не загрузилась библиотека Supabase. Обнови страницу через Ctrl+F5.';
+    node.textContent = 'Не загрузилась библиотека Supabase. Обнови страницу.';
     node.className = 'auth-message muted auth-message--error';
   }
   throw new Error('Supabase client not loaded');
@@ -47,7 +47,11 @@ const state = {
     status: 'all',
     payment: 'all',
     fill: 'all'
-  }
+  },
+  theme: 'dark',
+  isSavingJob: false,
+  isSavingExpense: false,
+  isRefreshing: false
 };
 
 const $ = (id) => document.getElementById(id);
@@ -64,6 +68,8 @@ const els = {
 
   userEmail: $('userEmail'),
   userRole: $('userRole'),
+  themeToggleBtn: $('themeToggleBtn'),
+  refreshBtn: $('refreshBtn'),
 
   monthTitle: $('monthTitle'),
   calendarGrid: $('calendarGrid'),
@@ -83,6 +89,7 @@ const els = {
   jobSheet: $('jobSheet'),
   jobSheetTitle: $('jobSheetTitle'),
   jobForm: $('jobForm'),
+  saveJobBtn: $('saveJobBtn'),
   jobId: $('jobId'),
   jobDate: $('jobDate'),
   jobSlot: $('jobSlot'),
@@ -112,40 +119,16 @@ const els = {
   applyFiltersBtn: $('applyFiltersBtn'),
   resetFiltersBtn: $('resetFiltersBtn'),
 
-  themeToggleBtn: $('themeToggleBtn')
+  toast: $('toast')
 };
-
-function applyTheme(theme) {
-  document.documentElement.setAttribute('data-theme', theme);
-  if (els.themeToggleBtn) {
-    els.themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
-  }
-}
-
-function initTheme() {
-  const saved = localStorage.getItem('theme');
-  if (saved === 'dark' || saved === 'light') {
-    applyTheme(saved);
-  } else {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    applyTheme(prefersDark ? 'dark' : 'light');
-  }
-}
-
-function toggleTheme() {
-  const current = document.documentElement.getAttribute('data-theme');
-  const next = current === 'dark' ? 'light' : 'dark';
-  localStorage.setItem('theme', next);
-  applyTheme(next);
-}
 
 init().catch((error) => {
   console.error('init error', error);
-  showAuthMessage(error.message || 'Ошибка запуска', true);
+  showAuthMessage(normalizeError(error), true);
 });
 
 async function init() {
-  initTheme();
+  applySavedTheme();
   populateStaticFields();
   bindEvents();
 
@@ -160,46 +143,22 @@ async function init() {
   });
 }
 
-async function safeHandleSession() {
-  try {
-    await handleSession();
-  } catch (error) {
-    console.error('handleSession error', error);
-    alert(error.message || 'Ошибка загрузки данных.');
-  }
-}
-
-function populateStaticFields() {
-  els.jobSlot.innerHTML = SLOTS.map(
-    (slot) => `<option value="${slot.id}">${slot.label} — ${slot.subtitle}</option>`
-  ).join('');
-
-  els.jobStatus.innerHTML = STATUS_OPTIONS.map(
-    (value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`
-  ).join('');
-
-  els.jobPayment.innerHTML = PAYMENT_OPTIONS.map(
-    (value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`
-  ).join('');
-
-  els.reportMonth.innerHTML = Array.from({ length: 12 }, (_, i) => {
-    const monthName = new Date(2025, i, 1).toLocaleDateString('ru-RU', { month: 'long' });
-    return `<option value="${i + 1}">${capitalize(monthName)}</option>`;
-  }).join('');
-}
-
 function bindEvents() {
   els.authForm.addEventListener('submit', signIn);
   els.signUpBtn.addEventListener('click', signUp);
-  els.logoutBtn.addEventListener('click', async () => {
-    await sbClient.auth.signOut();
-  });
+  els.logoutBtn.addEventListener('click', logout);
+
+  els.themeToggleBtn.addEventListener('click', toggleTheme);
+  els.refreshBtn.addEventListener('click', () => refreshData(true));
 
   els.prevMonthBtn.addEventListener('click', () => shiftMonth(-1));
   els.nextMonthBtn.addEventListener('click', () => shiftMonth(1));
   els.addJobBtn.addEventListener('click', () => openJobSheet(state.selectedDate));
 
-  els.jobForm.addEventListener('submit', saveJob);
+  els.jobForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+  });
+  els.saveJobBtn.addEventListener('click', saveJob);
   els.deleteJobBtn.addEventListener('click', deleteJob);
 
   els.saveDayExpenseBtn.addEventListener('click', saveExpense);
@@ -223,10 +182,6 @@ function bindEvents() {
   els.exportYearBtn.addEventListener('click', () => exportCsv(true));
 
   els.openFiltersBtn.addEventListener('click', () => openSheet('filtersSheet'));
-
-  if (els.themeToggleBtn) {
-    els.themeToggleBtn.addEventListener('click', toggleTheme);
-  }
 
   els.applyFiltersBtn.addEventListener('click', () => {
     state.filters = {
@@ -259,6 +214,15 @@ function bindEvents() {
   });
 }
 
+async function safeHandleSession() {
+  try {
+    await handleSession();
+  } catch (error) {
+    console.error('handleSession error', error);
+    showToast(normalizeError(error), 'error');
+  }
+}
+
 async function handleSession() {
   if (!state.session) {
     state.profile = null;
@@ -281,12 +245,18 @@ async function handleSession() {
   renderAll();
 }
 
+async function logout() {
+  await sbClient.auth.signOut();
+}
+
 async function loadProfile() {
-  const { data, error } = await sbClient
-    .from('profiles')
-    .select('id,email,role')
-    .eq('id', state.session.user.id)
-    .maybeSingle();
+  const { data, error } = await withRetry(() =>
+    sbClient
+      .from('profiles')
+      .select('id,email,role')
+      .eq('id', state.session.user.id)
+      .maybeSingle()
+  );
 
   if (error || !data) {
     showAuthMessage('Доступ не разрешён для этого email.', true);
@@ -299,23 +269,25 @@ async function loadProfile() {
 }
 
 async function loadData() {
-  const [storesResult, jobsResult, expensesResult] = await Promise.all([
-    sbClient
-      .from('stores')
-      .select('id,name,sort_order')
-      .eq('is_active', true)
-      .order('sort_order'),
+  const [storesResult, jobsResult, expensesResult] = await withRetry(() =>
+    Promise.all([
+      sbClient
+        .from('stores')
+        .select('id,name,sort_order')
+        .eq('is_active', true)
+        .order('sort_order'),
 
-    sbClient
-      .from('jobs')
-      .select('id,job_date,slot,client_name,phone,address,mount_price,status,payment_status,comment,store_id,stores(name)')
-      .order('job_date')
-      .order('slot'),
+      sbClient
+        .from('jobs')
+        .select('id,job_date,slot,client_name,phone,address,mount_price,status,payment_status,comment,store_id,stores(name)')
+        .order('job_date')
+        .order('slot'),
 
-    sbClient
-      .from('day_expenses')
-      .select('day_date,amount,comment')
-  ]);
+      sbClient
+        .from('day_expenses')
+        .select('day_date,amount,comment')
+    ])
+  );
 
   if (storesResult.error) throw storesResult.error;
   if (jobsResult.error) throw jobsResult.error;
@@ -326,7 +298,7 @@ async function loadData() {
   state.jobs = (jobsResult.data || []).map((row) => ({
     id: row.id,
     date: row.job_date,
-    slot: row.slot,
+    slot: Number(row.slot),
     client: row.client_name,
     phone: row.phone || '',
     address: row.address || '',
@@ -334,7 +306,7 @@ async function loadData() {
     status: row.status,
     payment: row.payment_status,
     comment: row.comment || '',
-    store_id: row.store_id || '',
+    store_id: row.store_id == null ? '' : String(row.store_id),
     store: row.stores?.name || ''
   }));
 
@@ -352,6 +324,24 @@ async function loadData() {
   }
 }
 
+async function refreshData(withToast = false) {
+  if (state.isRefreshing) return;
+  state.isRefreshing = true;
+  setButtonLoading(els.refreshBtn, true, '…');
+
+  try {
+    await loadData();
+    renderAll();
+    if (withToast) showToast('Данные обновлены', 'success');
+  } catch (error) {
+    console.error('refreshData error', error);
+    showToast(normalizeError(error), 'error');
+  } finally {
+    state.isRefreshing = false;
+    setButtonLoading(els.refreshBtn, false, '↻');
+  }
+}
+
 async function signIn(event) {
   event.preventDefault();
 
@@ -363,7 +353,7 @@ async function signIn(event) {
   });
 
   if (error) {
-    showAuthMessage(error.message, true);
+    showAuthMessage(normalizeError(error), true);
   } else {
     showAuthMessage('');
   }
@@ -381,16 +371,29 @@ async function signUp() {
   });
 
   if (error) {
-    showAuthMessage(error.message, true);
+    showAuthMessage(normalizeError(error), true);
   } else {
     showAuthMessage('Пользователь создан. Теперь войди.');
   }
 }
 
-function showAuthMessage(text, isError = false) {
-  els.authMessage.textContent = text || '';
-  els.authMessage.className =
-    'auth-message muted' + (isError ? ' auth-message--error' : ' auth-message--success');
+function populateStaticFields() {
+  els.jobSlot.innerHTML = SLOTS.map(
+    (slot) => `<option value="${slot.id}">${slot.label} — ${slot.subtitle}</option>`
+  ).join('');
+
+  els.jobStatus.innerHTML = STATUS_OPTIONS.map(
+    (value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`
+  ).join('');
+
+  els.jobPayment.innerHTML = PAYMENT_OPTIONS.map(
+    (value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`
+  ).join('');
+
+  els.reportMonth.innerHTML = Array.from({ length: 12 }, (_, i) => {
+    const monthName = new Date(2025, i, 1).toLocaleDateString('ru-RU', { month: 'long' });
+    return `<option value="${i + 1}">${capitalize(monthName)}</option>`;
+  }).join('');
 }
 
 function renderAll() {
@@ -411,13 +414,17 @@ function toggleAdminUi() {
 function populateStoreFields() {
   els.jobStore.innerHTML =
     '<option value="">Не выбран</option>' +
-    state.stores.map((store) => `<option value="${store.id}">${escapeHtml(store.name)}</option>`).join('');
+    state.stores
+      .map((store) => `<option value="${store.id}">${escapeHtml(store.name)}</option>`)
+      .join('');
 }
 
 function populateFilterFields() {
   els.filterStore.innerHTML =
     '<option value="all">Все</option>' +
-    state.stores.map((store) => `<option value="${store.id}">${escapeHtml(store.name)}</option>`).join('');
+    state.stores
+      .map((store) => `<option value="${store.id}">${escapeHtml(store.name)}</option>`)
+      .join('');
 
   els.filterStatus.innerHTML =
     '<option value="all">Все</option>' +
@@ -463,7 +470,6 @@ function shiftMonth(step) {
 
   state.currentMonth = month;
   state.currentYear = year;
-
   renderCalendar();
 }
 
@@ -483,7 +489,6 @@ function renderCalendar() {
 
   const leading = weekday - 1;
   const prevMonthLastDate = new Date(state.currentYear, state.currentMonth, 0).getDate();
-
   const cells = [];
 
   for (let i = leading - 1; i >= 0; i--) {
@@ -542,11 +547,11 @@ function renderDayCell(date, muted) {
 
 function matchesFiltersAndSearch(job) {
   if (state.search) {
-    const text = [job.client, job.phone, job.address].join(' ').toLowerCase();
+    const text = [job.client, job.phone, job.address, job.store].join(' ').toLowerCase();
     if (!text.includes(state.search)) return false;
   }
 
-  if (state.filters.store !== 'all' && job.store_id !== state.filters.store) return false;
+  if (state.filters.store !== 'all' && String(job.store_id) !== String(state.filters.store)) return false;
   if (state.filters.status !== 'all' && job.status !== state.filters.status) return false;
   if (state.filters.payment !== 'all' && job.payment !== state.filters.payment) return false;
 
@@ -564,139 +569,6 @@ function getJobsForDate(date) {
   return state.jobs
     .filter((job) => job.date === date && job.status !== 'Отменён')
     .sort((a, b) => a.slot - b.slot);
-}
-
-function openJobSheet(date = state.selectedDate, jobId = '') {
-  if (state.profile?.role !== 'admin') return;
-
-  els.jobForm.reset();
-  els.jobId.value = '';
-  els.jobDate.value = date;
-  els.jobSlot.value = '1';
-  els.jobStatus.value = 'Бронь';
-  els.jobPayment.value = 'Не оплачено';
-  els.jobSheetTitle.textContent = 'Новый монтаж';
-  els.deleteJobBtn.hidden = true;
-
-  if (jobId) {
-    const job = state.jobs.find((item) => item.id === jobId);
-    if (job) {
-      els.jobId.value = job.id;
-      els.jobDate.value = job.date;
-      els.jobSlot.value = String(job.slot);
-      els.jobClient.value = job.client;
-      els.jobPhone.value = job.phone;
-      els.jobAddress.value = job.address;
-      els.jobStore.value = job.store_id || '';
-      els.jobPrice.value = String(job.price || '');
-      els.jobStatus.value = job.status;
-      els.jobPayment.value = job.payment;
-      els.jobComment.value = job.comment;
-      els.jobSheetTitle.textContent = 'Редактировать монтаж';
-      els.deleteJobBtn.hidden = false;
-    }
-  }
-
-  openSheet('jobSheet');
-}
-
-async function saveJob(event) {
-  event.preventDefault();
-
-  if (state.profile?.role !== 'admin') return;
-
-  if (!els.jobDate.value || !els.jobClient.value.trim()) {
-    alert('Заполни дату и ФИО клиента.');
-    return;
-  }
-
-  const payload = {
-    job_date: els.jobDate.value,
-    slot: Number(els.jobSlot.value),
-    client_name: els.jobClient.value.trim(),
-    phone: els.jobPhone.value.trim() || null,
-    address: els.jobAddress.value.trim() || null,
-    store_id: els.jobStore.value || null,
-    mount_price: Number(els.jobPrice.value || 0),
-    status: els.jobStatus.value,
-    payment_status: els.jobPayment.value,
-    comment: els.jobComment.value.trim() || null,
-    updated_by: state.profile?.id || null
-  };
-
-  const collision = state.jobs.find((job) => {
-    return (
-      job.id !== els.jobId.value &&
-      job.date === payload.job_date &&
-      Number(job.slot) === Number(payload.slot) &&
-      job.status !== 'Отменён'
-    );
-  });
-
-  if (collision) {
-    alert('Этот слот уже занят.');
-    return;
-  }
-
-  try {
-    let result;
-
-    if (els.jobId.value) {
-      result = await sbClient
-        .from('jobs')
-        .update(payload)
-        .eq('id', els.jobId.value)
-        .select('id')
-        .single();
-    } else {
-      result = await sbClient
-        .from('jobs')
-        .insert({
-          ...payload,
-          created_by: state.profile?.id || null
-        })
-        .select('id')
-        .single();
-    }
-
-    if (result.error) throw result.error;
-
-    closeSheet('jobSheet');
-    await loadData();
-    renderAll();
-    openDaySheet(payload.job_date);
-  } catch (error) {
-    console.error('saveJob error', error);
-
-    if (
-      String(error.message || '').toLowerCase().includes('duplicate') ||
-      String(error.message || '').toLowerCase().includes('unique')
-    ) {
-      alert('Этот слот уже занят.');
-      return;
-    }
-
-    alert(error.message || 'Не удалось сохранить монтаж.');
-  }
-}
-
-async function deleteJob() {
-  if (state.profile?.role !== 'admin' || !els.jobId.value) return;
-  if (!confirm('Удалить запись?')) return;
-
-  const { error } = await sbClient
-    .from('jobs')
-    .delete()
-    .eq('id', els.jobId.value);
-
-  if (error) {
-    alert(error.message || 'Не удалось удалить запись.');
-    return;
-  }
-
-  closeSheet('jobSheet');
-  await loadData();
-  renderAll();
 }
 
 function openDaySheet(date) {
@@ -730,7 +602,7 @@ function openDaySheet(date) {
   els.daySlots.querySelectorAll('[data-add]').forEach((node) => {
     node.addEventListener('click', () => {
       openJobSheet(date);
-      els.jobSlot.value = node.dataset.add;
+      els.jobSlot.value = String(node.dataset.add);
     });
   });
 
@@ -753,7 +625,8 @@ function renderSlotBlock(date, slot, job) {
   const actions = [];
 
   if (job.phone) {
-    actions.push(`<a class="action-link" href="tel:${job.phone.replace(/[^\d+]/g, '')}">Позвонить</a>`);
+    const tel = String(job.phone).replace(/[^\d+]/g, '');
+    if (tel) actions.push(`<a class="action-link" href="tel:${tel}">Позвонить</a>`);
   }
 
   if (job.address) {
@@ -822,38 +695,193 @@ function renderDayStats(date, jobs) {
     .join('');
 }
 
+function openJobSheet(date = state.selectedDate, jobId = '') {
+  if (state.profile?.role !== 'admin') return;
+
+  els.jobForm.reset();
+  els.jobId.value = '';
+  els.jobDate.value = date;
+  els.jobSlot.value = '1';
+  els.jobStatus.value = 'Бронь';
+  els.jobPayment.value = 'Не оплачено';
+  els.jobSheetTitle.textContent = 'Новый монтаж';
+  els.deleteJobBtn.hidden = true;
+
+  if (jobId) {
+    const job = state.jobs.find((item) => String(item.id) === String(jobId));
+    if (job) {
+      els.jobId.value = job.id;
+      els.jobDate.value = job.date;
+      els.jobSlot.value = String(job.slot);
+      els.jobClient.value = job.client;
+      els.jobPhone.value = job.phone;
+      els.jobAddress.value = job.address;
+      els.jobStore.value = job.store_id || '';
+      els.jobPrice.value = String(job.price || '');
+      els.jobStatus.value = job.status;
+      els.jobPayment.value = job.payment;
+      els.jobComment.value = job.comment;
+      els.jobSheetTitle.textContent = 'Редактировать монтаж';
+      els.deleteJobBtn.hidden = false;
+    }
+  }
+
+  openSheet('jobSheet');
+}
+
+async function saveJob(event) {
+  if (event) event.preventDefault();
+  if (state.profile?.role !== 'admin') return;
+  if (state.isSavingJob) return;
+
+  if (!els.jobDate.value || !els.jobClient.value.trim()) {
+    showToast('Заполни дату и ФИО клиента', 'error');
+    return;
+  }
+
+  const payload = {
+    job_date: els.jobDate.value,
+    slot: Number(els.jobSlot.value),
+    client_name: els.jobClient.value.trim(),
+    phone: els.jobPhone.value.trim() || null,
+    address: els.jobAddress.value.trim() || null,
+    store_id: els.jobStore.value || null,
+    mount_price: Number(els.jobPrice.value || 0),
+    status: els.jobStatus.value,
+    payment_status: els.jobPayment.value,
+    comment: els.jobComment.value.trim() || null,
+    updated_by: state.profile?.id || null
+  };
+
+  const editingId = String(els.jobId.value || '');
+
+  const collision = state.jobs.find((job) => {
+    return (
+      String(job.id) !== editingId &&
+      job.date === payload.job_date &&
+      Number(job.slot) === Number(payload.slot) &&
+      job.status !== 'Отменён'
+    );
+  });
+
+  if (collision) {
+    showToast('Этот слот уже занят', 'error');
+    return;
+  }
+
+  state.isSavingJob = true;
+  setButtonLoading(els.saveJobBtn, true, 'Сохраняю...');
+
+  try {
+    let result;
+
+    if (editingId) {
+      result = await withRetry(() =>
+        sbClient
+          .from('jobs')
+          .update(payload)
+          .eq('id', editingId)
+          .select('id')
+          .single()
+      );
+    } else {
+      result = await withRetry(() =>
+        sbClient
+          .from('jobs')
+          .insert({
+            ...payload,
+            created_by: state.profile?.id || null
+          })
+          .select('id')
+          .single()
+      );
+    }
+
+    if (result.error) throw result.error;
+
+    closeSheet('jobSheet');
+    await loadData();
+    renderAll();
+    openDaySheet(payload.job_date);
+    showToast('Запись сохранена', 'success');
+  } catch (error) {
+    console.error('saveJob error', error);
+    showToast(normalizeError(error), 'error');
+  } finally {
+    state.isSavingJob = false;
+    setButtonLoading(els.saveJobBtn, false, 'Сохранить');
+  }
+}
+
+async function deleteJob() {
+  if (state.profile?.role !== 'admin' || !els.jobId.value) return;
+  if (!confirm('Удалить запись?')) return;
+
+  setButtonLoading(els.deleteJobBtn, true, 'Удаляю...');
+
+  try {
+    const { error } = await withRetry(() =>
+      sbClient
+        .from('jobs')
+        .delete()
+        .eq('id', els.jobId.value)
+    );
+
+    if (error) throw error;
+
+    closeSheet('jobSheet');
+    await loadData();
+    renderAll();
+    openDaySheet(state.selectedDate);
+    showToast('Запись удалена', 'success');
+  } catch (error) {
+    console.error('deleteJob error', error);
+    showToast(normalizeError(error), 'error');
+  } finally {
+    setButtonLoading(els.deleteJobBtn, false, 'Удалить');
+  }
+}
+
 async function saveExpense() {
   if (state.profile?.role !== 'admin') return;
+  if (state.isSavingExpense) return;
 
   const date = state.selectedDate;
   const exists = Boolean(state.expenses[date]);
+
+  state.isSavingExpense = true;
+  setButtonLoading(els.saveDayExpenseBtn, true, 'Сохраняю...');
 
   try {
     let result;
 
     if (exists) {
-      result = await sbClient
-        .from('day_expenses')
-        .update({
-          amount: Number(els.dayExpenseInput.value || 0),
-          comment: els.dayExpenseComment.value.trim() || null,
-          updated_by: state.profile?.id || null
-        })
-        .eq('day_date', date)
-        .select('day_date')
-        .single();
+      result = await withRetry(() =>
+        sbClient
+          .from('day_expenses')
+          .update({
+            amount: Number(els.dayExpenseInput.value || 0),
+            comment: els.dayExpenseComment.value.trim() || null,
+            updated_by: state.profile?.id || null
+          })
+          .eq('day_date', date)
+          .select('day_date')
+          .single()
+      );
     } else {
-      result = await sbClient
-        .from('day_expenses')
-        .insert({
-          day_date: date,
-          amount: Number(els.dayExpenseInput.value || 0),
-          comment: els.dayExpenseComment.value.trim() || null,
-          created_by: state.profile?.id || null,
-          updated_by: state.profile?.id || null
-        })
-        .select('day_date')
-        .single();
+      result = await withRetry(() =>
+        sbClient
+          .from('day_expenses')
+          .insert({
+            day_date: date,
+            amount: Number(els.dayExpenseInput.value || 0),
+            comment: els.dayExpenseComment.value.trim() || null,
+            created_by: state.profile?.id || null,
+            updated_by: state.profile?.id || null
+          })
+          .select('day_date')
+          .single()
+      );
     }
 
     if (result.error) throw result.error;
@@ -861,9 +889,13 @@ async function saveExpense() {
     await loadData();
     renderAll();
     openDaySheet(date);
+    showToast('Расходка сохранена', 'success');
   } catch (error) {
     console.error('saveExpense error', error);
-    alert(error.message || 'Не удалось сохранить расходку.');
+    showToast(normalizeError(error), 'error');
+  } finally {
+    state.isSavingExpense = false;
+    setButtonLoading(els.saveDayExpenseBtn, false, 'Сохранить расходку');
   }
 }
 
@@ -1021,6 +1053,88 @@ function closeSheet(id) {
   if (!node) return;
   node.classList.remove('is-open');
   node.setAttribute('aria-hidden', 'true');
+}
+
+function showAuthMessage(text, isError = false) {
+  els.authMessage.textContent = text || '';
+  els.authMessage.className =
+    'auth-message muted' + (isError ? ' auth-message--error' : ' auth-message--success');
+}
+
+function showToast(message, type = 'info') {
+  if (!els.toast) return;
+  els.toast.textContent = message;
+  els.toast.className = `toast toast--show toast--${type}`;
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(() => {
+    els.toast.className = 'toast';
+  }, 2600);
+}
+
+function setButtonLoading(button, isLoading, loadingText) {
+  if (!button) return;
+  if (!button.dataset.originalText) {
+    button.dataset.originalText = button.textContent;
+  }
+  button.disabled = isLoading;
+  button.textContent = isLoading ? loadingText : button.dataset.originalText;
+}
+
+async function withRetry(fn, retries = 1) {
+  try {
+    return await fn();
+  } catch (error) {
+    if (retries > 0 && isNetworkError(error)) {
+      await delay(450);
+      return withRetry(fn, retries - 1);
+    }
+    throw error;
+  }
+}
+
+function isNetworkError(error) {
+  const text = String(error?.message || error || '').toLowerCase();
+  return (
+    error instanceof TypeError ||
+    text.includes('load failed') ||
+    text.includes('failed to fetch') ||
+    text.includes('network')
+  );
+}
+
+function normalizeError(error) {
+  const text = String(error?.message || error || '');
+
+  if (!text) return 'Неизвестная ошибка';
+  if (text.toLowerCase().includes('load failed')) return 'Ошибка сети. Попробуй ещё раз.';
+  if (text.toLowerCase().includes('failed to fetch')) return 'Нет ответа от сервера. Попробуй ещё раз.';
+  if (text.toLowerCase().includes('invalid login credentials')) return 'Неверный email или пароль.';
+  if (text.toLowerCase().includes('duplicate') || text.toLowerCase().includes('unique')) return 'Этот слот уже занят.';
+
+  return text;
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function applySavedTheme() {
+  const saved = localStorage.getItem('montaji-theme') || 'dark';
+  state.theme = saved;
+  document.documentElement.setAttribute('data-theme', saved);
+  updateThemeButton(saved);
+}
+
+function toggleTheme() {
+  state.theme = state.theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', state.theme);
+  localStorage.setItem('montaji-theme', state.theme);
+  updateThemeButton(state.theme);
+}
+
+function updateThemeButton(theme) {
+  if (!els.themeToggleBtn) return;
+  els.themeToggleBtn.textContent = theme === 'dark' ? '☀' : '☾';
 }
 
 function formatDate(date) {
