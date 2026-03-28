@@ -9,7 +9,7 @@
   <meta name="robots" content="noindex,nofollow,noarchive,nosnippet" />
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="./icon.svg" />
-  <link rel="stylesheet" href="styles.css?v=10" />
+  <link rel="stylesheet" href="styles.css?v=11" />
 </head>
 <body>
   <section id="authScreen" class="auth-screen">
@@ -232,6 +232,44 @@
     </div>
   </div>
 
+  <div class="sheet sheet--modal" id="transferSheet" aria-hidden="true">
+    <div class="sheet__overlay" id="transferOverlay"></div>
+    <div class="sheet__body sheet__body--modal">
+      <div class="sheet__handle"></div>
+
+      <div class="sheet__header">
+        <h2>Перенести монтаж</h2>
+        <button type="button" class="icon-btn" id="transferCloseBtn">✕</button>
+      </div>
+
+      <div class="panel panel--soft">
+        <p id="transferSource" class="muted">—</p>
+
+        <div class="form-grid" style="margin-top:12px;">
+          <div class="field">
+            <label for="transferDate">Новая дата</label>
+            <input id="transferDate" type="date" required />
+          </div>
+
+          <div class="field">
+            <label for="transferSlot">Новый слот</label>
+            <select id="transferSlot"></select>
+          </div>
+
+          <div class="field field--full">
+            <label for="transferComment">Комментарий к переносу</label>
+            <textarea id="transferComment" rows="3" placeholder="Например: перенос по просьбе клиента"></textarea>
+          </div>
+
+          <div class="actions-row field--full">
+            <button type="button" class="primary-btn" id="confirmTransferBtn">Перенести</button>
+            <button type="button" class="ghost-btn" id="cancelTransferBtn">Отмена</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="sheet" id="filtersSheet" aria-hidden="true">
     <div class="sheet__overlay" data-close="filtersSheet"></div>
     <div class="sheet__body">
@@ -284,7 +322,7 @@
       document.write('<script src="https://unpkg.com/@supabase/supabase-js@2"><\\/script>');
     }
   </script>
-  <script src="config.js?v=10"></script>
-  <script src="app.js?v=10"></script>
+  <script src="config.js?v=11"></script>
+  <script src="app.js?v=11"></script>
 </body>
 </html>
