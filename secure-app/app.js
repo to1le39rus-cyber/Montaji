@@ -51,7 +51,9 @@ const state = {
   theme: 'dark',
   isSavingJob: false,
   isSavingExpense: false,
-  isRefreshing: false
+  isRefreshing: false,
+  jobOriginalStatus: 'Бронь',
+  pendingTransfer: null
 };
 
 const $ = (id) => document.getElementById(id);
@@ -102,6 +104,16 @@ const els = {
   jobPayment: $('jobPayment'),
   jobComment: $('jobComment'),
   deleteJobBtn: $('deleteJobBtn'),
+
+  transferSheet: $('transferSheet'),
+  transferOverlay: $('transferOverlay'),
+  transferCloseBtn: $('transferCloseBtn'),
+  transferSource: $('transferSource'),
+  transferDate: $('transferDate'),
+  transferSlot: $('transferSlot'),
+  transferComment: $('transferComment'),
+  confirmTransferBtn: $('confirmTransferBtn'),
+  cancelTransferBtn: $('cancelTransferBtn'),
 
   daySheet: $('daySheet'),
   daySheetTitle: $('daySheetTitle'),
@@ -160,6 +172,12 @@ function bindEvents() {
   });
   els.saveJobBtn.addEventListener('click', saveJob);
   els.deleteJobBtn.addEventListener('click', deleteJob);
+  els.jobStatus.addEventListener('change', onJobStatusChange);
+
+  els.transferOverlay.addEventListener('click', () => closeTransferSheet(true));
+  els.transferCloseBtn.addEventListener('click', () => closeTransferSheet(true));
+  els.cancelTransferBtn.addEventListener('click', () => closeTransferSheet(true));
+  els.confirmTransferBtn.addEventListener('click', confirmTransfer);
 
   els.saveDayExpenseBtn.addEventListener('click', saveExpense);
 
@@ -378,9 +396,12 @@ async function signUp() {
 }
 
 function populateStaticFields() {
-  els.jobSlot.innerHTML = SLOTS.map(
+  const slotOptions = SLOTS.map(
     (slot) => `<option value="${slot.id}">${slot.label} — ${slot.subtitle}</option>`
   ).join('');
+
+  els.jobSlot.innerHTML = slotOptions;
+  els.transferSlot.innerHTML = slotOptions;
 
   els.jobStatus.innerHTML = STATUS_OPTIONS.map(
     (value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`
@@ -571,6 +592,10 @@ function getJobsForDate(date) {
     .sort((a, b) => a.slot - b.slot);
 }
 
+function isPaidJob(job) {
+  return job.status !== 'Отменён' && job.payment === 'Оплачено';
+}
+
 function openDaySheet(date) {
   state.selectedDate = date;
 
@@ -674,12 +699,16 @@ function renderSlotBlock(date, slot, job) {
 }
 
 function renderDayStats(date, jobs) {
-  const revenue = jobs.reduce((sum, job) => sum + job.price, 0);
+  const paidJobs = jobs.filter(isPaidJob);
+  const totalCount = jobs.length;
+  const paidCount = paidJobs.length;
+  const revenue = paidJobs.reduce((sum, job) => sum + job.price, 0);
   const expense = Number(state.expenses[date]?.amount || 0);
   const net = revenue - expense;
 
   return [
-    ['Монтажей', jobs.length],
+    ['Записей', totalCount],
+    ['Оплачено', paidCount],
     ['Выручка', formatMoney(revenue)],
     ['Расходка', formatMoney(expense)],
     ['Чистыми', formatMoney(net)]
@@ -706,6 +735,8 @@ function openJobSheet(date = state.selectedDate, jobId = '') {
   els.jobPayment.value = 'Не оплачено';
   els.jobSheetTitle.textContent = 'Новый монтаж';
   els.deleteJobBtn.hidden = true;
+  state.jobOriginalStatus = 'Бронь';
+  state.pendingTransfer = null;
 
   if (jobId) {
     const job = state.jobs.find((item) => String(item.id) === String(jobId));
@@ -723,23 +754,27 @@ function openJobSheet(date = state.selectedDate, jobId = '') {
       els.jobComment.value = job.comment;
       els.jobSheetTitle.textContent = 'Редактировать монтаж';
       els.deleteJobBtn.hidden = false;
+      state.jobOriginalStatus = job.status;
     }
   }
 
   openSheet('jobSheet');
 }
 
-async function saveJob(event) {
-  if (event) event.preventDefault();
-  if (state.profile?.role !== 'admin') return;
-  if (state.isSavingJob) return;
+function onJobStatusChange() {
+  if (els.jobStatus.value !== 'Перенос') return;
 
-  if (!els.jobDate.value || !els.jobClient.value.trim()) {
-    showToast('Заполни дату и ФИО клиента', 'error');
+  if (!els.jobId.value) {
+    showToast('Перенос доступен только для уже сохранённой записи', 'error');
+    els.jobStatus.value = 'Бронь';
     return;
   }
 
-  const payload = {
+  openTransferSheetFromForm();
+}
+
+function getJobPayloadFromForm() {
+  return {
     job_date: els.jobDate.value,
     slot: Number(els.jobSlot.value),
     client_name: els.jobClient.value.trim(),
@@ -752,7 +787,165 @@ async function saveJob(event) {
     comment: els.jobComment.value.trim() || null,
     updated_by: state.profile?.id || null
   };
+}
 
+function openTransferSheetFromForm() {
+  const editingId = String(els.jobId.value || '');
+  if (!editingId) return;
+
+  const payload = getJobPayloadFromForm();
+
+  state.pendingTransfer = {
+    editingId,
+    originalStatus: state.jobOriginalStatus && state.jobOriginalStatus !== 'Перенос'
+      ? state.jobOriginalStatus
+      : 'Бронь',
+    sourceDate: payload.job_date,
+    sourceSlot: payload.slot,
+    payload
+  };
+
+  els.transferSource.textContent = `Сейчас: ${shortDate(payload.job_date)} · ${getSlotLabel(payload.slot)} · ${payload.client_name || 'без имени'}`;
+  els.transferDate.value = payload.job_date;
+  els.transferSlot.value = String(payload.slot);
+  els.transferComment.value = '';
+
+  openSheet('transferSheet');
+}
+
+function closeTransferSheet(resetStatus) {
+  closeSheet('transferSheet');
+
+  if (resetStatus) {
+    const backStatus = state.pendingTransfer?.originalStatus || state.jobOriginalStatus || 'Бронь';
+    if (els.jobStatus.value === 'Перенос') {
+      els.jobStatus.value = backStatus === 'Перенос' ? 'Бронь' : backStatus;
+    }
+  }
+
+  state.pendingTransfer = null;
+}
+
+async function confirmTransfer() {
+  if (!state.pendingTransfer) return;
+  if (state.isSavingJob) return;
+
+  const { editingId, originalStatus, sourceDate, sourceSlot } = state.pendingTransfer;
+  const targetDate = els.transferDate.value;
+  const targetSlot = Number(els.transferSlot.value);
+  const extraComment = els.transferComment.value.trim();
+
+  if (!targetDate) {
+    showToast('Выбери новую дату', 'error');
+    return;
+  }
+
+  if (targetDate === sourceDate && targetSlot === sourceSlot) {
+    showToast('Выбери другую дату или слот', 'error');
+    return;
+  }
+
+  const collision = state.jobs.find((job) => {
+    return (
+      String(job.id) !== String(editingId) &&
+      job.date === targetDate &&
+      Number(job.slot) === targetSlot &&
+      job.status !== 'Отменён'
+    );
+  });
+
+  if (collision) {
+    showToast('Этот слот уже занят', 'error');
+    return;
+  }
+
+  const basePayload = getJobPayloadFromForm();
+  const transferNote = buildTransferComment(basePayload.comment, sourceDate, sourceSlot, extraComment);
+
+  const payload = {
+    ...basePayload,
+    job_date: targetDate,
+    slot: targetSlot,
+    status: originalStatus === 'Перенос' ? 'Бронь' : originalStatus,
+    comment: transferNote,
+    updated_by: state.profile?.id || null
+  };
+
+  state.isSavingJob = true;
+  setButtonLoading(els.confirmTransferBtn, true, 'Переношу...');
+
+  try {
+    const result = await withRetry(() =>
+      sbClient
+        .from('jobs')
+        .update(payload)
+        .eq('id', editingId)
+        .select('id')
+        .single()
+    );
+
+    if (result.error) throw result.error;
+
+    closeTransferSheet(false);
+    closeSheet('jobSheet');
+    await loadData();
+    renderAll();
+    openDaySheet(targetDate);
+    showToast('Монтаж перенесён', 'success');
+  } catch (error) {
+    console.error('confirmTransfer error', error);
+    showToast(normalizeError(error), 'error');
+  } finally {
+    state.isSavingJob = false;
+    setButtonLoading(els.confirmTransferBtn, false, 'Перенести');
+  }
+}
+
+function buildTransferComment(currentComment, sourceDate, sourceSlot, extraComment) {
+  const parts = [];
+
+  if (currentComment) parts.push(currentComment.trim());
+
+  const movedLine = `Перенесено с ${shortDate(sourceDate)}, ${getSlotLabel(sourceSlot)}.`;
+  parts.push(movedLine);
+
+  if (extraComment) {
+    parts.push(`Причина: ${extraComment}`);
+  }
+
+  return parts.join('\n');
+}
+
+function getSlotLabel(slotId) {
+  const slot = SLOTS.find((item) => Number(item.id) === Number(slotId));
+  return slot ? slot.label : `${slotId} слот`;
+}
+
+function shortDate(dateString) {
+  const date = new Date(`${dateString}T00:00:00`);
+  return date.toLocaleDateString('ru-RU');
+}
+
+async function saveJob(event) {
+  if (event) event.preventDefault();
+  if (state.profile?.role !== 'admin') return;
+  if (state.isSavingJob) return;
+
+  if (!els.jobDate.value || !els.jobClient.value.trim()) {
+    showToast('Заполни дату и ФИО клиента', 'error');
+    return;
+  }
+
+  if (els.jobStatus.value === 'Перенос') {
+    if (!els.jobId.value) {
+      showToast('Сначала сохрани запись, потом можно переносить', 'error');
+      return;
+    }
+    openTransferSheetFromForm();
+    return;
+  }
+
+  const payload = getJobPayloadFromForm();
   const editingId = String(els.jobId.value || '');
 
   const collision = state.jobs.find((job) => {
@@ -913,28 +1106,34 @@ function renderReports() {
     );
   });
 
+  const monthPaidJobs = monthJobs.filter(isPaidJob);
+
   const monthExpenses = Object.entries(state.expenses)
     .filter(([date]) => Number(date.slice(0, 4)) === year && Number(date.slice(5, 7)) === month)
     .reduce((sum, [, value]) => sum + Number(value.amount || 0), 0);
 
-  const monthRevenue = monthJobs.reduce((sum, job) => sum + job.price, 0);
+  const monthRevenue = monthPaidJobs.reduce((sum, job) => sum + job.price, 0);
 
   const yearJobs = state.jobs.filter((job) => {
     return job.status !== 'Отменён' && Number(job.date.slice(0, 4)) === year;
   });
 
+  const yearPaidJobs = yearJobs.filter(isPaidJob);
+
   const yearExpenses = Object.entries(state.expenses)
     .filter(([date]) => Number(date.slice(0, 4)) === year)
     .reduce((sum, [, value]) => sum + Number(value.amount || 0), 0);
 
-  const yearRevenue = yearJobs.reduce((sum, job) => sum + job.price, 0);
+  const yearRevenue = yearPaidJobs.reduce((sum, job) => sum + job.price, 0);
 
   els.statsGrid.innerHTML = [
-    ['Монтажей за месяц', monthJobs.length],
+    ['Записей за месяц', monthJobs.length],
+    ['Оплачено за месяц', monthPaidJobs.length],
     ['Выручка за месяц', formatMoney(monthRevenue)],
     ['Расходка за месяц', formatMoney(monthExpenses)],
     ['Чистыми за месяц', formatMoney(monthRevenue - monthExpenses)],
-    ['Монтажей за год', yearJobs.length],
+    ['Записей за год', yearJobs.length],
+    ['Оплачено за год', yearPaidJobs.length],
     ['Выручка за год', formatMoney(yearRevenue)],
     ['Расходка за год', formatMoney(yearExpenses)],
     ['Чистыми за год', formatMoney(yearRevenue - yearExpenses)]
@@ -961,7 +1160,8 @@ function renderArchive() {
         return job.status !== 'Отменён' && Number(job.date.slice(0, 4)) === year;
       });
 
-      const revenue = jobs.reduce((sum, job) => sum + job.price, 0);
+      const paidJobs = jobs.filter(isPaidJob);
+      const revenue = paidJobs.reduce((sum, job) => sum + job.price, 0);
 
       const expense = Object.entries(state.expenses)
         .filter(([date]) => Number(date.slice(0, 4)) === year)
@@ -971,7 +1171,7 @@ function renderArchive() {
         <div class="archive-item">
           <div>
             <div><strong>${year}</strong></div>
-            <div class="archive-item__stats">${jobs.length} монтажей · выручка ${formatMoney(revenue)} · чистыми ${formatMoney(revenue - expense)}</div>
+            <div class="archive-item__stats">${jobs.length} записей · оплачено ${paidJobs.length} · выручка ${formatMoney(revenue)} · чистыми ${formatMoney(revenue - expense)}</div>
           </div>
           <button type="button" class="ghost-btn" data-year="${year}">CSV</button>
         </div>
@@ -1007,6 +1207,7 @@ function exportCsv(yearOnly = false, forcedYear = state.reportYear) {
       Цена: job.price,
       Статус: job.status,
       Оплата: job.payment,
+      В_статистике: isPaidJob(job) ? 'Да' : 'Нет',
       Комментарий: job.comment,
       Расходка_дня: state.expenses[job.date]?.amount || 0
     }));
