@@ -1,6 +1,15 @@
 # Montaji Telegram Bot — Google Sheets backend
 
-Это основная новая версия бота: Telegram + Google Apps Script + Google Sheets. Supabase больше не нужен для работы бота.
+Основная новая версия бота: Telegram + Google Apps Script + Google Sheets. Supabase и Cloudflare не нужны для работы новой версии.
+
+## Текущая конфигурация пользователя
+
+- Telegram bot: `@Montaj39_bot`
+- Google Spreadsheet: `https://docs.google.com/spreadsheets/d/10IllFL4dx8aOraOVdASIbM0RMURykXNGTv8xGinocA0/edit`
+- Spreadsheet ID: `10IllFL4dx8aOraOVdASIbM0RMURykXNGTv8xGinocA0`
+- Timezone: `Europe/Kaliningrad`
+
+ID таблицы и username бота не являются секретами. Telegram bot token хранить только в Script Properties и никогда не коммитить.
 
 ## Что хранится в Google Sheets
 
@@ -14,32 +23,35 @@
 
 Исходные магазины взяты из старого проекта Montaji.
 
-## Секреты
+## Script Properties
 
 В Apps Script → Project Settings → Script Properties добавить:
 
-- `SPREADSHEET_ID` — ID Google-таблицы;
-- `TELEGRAM_BOT_TOKEN` — токен от @BotFather;
-- `BOT_USERNAME` — username бота без @.
+- `SPREADSHEET_ID` = `10IllFL4dx8aOraOVdASIbM0RMURykXNGTv8xGinocA0`
+- `TELEGRAM_BOT_TOKEN` = токен от @BotFather
+- `BOT_USERNAME` = `Montaj39_bot`
 
-Секреты не коммитить в Git.
+`TELEGRAM_BOT_TOKEN` не добавлять в GitHub, README, исходники или сообщения.
 
 ## Первый запуск
 
-1. Создать Google Sheet.
-2. Открыть Extensions → Apps Script.
-3. Перенести `Code.gs` и `appsscript.json`.
-4. Добавить Script Properties.
-5. Запустить функцию `setup()` один раз и дать разрешения.
+1. Открыть указанную Google Таблицу.
+2. Открыть **Расширения → Apps Script**.
+3. Перенести `telegram-bot/google-apps-script/Code.gs` и `appsscript.json` из репозитория.
+4. Добавить Script Properties из раздела выше.
+5. Запустить функцию `setup()` один раз и выдать запрошенные Google-разрешения.
 6. Убедиться, что созданы 5 листов.
-7. Deploy → New deployment → Web app.
+7. Выполнить Deploy → New deployment → Web app.
 8. Execute as: Me.
 9. Who has access: Anyone.
-10. Вызвать Telegram `setWebhook` на URL `/exec` веб-приложения.
+10. Получить URL Web App, заканчивающийся `/exec`.
+11. Выполнить `setWebhook` для Telegram с этим URL.
 
-Пример:
+Пример webhook:
 
 `https://api.telegram.org/bot<TOKEN>/setWebhook?url=<WEB_APP_URL>`
+
+Не публиковать URL вместе с токеном в GitHub.
 
 ## Напоминания
 
@@ -49,14 +61,16 @@
 - за 1 час — напоминание о конкретном монтаже;
 - 20:00 — незакрытые монтажи.
 
+Часовой пояс: `Europe/Kaliningrad`.
+
 ## Совместная работа
 
-Первый пользователь, который нажал `/start`, становится owner. Он может создать ссылку в `👥 Напарник`. Напарник подключается через `/start invite_...` и получает роль member.
+Первый авторизованный пользователь становится owner. Он может создать одноразовую invite-ссылку в `👥 Напарник`. Напарник подключается через `/start invite_...` и получает роль member.
 
-Случайный пользователь без приглашения доступа к монтажам не получает.
+Случайный пользователь без действующего приглашения доступа к монтажам не получает.
 
 ## Важно
 
-Google Apps Script — хранилище и backend. Telegram является интерфейсом. Таблицу можно открыть в любой момент как резервную копию и рабочий список.
+Google Apps Script — backend и слой доступа к таблице. Telegram — основной интерфейс. Таблица остаётся понятным резервом и доступна с телефона/компьютера через Google Drive.
 
-Старый PWA и Supabase-файлы в репозитории не удаляются.
+Старый PWA и исторические Supabase-файлы в репозитории не удаляются.
