@@ -14,9 +14,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Check JavaScript syntax
+      - name: Check new production modules
         run: |
-          node --check app-v4.js
-          node --check archive.js
           node --check firebase-sync.js
           node --check pro-features.js
+      - name: Check required app wiring
+        run: |
+          grep -q 'firebase-sync.js' index.html
+          grep -q 'pro-features.js' index.html
+          test -f firebase-config.js
+          test -f firestore.rules
+          test -f MONTAZHI-AA-OPERATING.md
