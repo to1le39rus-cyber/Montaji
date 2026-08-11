@@ -9,4 +9,4 @@
 - JSON — полная восстанавливаемая резервная копия.
 - Excel — независимая таблица всей истории; при недоступности XLSX создаётся CSV, совместимый с Excel.
 
-Firebase realtime sync предусмотрен через `onSnapshot`. В репозитории конфигурация Firebase оставлена пустой, поэтому приложение безопасно работает local-first. Для общей базы двух телефонов нужен действующий Firebase Web App config.
+Firebase realtime sync предусмотрен через `onSnapshot`. В репозитории Firebase Web App config оставлен пустым, поэтому приложение безопасно работает local-first. Для общей базы двух телефонов нужен действующий Firebase Web App config.
