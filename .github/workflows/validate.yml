@@ -1,0 +1,30 @@
+name: Validate Montaji AA
+
+on:
+  push:
+    branches: ["Astera-smart"]
+  pull_request:
+    branches: ["Astera-smart"]
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: |
+          node --check app-v4.js
+          node --check archive.js
+          node --check firebase-sync.js
+          node --check firebase-shared-config.js
+          node --check pro-features.js
+      - name: Verify canonical sync wiring
+        run: |
+          grep -F "app-v4.js?v=20260811-sync3" index.html
+          grep -F "firebase-sync.js?v=20260811-sync3" index.html
+          grep -F "firebase-shared-config.js" firebase-sync.js
+          grep -F "appData', 'shared'" firebase-sync.js
+          grep -F "export const firebaseConfig = {};" firebase-config.js
