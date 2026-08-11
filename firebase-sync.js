@@ -6,8 +6,6 @@ const CLIENT_KEY = 'montaji-aa-client';
 const clientId = localStorage.getItem(CLIENT_KEY) || crypto.randomUUID();
 localStorage.setItem(CLIENT_KEY, clientId);
 
-let db = null;
-let fs = null;
 let ready = false;
 let reconciling = false;
 let lastJson = localStorage.getItem(DATA_KEY) || '';
@@ -28,6 +26,12 @@ const sameData = (a, b) => {
   catch { return false; }
 };
 
+const normalize = data => ({
+  jobs: Array.isArray(data?.jobs) ? data.jobs : [],
+  expenses: Array.isArray(data?.expenses) ? data.expenses : [],
+  version: 4
+});
+
 async function start() {
   if (!firebaseConfig?.apiKey || !firebaseConfig?.projectId) {
     status('Локально · Firebase не настроен');
@@ -43,29 +47,27 @@ async function start() {
 
     const app = appMod.initializeApp(firebaseConfig, 'montaji-aa-shared-sync');
     const auth = authMod.getAuth(app);
-    db = fsMod.getFirestore(app);
-    fs = fsMod;
-
+    const db = fsMod.getFirestore(app);
     status('Firebase · подключение…');
     await authMod.signInAnonymously(auth);
     ready = true;
 
-    const ref = fs.doc(db, 'astera_workspaces', 'default');
+    // Canonical shared document. Firestore rules already allow authenticated users here.
+    const ref = fsMod.doc(db, 'appData', 'shared');
     const local = readLocal();
-    const snap = await fs.getDoc(ref);
+    const snap = await fsMod.getDoc(ref);
 
     if (snap.exists()) {
       const remote = snap.data() || {};
-      const remoteData = {
-        jobs: Array.isArray(remote.jobs) ? remote.jobs : [],
-        expenses: Array.isArray(remote.expenses) ? remote.expenses : [],
-        version: 4
-      };
+      const remoteData = normalize(remote.data);
       const remoteAt = Number(remote.updatedAt || 0);
 
+      // First device wins if the shared document is still empty.
       if (local?.jobs?.length && !remoteData.jobs.length && !remoteData.expenses.length) {
-        await fs.setDoc(ref, { jobs: local.jobs, expenses: local.expenses || [], version: 4, updatedAt: Date.now(), updatedBy: clientId });
-        lastRemoteAt = Date.now();
+        const at = Date.now();
+        await fsMod.setDoc(ref, { data: normalize(local), updatedAt: at, updatedBy: clientId });
+        lastRemoteAt = at;
+        localStorage.setItem(SYNC_KEY, String(at));
       } else if (!sameData(local, remoteData)) {
         reconciling = true;
         localStorage.setItem(DATA_KEY, JSON.stringify(remoteData));
@@ -81,21 +83,18 @@ async function start() {
       }
     } else if (local?.jobs) {
       const at = Date.now();
-      await fs.setDoc(ref, { jobs: local.jobs, expenses: local.expenses || [], version: 4, updatedAt: at, updatedBy: clientId });
+      await fsMod.setDoc(ref, { data: normalize(local), updatedAt: at, updatedBy: clientId });
       lastRemoteAt = at;
       localStorage.setItem(SYNC_KEY, String(at));
     }
 
     status('Firebase · синхронизация включена');
 
-    fs.onSnapshot(ref, snapshot => {
+    // Realtime updates from the partner's phone.
+    fsMod.onSnapshot(ref, snapshot => {
       if (!snapshot.exists() || reconciling) return;
       const remote = snapshot.data() || {};
-      const remoteData = {
-        jobs: Array.isArray(remote.jobs) ? remote.jobs : [],
-        expenses: Array.isArray(remote.expenses) ? remote.expenses : [],
-        version: 4
-      };
+      const remoteData = normalize(remote.data);
       const remoteAt = Number(remote.updatedAt || 0);
       const localNow = readLocal();
 
@@ -115,24 +114,19 @@ async function start() {
       }
     });
 
+    // Detect local changes (the main app saves to localStorage) and publish them.
     setInterval(async () => {
       if (!ready || reconciling || !navigator.onLine) return;
       const json = localStorage.getItem(DATA_KEY) || '';
       if (json === lastJson) return;
 
       try {
-        const data = JSON.parse(json);
+        const data = normalize(JSON.parse(json));
         const at = Date.now();
-        lastJson = json;
+        lastJson = JSON.stringify(data);
         lastRemoteAt = at;
         localStorage.setItem(SYNC_KEY, String(at));
-        await fs.setDoc(ref, {
-          jobs: Array.isArray(data.jobs) ? data.jobs : [],
-          expenses: Array.isArray(data.expenses) ? data.expenses : [],
-          version: 4,
-          updatedAt: at,
-          updatedBy: clientId
-        });
+        await fsMod.setDoc(ref, { data, updatedAt: at, updatedBy: clientId });
         status('Firebase · сохранено для обоих телефонов');
       } catch (e) {
         console.warn('sync write', e);
