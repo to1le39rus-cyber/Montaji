@@ -17,3 +17,17 @@ function download(blob,name){const a=document.createElement('a');a.href=URL.crea
 function install(){const more=document.querySelector('#moreScreen .settings-card');if(!more||document.getElementById('archiveBtn'))return;const b=document.createElement('button');b.className='setting-row';b.id='archiveBtn';b.innerHTML='<span>Архив всех выездов</span><b>Открыть ›</b>';b.onclick=openArchive;more.prepend(b);const note=document.querySelector('#moreScreen .system-note');if(note)note.textContent='Общая база · локальная копия · Excel/JSON доступны в любой момент';}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(install,0));else setTimeout(install,0);
 window.addEventListener('online',install);
+
+// Финансовый блок главной: неделя (Пн–Вс), текущий месяц и накопительный итог.
+// Он сознательно читает ту же localStorage-базу, что и приложение, поэтому архивные
+// завершённые монтажи сразу попадают в расчёт даже после смены дня.
+const moneyHomeDate=d=>{const x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`};
+const moneyHomeToday=()=>moneyHomeDate(new Date());
+const moneyHomeCompleted=j=>j.status==='Выполнен' && !j.status==='Отменён';
+const moneyHomeActivity=j=>j.status==='Выполнен'?(j.completedDate||j.date):j.date;
+const moneyHomeRange=(offsetDays)=>{const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+offsetDays);return moneyHomeDate(d)};
+function moneyHomeWeek(){const d=new Date();d.setHours(12,0,0,0);const dow=(d.getDay()+6)%7;d.setDate(d.getDate()-dow);const start=moneyHomeDate(d);d.setDate(d.getDate()+6);return [start,moneyHomeDate(d)]}
+function moneyHomeSum(rows,start,end){return rows.filter(j=>j.status==='Выполнен'&&j.status!=='Отменён'&&moneyHomeActivity(j)>=start&&moneyHomeActivity(j)<=end).reduce((s,j)=>s+Number(j.price||0),0)}
+function moneyHomeExpenseSum(expenses,start,end){return expenses.filter(e=>e.date>=start&&e.date<=end).reduce((s,e)=>s+Number(e.amount||0),0)}
+function renderMoneyHome(){const s=read(),jobs=s.jobs||[],expenses=s.expenses||[],[weekStart,weekEnd]=moneyHomeWeek(),monthStart=moneyHomeDate(new Date(new Date().getFullYear(),new Date().getMonth(),1)),monthEnd=moneyHomeDate(new Date(new Date().getFullYear(),new Date().getMonth()+1,0)),allStart='0000-01-01',allEnd='9999-12-31';const week=moneyHomeSum(jobs,weekStart,weekEnd),month=moneyHomeSum(jobs,monthStart,monthEnd),all=moneyHomeSum(jobs,allStart,allEnd),weekExpenses=moneyHomeExpenseSum(expenses,weekStart,weekEnd);const income=$('#todayIncome');if(income)income.textContent=money(week);const label=document.querySelector('.hero-label');if(label)label.textContent='доход за неделю';const sub=$('#todaySub');if(sub)sub.textContent=`Расходы за неделю: ${money(weekExpenses)} · Чистыми: ${money(week-weekExpenses)}`;let box=document.getElementById('moneyHomeSummary');if(!box){const hero=document.querySelector('.hero-card');if(!hero)return;box=document.createElement('div');box.id='moneyHomeSummary';box.className='money-home-summary';hero.appendChild(box)}const monthName=new Intl.DateTimeFormat('ru-RU',{month:'long'}).format(new Date()).replace(/^./,c=>c.toUpperCase());box.innerHTML=`<div><span>За ${esc(monthName)}</span><b>${money(month)}</b></div><div><span>За всё время</span><b>${money(all)}</b></div><small>Неделя обновляется каждый понедельник · месяц — 1-го числа</small>`}
+renderMoneyHome();setInterval(renderMoneyHome,1000);window.addEventListener('storage',renderMoneyHome);
