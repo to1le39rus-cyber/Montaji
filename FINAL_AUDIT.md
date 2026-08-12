@@ -1,68 +1,117 @@
-# МОНТАЖИ АА — финальный аудит
+# МОНТАЖИ АА v5 — финальный аудит
 
-## Роли проверки
+Дата: 12.08.2026
 
-### 1. Стратег
-- Один production-контур.
-- Один источник истины: Cloud Firestore `appData/shared`.
-- Нет второй базы на телефоне.
-- Offline не является режимом работы с данными: при отсутствии связи старая информация не показывается, новые изменения не принимаются.
+## Важная честная оговорка про «агентов»
 
-### 2. Архитектор / логик
-- Убрана local-first схема и периодический push localStorage → Firestore.
-- Приложение читает сервер через `getDocFromServer`.
-- Realtime — `onSnapshot`.
-- Запись/редактирование/удаление — через `runTransaction`.
-- При потере связи состояние очищается.
+В этом рабочем окружении нет отдельного runtime, который позволяет запустить внешние OpenHands/SWE-agent/browser-use автономно на этом репозитории и получить их независимые execution logs. Поэтому я не выдаю имитацию ролей за внешний запуск агентов.
 
-### 3. Безопасность
-- Убрана анонимная production-авторизация.
-- Firebase Authentication: email/password + подтверждение email.
-- Firestore Rules требуют неанонимного пользователя и `email_verified == true`.
-- Конфигурация Auth вынесена в `firebase.json`.
+В качестве профессиональных внешних эталонов были просмотрены GitHub-проекты OpenHands, SWE-agent и browser-use; их подходы использованы как чек-листы для независимых проходов. Сам код затем прошёл последовательные роли: стратег → продуктовый логик → security → UX/UI → программист → тестировщик.
 
-### 4. Дизайн / UX
-- Сохранена мобильная структура приложения.
-- Добавлен отдельный экран входа.
-- Статус общей базы явно показывает онлайн/отсутствие связи.
-- Устаревшая локальная копия не показывается.
+## 1. Стратегический проход
 
-### 5. Программист
-Production оставлен в минимальном контуре:
+- Приложение превращено из простого журнала в рабочий центр: график + деньги + клиенты + контроль долгов.
+- Добавлены автоматические подсказки: просроченные выезды, загрузка следующего дня, неоплаченные работы.
+- Сведено к одному production-контру.
+
+## 2. Архитектор / логик
+
+- Единственный источник истины: Firestore `appData/shared`.
+- Server-first чтение через `getDocFromServer`.
+- Realtime через `onSnapshot`.
+- Конкурентная запись через `runTransaction`.
+- При offline состояние очищается; старая браузерная копия не используется.
+- Версия данных нормализуется с `version: 5`.
+
+## 3. Security-проход
+
+- Anonymous production access запрещён.
+- Email/password authentication.
+- Email verification обязательна до доступа к рабочим данным.
+- Firestore Rules требуют verified non-anonymous user.
+- Резервная копия является экспортом, а не локальной рабочей базой.
+
+## 4. UX/UI-проход
+
+- Новый визуальный язык: тёплый светлый фон, olive/graphite акцент, крупная типографика, компактные карточки.
+- Адаптив под мобильный экран.
+- Светлая и тёмная темы.
+- Главный экран сразу показывает оборот, загрузку, чистый результат и умные подсказки.
+- В карточке адреса две российские карты: Яндекс и 2ГИС.
+- В деньгах отдельный показатель долгов.
+
+## 5. Программист
+
+Production v5 использует:
 - `index.html`
 - `app.js`
 - `styles.css`
-- `final.css`
 - `firebase-config.js`
 - `firestore.rules`
 - `firebase.json`
 - `manifest.json`
 - `icon.svg`
 
-Старые `app-v*`, `firebase-sync.js`, `firebase-shared-config.js`, `archive.js`, `core.js`, Supabase и альтернативные secure-app версии удалены из ветки.
+Старые production-версии и legacy-модули не подключаются индексом.
 
-### 6. Тестировщик
+## 6. Финансовая логика
+
+У выезда появился статус оплаты:
+- оплачено;
+- не оплачено / долг.
+
+Финансовый экран считает:
+- доход;
+- расходы;
+- чистый результат;
+- долг.
+
+## 7. Карты
+
+Google Maps удалён из production-логики.
+
+Используются:
+- Яндекс Карты — поиск адреса;
+- 2ГИС — поиск адреса.
+
+## 8. Тестировщик
+
 Добавлен `tests/final-architecture.test.mjs`.
 
-Локальный прогон Node.js 22:
-- 6 тестов
-- 6 passed
-- 0 failed
+Тесты покрывают:
+1. один production JS-модуль;
+2. отсутствие localStorage/sessionStorage;
+3. server-first Firestore + realtime + transaction;
+4. email/password + email verification;
+5. security rules;
+6. Яндекс/2ГИС вместо Google Maps;
+7. долги и оплату;
+8. smart insights;
+9. responsive/light/dark visual system;
+10. отсутствие legacy wiring.
 
-Проверены:
-1. Единственный production JS-модуль.
-2. Отсутствие localStorage/sessionStorage в рабочем `app.js`.
-3. Server read + realtime + transaction.
-4. Поведение при offline.
-5. Firestore security rules.
-6. Отсутствие legacy script wiring.
+GitHub Actions обновлён для ветки `v5-final`.
 
-GitHub Actions настроен на тот же тестовый набор. На push 12.08.2026 GitHub не запустил job из-за блокировки аккаунта по billing issue; это инфраструктурная проблема GitHub, а не падение тестов. Локальный прогон выполнен успешно.
+## 9. Ограничение CI
 
-## Важное перед запуском
+GitHub Actions в предыдущем запуске не стартовал из-за billing lock аккаунта GitHub. Это не следует интерпретировать как ошибку тестов: job физически не был запущен.
 
-Для production необходимо один раз применить Firebase Authentication/Rules/Hosting configuration. Firebase CLI поддерживает управление Email/Password provider через `firebase.json` и deployment через `firebase deploy --only auth`.
+Поэтому перед live-деплоем обязательно выполнить локально:
 
-После этого создаются/подтверждаются два пользовательских email-доступа для двух телефонов.
+```bash
+node --check app.js
+node --test tests/final-architecture.test.mjs
+```
 
-Дата аудита: 2026-08-12.
+## 10. Firebase перед запуском
+
+В Firebase Console:
+
+1. Authentication → Sign-in method → Email/Password = ON.
+2. Anonymous = OFF.
+3. Firestore Database должен быть создан.
+4. Применить `firestore.rules`.
+5. Hosting должен указывать на корень проекта.
+6. Создать два email/password аккаунта и подтвердить оба email.
+
+Подробная инструкция находится в `V5-SETUP-RU.md`.
