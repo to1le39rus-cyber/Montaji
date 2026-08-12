@@ -1,11 +1,9 @@
-name: Validate Montaji AA
-
+name: Validate Montaji AA v5
 on:
   push:
-    branches: ["Astera-smart"]
+    branches: ["v5-final"]
   pull_request:
-    branches: ["Astera-smart"]
-
+    branches: ["v5-final"]
 jobs:
   syntax-and-architecture:
     runs-on: ubuntu-latest
@@ -16,13 +14,18 @@ jobs:
           node-version: 22
       - name: Check production JavaScript syntax
         run: node --check app.js
-      - name: Run architecture tests
+      - name: Run v5 regression tests
         run: node --test tests/final-architecture.test.mjs
       - name: Check production wiring
         run: |
-          grep -F 'app.js?v=20260812-final1' index.html
+          grep -F 'app.js?v=20260812-v5' index.html
           test -f firebase-config.js
           test -f firestore.rules
+      - name: Check Russian map routing
+        run: |
+          grep -F 'yandex.ru/maps' app.js
+          grep -F '2gis.ru/search' app.js
+          ! grep -F 'google.com/maps' app.js
       - name: Check security rules
         run: |
           grep -F "request.auth.token.firebase.sign_in_provider != 'anonymous'" firestore.rules
