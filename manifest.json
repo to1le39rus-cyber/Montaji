@@ -1,11 +1,9 @@
 {
   "name": "Монтажи АА",
   "short_name": "Монтажи АА",
-  "start_url": "./?v=20260811-1",
+  "start_url": "./?v=5-final-20260812",
   "display": "standalone",
-  "background_color": "#f3f4f6",
-  "theme_color": "#6d7652",
-  "icons": [
-    {"src":"./icon.svg","sizes":"192x192","type":"image/svg+xml","purpose":"any maskable"}
-  ]
+  "background_color": "#f3f4ef",
+  "theme_color": "#78875a",
+  "icons": [{"src":"./icon.svg","sizes":"192x192","type":"image/svg+xml","purpose":"any maskable"}]
 }
