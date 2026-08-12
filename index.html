@@ -2,12 +2,29 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#78875a"><meta name="description" content="Монтажи АА — график, деньги, клиенты и общая база">
-<link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg"><link rel="stylesheet" href="styles.css?v=5-final-20260812">
-<title>Монтажи АА</title>
+<meta name="theme-color" content="#171a17"><meta name="description" content="Приложение для монтажников Анатолий / Александр">
+<link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg"><link rel="stylesheet" href="styles.css?v=5-ui-20260812">
+<title>Монтажи — Анатолий / Александр</title>
 </head>
 <body>
-<section class="auth-screen" id="authScreen"><div class="auth-card"><div class="brand-mark">AA</div><div class="eyebrow">MONTAЖИ АА · FINAL</div><h1>Работа.<br><em>Без хаоса.</em></h1><p>Один график, одна общая база, реальные деньги и понятная история. Для тебя и напарника.</p><form id="authForm"><label>Email<input id="authEmail" type="email" autocomplete="email" required placeholder="name@example.com"></label><label>Пароль<input id="authPassword" type="password" autocomplete="current-password" minlength="6" required placeholder="••••••••"></label><button class="primary auth-submit" type="submit">Войти</button></form><div class="auth-actions"><button class="text-btn" id="signUpBtn" type="button">Создать доступ</button><button class="text-btn" id="resetBtn" type="button">Сбросить пароль</button></div><div class="auth-message" id="authMessage"></div></div></section>
+<section class="auth-screen" id="authScreen">
+  <div class="auth-ambient" aria-hidden="true"><span></span><span></span><span></span></div>
+  <div class="auth-brand"><div class="brand-mark">AA</div><span>MONTAЖИ</span></div>
+  <div class="auth-card">
+    <div class="auth-kicker">Приложение для монтажников</div>
+    <h1>Анатолий <span>/</span><br>Александр</h1>
+    <p>График. Клиенты. Деньги.<br>Всё в одном месте.</p>
+    <div class="auth-divider"><span>Вход или регистрация</span></div>
+    <form id="authForm">
+      <label>Email<input id="authEmail" type="email" autocomplete="email" required placeholder="Ваш email"></label>
+      <label>Пароль<input id="authPassword" type="password" autocomplete="current-password" minlength="6" required placeholder="Ваш пароль"></label>
+      <button class="primary auth-submit" type="submit">Войти</button>
+    </form>
+    <div class="auth-actions"><button class="text-btn auth-register" id="signUpBtn" type="button">Регистрация</button><button class="text-btn auth-reset" id="resetBtn" type="button">Забыли пароль?</button></div>
+    <div class="auth-message" id="authMessage"></div>
+  </div>
+  <div class="auth-footer">ASTERA · MONTAЖИ</div>
+</section>
 <div class="app hidden" id="app">
 <header class="topbar"><div><div class="brand">MONTAЖИ <span>АА</span></div><div class="top-date" id="topDate"></div></div><div class="top-actions"><span class="sync-dot" id="syncStatus">Подключение…</span><button class="circle-btn" id="themeBtn" aria-label="Сменить тему">◐</button></div></header>
 <main class="main">
