@@ -7,7 +7,7 @@ on:
     branches: ["Astera-smart"]
 
 jobs:
-  syntax:
+  syntax-and-architecture:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,14 +16,13 @@ jobs:
           node-version: 22
       - name: Check production JavaScript syntax
         run: node --check app.js
+      - name: Run architecture tests
+        run: node --test tests/final-architecture.test.mjs
       - name: Check production wiring
         run: |
           grep -F 'app.js?v=20260812-final1' index.html
           test -f firebase-config.js
           test -f firestore.rules
-          ! grep -q 'localStorage' app.js
-          ! grep -q 'firebase-sync.js' index.html
-          ! grep -q 'app-v4.js' index.html
       - name: Check security rules
         run: |
           grep -F "request.auth.token.firebase.sign_in_provider != 'anonymous'" firestore.rules
