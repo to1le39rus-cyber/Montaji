@@ -1,8 +1,8 @@
-name: Deploy Montaji AA v5
+name: Montaji AA — production
 
 on:
   push:
-    branches: ["v5-final"]
+    branches: ["Astera-smart"]
   workflow_dispatch:
 
 permissions:
@@ -13,17 +13,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
-    name: Deploy Firebase Hosting production
+  validate-and-deploy:
+    name: Validate and deploy production
     runs-on: ubuntu-latest
-    environment:
-      name: production
-      url: https://montaj-39.web.app
     steps:
-      - name: Checkout production branch
+      - name: Checkout canonical production branch
         uses: actions/checkout@v4
 
-      - name: Deploy to Firebase Hosting
+      - name: Run zero-dependency regression tests
+        run: npm test
+
+      - name: Deploy Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
