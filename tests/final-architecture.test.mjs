@@ -14,7 +14,7 @@ test('Firebase auth uses verified email/password',()=>{assert.match(app,/signInW
 test('map routing is Russian-first',()=>{assert.match(app,/yandex\.ru\/maps/);assert.match(app,/2gis\.ru\/search/);assert.equal(app.includes('google.com/maps'),false)});
 test('finance has day, week, month and all-time views plus expenses',()=>{assert.match(app,/totals\('day'\)/);assert.match(app,/totals\('week'\)/);assert.match(app,/totals\('month'\)/);assert.match(app,/totals\('all'\)/);assert.match(index,/moneyHighlights/);assert.match(index,/expenseArchive/)});
 test('income is based on completed work only',()=>{assert.match(app,/isDone\(j\)/);assert.match(app,/activityDate\(j\)/);assert.match(app,/type==='Доп\. доход'\?'Выполнен'/)});
-test('exact expense amounts including 180 are accepted',()=>{assert.match(index,/id="eAmount" type="number" min="0\.01" step="0\.01"/);assert.match(app,/const amount=num\(\$\('#eAmount'\)\.value\)/)});
+test('exact expense amounts including 180 are accepted',()=>{assert.match(app,/id="eAmount" type="number" min="0\.01" step="0\.01"/);assert.match(app,/const amount=num\(\$\('#eAmount'\)\.value\)/)});
 test('concurrent edits use Firestore transactions',()=>{assert.match(app,/F\.runTransaction\(db/);assert.match(app,/tx\.get\(ref\)/);assert.match(app,/tx\.set\(ref/)});
 test('smart operational insights exist',()=>{assert.match(app,/просроченных выездов/);assert.match(app,/полностью загружен/);assert.match(app,/выполненных работ ещё не оплачено/)});
 test('Excel-compatible export and JSON disaster backup exist',()=>{assert.match(app,/exportExcel/);assert.match(app,/text\/csv;charset=utf-8/);assert.match(app,/exportJson/);assert.match(app,/restoreJson/)});
