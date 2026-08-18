@@ -1,7 +1,7 @@
 (() => {
   const FIREBASE_VERSION = '10.14.1';
-  const DOC = ['appData', 'shared'];
-  const NOTES_DOC = ['appData', 'notes'];
+  const DOC=['appData','shared'];
+  const NOTES_DOC=['appData','notes'];
   const $ = (s, root = document) => root.querySelector(s);
   const $$ = (s, root = document) => [...root.querySelectorAll(s)];
   const uid = () => crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`;
@@ -47,14 +47,8 @@
     });
   }
 
-  function observeShared(){
-    stopShared?.();
-    stopShared = F.onSnapshot(F.doc(db,...DOC), snap => { shared=currentData(snap); renderAll(); });
-  }
-  function observeNotes(){
-    stopNotes?.();
-    stopNotes = F.onSnapshot(F.doc(db,...NOTES_DOC), snap => { notes=currentNotes(snap); renderAll(); });
-  }
+  function observeShared(){ stopShared?.(); stopShared = F.onSnapshot(F.doc(db,...DOC), snap => { shared=currentData(snap); renderAll(); }); }
+  function observeNotes(){ stopNotes?.(); stopNotes = F.onSnapshot(F.doc(db,...NOTES_DOC), snap => { notes=currentNotes(snap); renderAll(); }); }
   function jobsForDate(d){ return shared.jobs.filter(j=>j.date===d && j.status!=='Отменён'); }
   function doneJobsForDate(d){ return jobsForDate(d).filter(j=>j.status==='Выполнен'); }
   function expensesForDate(d){ return shared.expenses.filter(e=>e.date===d); }
@@ -101,7 +95,7 @@
     const ref=F.doc(db,...DOC);
     await F.runTransaction(db,async tx=>{const s=await tx.get(ref),cur=s.exists()?s.data()?.data||{}:{};const next=await mut(JSON.parse(JSON.stringify(cur)));tx.set(ref,{data:next,version:9,updatedAt:F.serverTimestamp(),updatedBy:user.uid},{merge:true});});
   }
-  async function saveNotes(mut){
+  async function noteSave(mut){
     if(!ready||!user) throw Error('Нет соединения с общей базой');
     const ref=F.doc(db,...NOTES_DOC);
     await F.runTransaction(db,async tx=>{const s=await tx.get(ref),cur=s.exists()?s.data()?.data||{}:{};const next=await mut(JSON.parse(JSON.stringify(cur)));tx.set(ref,{data:next,version:9,updatedAt:F.serverTimestamp(),updatedBy:user.uid},{merge:true});});
@@ -110,15 +104,15 @@
   function openNote(n=null){
     const m=modal(`<div class="v9-head"><h2>${n?'Изменить заметку':'Новая заметка'}</h2><button class="v9-btn" data-x>×</button></div><form id="v9NoteForm"><label class="v9-field"><span>Заголовок</span><input id="v9NoteTitle" required value="${esc(n?.title||'')}"></label><label class="v9-field"><span>Текст</span><textarea id="v9NoteText" rows="5" required>${esc(n?.text||'')}</textarea></label><div class="v9-actions"><button class="v9-btn primary">Сохранить</button>${n?'<button type="button" class="v9-btn danger" id="v9DeleteNote">Удалить</button>':''}</div></form>`);
     $('[data-x]',m).onclick=()=>m.remove();
-    $('#v9NoteForm',m).onsubmit=async e=>{e.preventDefault();const item={id:n?.id||uid(),title:$('#v9NoteTitle',m).value.trim(),text:$('#v9NoteText',m).value.trim(),archived:n?.archived===true,updatedAt:new Date().toISOString()};if(!item.title||!item.text)return;try{await saveNotes(cur=>({...cur,notes:[...(Array.isArray(cur.notes)?cur.notes:[]).filter(x=>x.id!==item.id),item]}));m.remove();}catch(err){alert(err.message)}};
-    $('#v9DeleteNote',m)?.addEventListener('click',async()=>{try{await saveNotes(cur=>({...cur,notes:(cur.notes||[]).filter(x=>x.id!==n.id)}));m.remove();}catch(err){alert(err.message)}});
+    $('#v9NoteForm',m).onsubmit=async e=>{e.preventDefault();const item={id:n?.id||uid(),title:$('#v9NoteTitle',m).value.trim(),text:$('#v9NoteText',m).value.trim(),archived:n?.archived===true,updatedAt:new Date().toISOString()};if(!item.title||!item.text)return;try{await noteSave(cur=>({...cur,notes:[...(Array.isArray(cur.notes)?cur.notes:[]).filter(x=>x.id!==item.id),item]}));m.remove();}catch(err){alert(err.message)}};
+    $('#v9DeleteNote',m)?.addEventListener('click',async()=>{try{await noteSave(cur=>({...cur,notes:(cur.notes||[]).filter(x=>x.id!==n.id)}));m.remove();}catch(err){alert(err.message)}});
   }
-  async function setNoteState(id,arch){try{await saveNotes(cur=>({...cur,notes:(Array.isArray(cur.notes)?cur.notes:[]).map(n=>n.id===id?{...n,archived:arch,updatedAt:new Date().toISOString()}:n)}));}catch(e){alert(e.message)}}
+  async function setNoteState(id,arch){try{await noteSave(cur=>({...cur,notes:(Array.isArray(cur.notes)?cur.notes:[]).map(n=>n.id===id?{...n,archived:arch,updatedAt:new Date().toISOString()}:n)}));}catch(e){alert(e.message)}}
 
   function openExpense(d){
     const m=modal(`<div class="v9-head"><h2>Расход · ${esc(fmt(d))}</h2><button class="v9-btn" data-x>×</button></div><form id="v9ExpenseForm"><div class="v9-grid"><label class="v9-field"><span>Дата</span><input id="v9ExpDate" type="date" required value="${esc(d)}"></label><label class="v9-field"><span>Сумма, ₽</span><input id="v9ExpAmount" type="number" min="0.01" step="0.01" required></label></div><label class="v9-field"><span>Категория</span><select id="v9ExpCat"><option>Топливо</option><option>Аренда</option><option>Парковка</option><option>Материалы</option><option>Инструмент</option><option>Прочее</option></select></label><label class="v9-field"><span>Комментарий</span><textarea id="v9ExpComment" rows="3" placeholder="Что оплатили?"></textarea></label><div class="v9-actions"><button class="v9-btn primary">Сохранить расход</button></div></form>`);
     $('[data-x]',m).onclick=()=>m.remove();
-    $('#v9ExpenseForm',m).onsubmit=async e=>{e.preventDefault();const amount=Number($('#v9ExpAmount',m).value);if(!(amount>0))return;const item={id:uid(),date:$('#v9ExpDate',m).value,amount,category:$('#v9ExpCat',m).value,comment:$('#v9ExpComment',m).value.trim()};try{await saveShared(cur=>({...cur,expenses:[...(cur.expenses||[]),item]}));m.remove();}catch(err){alert(err.message)}};
+    $('#v9ExpenseForm',m).onsubmit=async e=>{e.preventDefault();const amount=Number($('#v9ExpAmount').value);if(!(amount>0))return;const item={id:uid(),date:$('#v9ExpDate',m).value,amount,category:$('#v9ExpCat',m).value,comment:$('#v9ExpComment',m).value.trim()};try{await saveShared(cur=>({...cur,expenses:[...(cur.expenses||[]),item]}));m.remove();}catch(err){alert(err.message)}};
   }
 
   function dayArchive(d){
@@ -136,7 +130,6 @@
     cal.dataset.v9Bound='1';
     cal.addEventListener('click',e=>{const day=e.target.closest('.day[data-date]');if(!day)return;setTimeout(()=>{const legacy=document.querySelector('.modal.open');if(legacy&&legacy.querySelector('.sheet')&&!legacy.querySelector('.v9-open-archive')){const b=document.createElement('button');b.className='v9-open-archive';b.textContent='Открыть весь день';b.onclick=()=>{legacy.remove();showArchive(day.dataset.date)};const actions=legacy.querySelector('.day-actions');actions?.appendChild(b);}},0);});
   }
-
   function patchCalendarButtons(){ $$('.day[data-date]').forEach(day=>{if(day.dataset.v9Direct==='1')return;day.dataset.v9Direct='1';day.addEventListener('dblclick',()=>showArchive(day.dataset.date));}); }
 
   function boot(){
