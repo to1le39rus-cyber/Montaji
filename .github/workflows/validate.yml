@@ -1,47 +1,43 @@
-name: Validate Montaji AA v5
+name: Validate Montaji AA v9
 
 on:
   push:
-    branches: ["v5-final"]
+    branches: ["v9-final"]
   pull_request:
-    branches: ["v5-final"]
+    branches: ["Astera-smart"]
 
 jobs:
   syntax-and-architecture:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-
       - name: Check production JavaScript syntax
-        run: node --check app.js
-
-      - name: Run v5 regression tests
-        run: node --test tests/final-architecture.test.mjs
-
+        run: |
+          node --check app.js
+          node --check v9.js
+      - name: Run regression tests
+        run: npm test
       - name: Check production wiring
         run: |
-          grep -F 'app.js?v=20260812-v5' index.html
+          grep -F 'app.js?v=9-core-20260818' index.html
+          grep -F 'v9.js?v=20260818-1' index.html
+          test "$(grep -o 'type=\"module\"' index.html | wc -l)" -eq 1
           test -f firebase-config.js
           test -f firestore.rules
           test -f firebase.json
           test -f .firebaserc
-
       - name: Check Russian map routing
         run: |
           grep -F 'yandex.ru/maps' app.js
           grep -F '2gis.ru/search' app.js
           ! grep -F 'google.com/maps' app.js
-
       - name: Check security rules
         run: |
           grep -F "request.auth.token.firebase.sign_in_provider != 'anonymous'" firestore.rules
           grep -F 'request.auth.token.email_verified == true' firestore.rules
-
-      - name: Check single production entry point
+      - name: Check legacy production wiring
         run: |
-          test "$(grep -o 'app.js?v=20260812-v5' index.html | wc -l)" -eq 1
-          ! grep -E 'app-v[0-9]|firebase-sync|archive.js' index.html
+          ! grep -E 'app-v[0-9]|firebase-sync|archive.js|enhancement-v8.js' index.html
