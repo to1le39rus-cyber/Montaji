@@ -3,10 +3,11 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 const index=fs.readFileSync('index.html','utf8');
 const app=fs.readFileSync('app.js','utf8');
+const v9=fs.readFileSync('v9.js','utf8');
 const css=fs.readFileSync('styles.css','utf8');
 const rules=fs.readFileSync('firestore.rules','utf8');
 
-test('single production app module and cache version',()=>{assert.match(index,/app\.js\?v=5-final-20260812/);assert.equal((index.match(/<script[^>]+type=["']module["']/g)||[]).length,1)});
+test('single production app module and v9 layer cache version',()=>{assert.match(index,/app\.js\?v=9-core-20260818/);assert.match(index,/v9\.js\?v=20260818-1/);assert.equal((index.match(/<script[^>]+type=["']module["']/g)||[]).length,1)});
 test('no browser database/cache is used',()=>{assert.equal(app.includes('localStorage'),false);assert.equal(app.includes('sessionStorage'),false);assert.match(app,/state=emptyState\(\)/)});
 test('Firestore architecture is server-first, transactional and realtime',()=>{assert.match(app,/getDocFromServer/);assert.match(app,/onSnapshot/);assert.match(app,/runTransaction/);assert.match(app,/serverTimestamp/);assert.match(app,/DOC_PATH = \['appData', 'shared'\]/)});
 test('Firebase auth uses verified email/password',()=>{assert.match(app,/signInWithEmailAndPassword/);assert.match(app,/createUserWithEmailAndPassword/);assert.match(app,/sendEmailVerification/);assert.match(rules,/email_verified == true/);assert.match(rules,/sign_in_provider != 'anonymous'/)});
@@ -18,4 +19,9 @@ test('concurrent edits use Firestore transactions',()=>{assert.match(app,/F\.run
 test('smart operational insights exist',()=>{assert.match(app,/просроченных выездов/);assert.match(app,/полностью загружен/);assert.match(app,/выполненных работ ещё не оплачено/)});
 test('Excel-compatible export and JSON disaster backup exist',()=>{assert.match(app,/exportExcel/);assert.match(app,/text\/csv;charset=utf-8/);assert.match(app,/exportJson/);assert.match(app,/restoreJson/)});
 test('modern responsive light/dark visual system exists',()=>{assert.match(css,/linear-gradient/);assert.match(css,/body\.dark/);assert.match(css,/backdrop-filter/);assert.match(css,/@media\(max-width:700px\)/)});
-test('legacy modules are not wired into production',()=>{for(const x of ['firebase-sync.js','archive.js','app-v4.js','app-v3.js'])assert.equal(index.includes(x),false)});
+test('legacy modules are not wired into production',()=>{for(const x of ['firebase-sync.js','archive.js','app-v4.js','app-v3.js','enhancement-v8.js'])assert.equal(index.includes(x),false)});
+test('v9 preserves the existing shared data and stores notes separately',()=>{assert.match(v9,/const DOC=\['appData','shared'\]/);assert.match(v9,/const NOTES_DOC=\['appData','notes'\]/);assert.match(v9,/notes:Array\.isArray\(notes\.notes\)/);assert.match(v9,/\{data:next,version:9,updatedAt:F\.serverTimestamp\(\),updatedBy:user\.uid\}/)});
+test('v9 home contains daily expenses and active plus archived notes',()=>{assert.match(v9,/Расходы сегодня/);assert.match(v9,/Архив заметок/);assert.match(v9,/data-note-archive/);assert.match(v9,/data-note-restore/)});
+test('v9 calendar opens a complete day archive with income, expenses and net',()=>{assert.match(v9,/observeCalendar/);assert.match(v9,/Архив дня/);assert.match(v9,/Открыть весь день/);assert.match(v9,/Монтажи и выезды/);assert.match(v9,/Расходы/);assert.match(v9,/net:income-exp/)});
+test('v9 expense amounts are decimal-safe and date-addressable',()=>{assert.match(v9,/min="0\.01" step="0\.01"/);assert.match(v9,/date:\$\('#v9ExpDate'\)\.value/);assert.match(v9,/amount,category/)});
+test('v9 writes are transactional and preserve unrelated fields',()=>{assert.match(v9,/F\.runTransaction\(db/);assert.match(v9,/const cur=s\.exists\(\)\?s\.data\(\)\?\.data\|\|\{\}:\{\}/);assert.match(v9,/\.\.\.cur,expenses/);assert.match(v9,/\.\.\.cur,notes/)});
