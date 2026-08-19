@@ -10,5 +10,10 @@ service cloud.firestore {
     match /appData/shared {
       allow read, write: if verifiedUser();
     }
+
+    // Notes are intentionally isolated so older shared-data writes cannot erase them.
+    match /appData/notes {
+      allow read, write: if verifiedUser();
+    }
   }
 }
