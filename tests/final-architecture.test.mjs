@@ -13,7 +13,7 @@ test('production entry is deterministic and uses the safe bootloader',()=>{
   assert.equal((index.match(/<script[^>]+type=["']module["']/g)||[]).length,1);
   assert.match(index,/app\.js\?v=12-20260819/);
   assert.match(recovery,/boot\.js/);
-  assert.match(boot,/LOAD_SERVER_PATCH_NOT_FOUND/);
+  assert.match(boot,/PRODUCTION_PATCH_NOT_APPLIED/);
   assert.doesNotMatch(index,/v9\.js|v9-compat|app-v[0-9]|firebase-sync|archive\.js/);
 });
 
@@ -26,10 +26,11 @@ test('working database contract is preserved',()=>{
 });
 
 test('safe bootloader isolates shared database loading from notes permissions',()=>{
-  assert.match(boot,/const sharedSnap=await F\.getDocFromServer/);
+  assert.match(boot,/sharedSnap=await F\.getDocFromServer/);
   assert.match(boot,/const notesSnap=await F\.getDocFromServer/);
-  assert.match(boot,/Notes document unavailable; shared database remains usable/);
+  assert.match(boot,/Notes unavailable; shared database remains usable/);
   assert.match(boot,/serverReady=true/);
+  assert.match(boot,/await F\.getDoc\(F\.doc\(db,\.\.\.SHARED_DOC\)\)/);
 });
 
 test('notes remain isolated from legacy shared writes',()=>{
@@ -73,9 +74,10 @@ test('mobile UX guards against horizontal overflow',()=>{
   assert.match(css,/max-width:100%/);
 });
 
-test('security blocks anonymous access and protects both data documents',()=>{
+test('security requires authenticated verified accounts and protects both documents',()=>{
   assert.match(rules,/request\.auth != null/);
   assert.match(rules,/sign_in_provider != 'anonymous'/);
+  assert.match(rules,/request\.auth\.token\.email_verified == true/);
   assert.match(rules,/match \/appData\/shared/);
   assert.match(rules,/match \/appData\/notes/);
 });
