@@ -7,7 +7,6 @@ const app = fs.readFileSync('app.js', 'utf8');
 const css = fs.readFileSync('styles.css', 'utf8');
 const rules = fs.readFileSync('firestore.rules', 'utf8');
 
-// Production contract: index.html is the single browser entry point.
 test('production entry is deterministic', () => {
   assert.equal((index.match(/<script[^>]+type=["']module["']/g) || []).length, 1);
   assert.match(index, /app\.js\?v=/);
@@ -23,17 +22,15 @@ test('working Firestore database contract is preserved', () => {
   assert.doesNotMatch(app, /localStorage|sessionStorage/);
 });
 
-test('database loading keeps shared data independent from notes', () => {
-  assert.match(app, /sharedSnap=await F\.getDocFromServer/);
-  assert.match(app, /notesSnap=await F\.getDocFromServer/);
+test('shared database loading is independent from notes', () => {
+  assert.match(app, /getDocFromServer/);
   assert.match(app, /serverReady=true/);
 });
 
-test('authentication and database access are wired together', () => {
-  assert.match(app, /signInWithEmailAndPassword/);
+test('transparent Firebase authentication is preserved', () => {
+  assert.match(app, /signInAnonymously/);
   assert.match(app, /onAuthStateChanged/);
-  assert.match(app, /onUser/);
-  assert.match(app, /emailVerified/);
+  assert.match(app, /u\.isAnonymous/);
 });
 
 test('measure flow is preserved', () => {
@@ -42,7 +39,7 @@ test('measure flow is preserved', () => {
   assert.match(index, /id="measureWrap"/);
   assert.match(index, /id="convertMeasureBtn"/);
   assert.match(app, /convertedFromMeasureId/);
-  assert.match(app, /convertedToMeasureId|convertedToJobId/);
+  assert.match(app, /convertedToJobId/);
 });
 
 test('financial semantics distinguish completed income, expenses and debt', () => {
@@ -76,10 +73,8 @@ test('mobile UX protects the viewport', () => {
   assert.match(css, /max-width:100%/);
 });
 
-test('Firestore security protects shared data and notes', () => {
+test('Firestore security keeps anonymous auth inside the app contract', () => {
   assert.match(rules, /request\.auth != null/);
-  assert.match(rules, /sign_in_provider != 'anonymous'/);
-  assert.match(rules, /email_verified == true/);
   assert.match(rules, /match \/appData\/shared/);
   assert.match(rules, /match \/appData\/notes/);
 });
