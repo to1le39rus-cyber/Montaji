@@ -74,10 +74,10 @@ test('mobile UX guards against horizontal overflow',()=>{
   assert.match(css,/max-width:100%/);
 });
 
-test('security requires authenticated verified accounts and protects both documents',()=>{
+test('security requires authenticated non-anonymous accounts and protects both documents',()=>{
   assert.match(rules,/request\.auth != null/);
   assert.match(rules,/sign_in_provider != 'anonymous'/);
-  assert.match(rules,/request\.auth\.token\.email_verified == true/);
+  assert.doesNotMatch(rules,/email_verified == true/);
   assert.match(rules,/match \/appData\/shared/);
   assert.match(rules,/match \/appData\/notes/);
 });
