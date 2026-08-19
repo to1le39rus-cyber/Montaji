@@ -1,4 +1,4 @@
-const APP_URL = new URL(`app.js?runtime=20260819-5`, location.href);
+const APP_URL = new URL(`app.js?runtime=20260819-6`, location.href);
 const CONFIG_URL = new URL('firebase-config.js', location.href).href;
 
 async function boot() {
@@ -11,9 +11,6 @@ async function boot() {
     `import { firebaseConfig } from '${CONFIG_URL}';`
   );
 
-  // Shared Firestore is authoritative. Notes are deliberately non-blocking.
-  // The loader first asks the server, then falls back to the browser cache.
-  // A temporary notes failure must never blank the montage database.
   const loadServer = `async function loadServer(){
     if(!user||!online){
       serverReady=false;state=emptyState();notes=[];render();
@@ -42,9 +39,9 @@ async function boot() {
     if(!sharedSnap){
       console.error('Shared database load failed',lastErr);
       serverReady=false;state=emptyState();notes=[];render();
-      const code=lastErr?.code?` [${lastErr.code}]`:'';
+      const code=lastErr?.code?' ['+lastErr.code+']':'';
       status(code.includes('permission-denied')?'Нет доступа к общей базе':'База недоступна','offline');
-      toast(`Не удалось получить данные с сервера.${code}`,'error');
+      toast('Не удалось получить данные с сервера.'+code,'error');
       return false;
     }
     state=sharedSnap.exists()?normalize(sharedSnap.data().data):emptyState();
