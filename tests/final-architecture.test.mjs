@@ -23,18 +23,21 @@ test('working Firestore database contract is preserved', () => {
   assert.doesNotMatch(app, /localStorage|sessionStorage/);
 });
 
-test('database boot keeps Firebase config resolvable and does not impose an auth workaround', () => {
+test('database boot uses the canonical Firebase config and resilient shared load', () => {
   assert.match(boot, /CONFIG_URL/);
   assert.match(boot, /firebase-config\.js/);
+  assert.match(boot, /Shared database load failed/);
   assert.doesNotMatch(boot, /signInAnonymously/);
 });
 
 test('montage scheduling has no artificial daily capacity limit', () => {
-  assert.match(boot, /There is deliberately NO daily capacity limit/);
+  assert.match(boot, /function montageCount\(d\).*jobsForDate\(d\).*type==='Монтаж'/s);
   assert.match(boot, /conflict=null/);
   assert.match(boot, /todayLoad/);
   assert.doesNotMatch(boot, /Сегодня уже занято 3\/3 монтажных окна/);
   assert.doesNotMatch(boot, /На эту дату уже занято 3\/3 монтажных окна/);
+  assert.doesNotMatch(app, /Сегодня уже занято 3\/3 монтажных окна/);
+  assert.doesNotMatch(app, /На эту дату уже занято 3\/3 монтажных окна/);
 });
 
 test('measure flow has all required DOM fields', () => {
@@ -71,7 +74,7 @@ test('expenses are independent and archivable', () => {
   assert.match(app, /expenses: Array\.isArray/);
   assert.match(app, /cancelled:e\.cancelled === true/);
   assert.match(app, /cancelled:true/);
-  assert.match(app, /id="cancelExpense"/);
+  assert.match(index, /id="cancelExpense"/);
 });
 
 test('mobile UX protects the viewport', () => {
