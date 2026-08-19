@@ -1,20 +1,18 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Production data is readable/writable only by a real, verified Firebase account.
-    // No anonymous access. This rule change never migrates, deletes, or rewrites data.
-    function signedInVerified() {
-      return request.auth != null
-        && request.auth.token.firebase.sign_in_provider != 'anonymous'
-        && request.auth.token.email_verified == true;
+    // Original production contract: transparent Firebase anonymous auth.
+    // Shared data is never migrated or deleted by these rules.
+    function signedIn() {
+      return request.auth != null;
     }
 
     match /appData/shared {
-      allow read, write: if signedInVerified();
+      allow read, write: if signedIn();
     }
 
     match /appData/notes {
-      allow read, write: if signedInVerified();
+      allow read, write: if signedIn();
     }
   }
 }
