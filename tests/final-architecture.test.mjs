@@ -9,7 +9,7 @@ const rules=fs.readFileSync('firestore.rules','utf8');
 
 test('production entry is one deterministic application module',()=>{
   assert.equal((index.match(/<script[^>]+type=["']module["']/g)||[]).length,1);
-  assert.match(index,/app\.js\?v=10-20260819/);
+  assert.match(index,/app\.js\?v=11-20260819/);
   assert.doesNotMatch(index,/v9\.js|v9-compat|app-v[0-9]|firebase-sync|archive\.js/);
 });
 
