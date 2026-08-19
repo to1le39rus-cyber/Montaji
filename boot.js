@@ -1,4 +1,4 @@
-const APP_URL = new URL(`app.js?runtime=20260819-6`, location.href);
+const APP_URL = new URL(`app.js?runtime=20260819-7`, location.href);
 const CONFIG_URL = new URL('firebase-config.js', location.href).href;
 
 async function boot() {
@@ -11,6 +11,7 @@ async function boot() {
     `import { firebaseConfig } from '${CONFIG_URL}';`
   );
 
+  // Database boot: shared data is authoritative; notes are non-blocking.
   const loadServer = `async function loadServer(){
     if(!user||!online){
       serverReady=false;state=emptyState();notes=[];render();
@@ -30,11 +31,8 @@ async function boot() {
       }
     }
     if(!sharedSnap){
-      try{
-        sharedSnap=await F.getDoc(F.doc(db,...SHARED_DOC));
-      }catch(cacheErr){
-        lastErr=cacheErr;
-      }
+      try{ sharedSnap=await F.getDoc(F.doc(db,...SHARED_DOC)); }
+      catch(cacheErr){ lastErr=cacheErr; }
     }
     if(!sharedSnap){
       console.error('Shared database load failed',lastErr);
@@ -67,9 +65,8 @@ async function boot() {
     if(!u){
       serverReady=false;state=emptyState();notes=[];showAuth(false);render();
       status('Подключаем общую базу…');
-      try{
-        await F.authMod.signInAnonymously(auth);
-      }catch(err){
+      try{ await F.authMod.signInAnonymously(auth); }
+      catch(err){
         console.error('Anonymous auth failed',err);
         showAuth(true);
         authMessage('Не удалось подключиться к общей базе.',true);
@@ -101,17 +98,45 @@ async function boot() {
     `${anonymousAuth}\n(async()=>{`
   );
 
+  // Business invariant: three montage windows are capacity for the whole day,
+  // not only for unfinished jobs. This keeps Today and Calendar consistent
+  // after a job is completed.
+  patched = patched.replace(
+    /function montageCount\(d\)\{[^}]*\} function freeSlot\(d\)\{[^}]*\}/,
+    `function montageCount(d){return jobsForDate(d).filter(j=>j.type==='Монтаж').length;} function freeSlot(d){const used=new Set(jobsForDate(d).filter(j=>j.type==='Монтаж').map(j=>String(j.slot)));return ['1','2','3'].find(s=>!used.has(s))||null;}`
+  );
+
+  // A slot occupied by a completed job is still occupied for that calendar day.
+  patched = patched.replace(
+    /const d=\$\('#jobDate'\)\.value,s=\$\('#jobSlot'\)\.value,id=\$\('#jobId'\)\.value,conflict=editingType==='Монтаж'&&state\.jobs\.find\(j=>j\.id!==id&&!isCancelled\(j\)&&!isDone\(j\)&&j\.type==='Монтаж'&&j\.date===d&&String\(j\.slot\)===s\);/,
+    `const d=$('#jobDate').value,s=$('#jobSlot').value,id=$('#jobId').value,conflict=editingType==='Монтаж'&&state.jobs.find(j=>j.id!==id&&!isCancelled(j)&&j.type==='Монтаж'&&j.date===d&&String(j.slot)===s);`
+  );
+  patched = patched.replace(
+    /const conflict=state\.jobs\.find\(j=>j\.id!==id&&!isCancelled\(j\)&&!isDone\(j\)&&j\.type==='Монтаж'&&j\.date===d&&String\(j\.slot\)===$\('#jobSlot'\)\.value\);/,
+    `const conflict=state.jobs.find(j=>j.id!==id&&!isCancelled(j)&&j.type==='Монтаж'&&j.date===d&&String(j.slot)===$('#jobSlot').value);`
+  );
+
+  // Quick actions: unfinished jobs get route/done; completed unpaid jobs get paid.
+  patched = patched.replace(
+    /\$\{!compact&&!isDone\(j\)&&!isCancelled\(j\)\?`<div class="quick-actions">[\s\S]*?`:\'\'\}/,
+    `\${!compact&&!isCancelled(j)&&(!isDone(j)||j.paid===false)?\`<div class="quick-actions">\${!isDone(j)?\`<button data-quick="route" data-id="\${esc(j.id)}">В путь</button><button data-quick="done" data-id="\${esc(j.id)}">Выполнено</button>\`:''}\${j.paid===false?\`<button data-quick="paid" data-id="\${esc(j.id)}">Оплачено</button>\`:''}</div>\`:''}`
+  );
+
+  // Calendar history uses the same daily capacity rule as Today.
+  patched = patched.replace(
+    /const k=dateKey\(new Date\(y,m,n\)\),c=montageCount\(k\),js=activeJobs\(k\),hasMeasure=js\.some\(isMeasure\);/,
+    `const k=dateKey(new Date(y,m,n)),c=montageCount(k),js=jobsForDate(k),hasMeasure=js.some(isMeasure);`
+  );
+
   if (patched === source) throw new Error('PRODUCTION_PATCH_NOT_APPLIED');
   if (!patched.includes('signInAnonymously')) throw new Error('ANONYMOUS_AUTH_PATCH_NOT_APPLIED');
+  if (!patched.includes("function montageCount(d){return jobsForDate(d).filter(j=>j.type==='Монтаж').length;}")) throw new Error('CAPACITY_PATCH_NOT_APPLIED');
   if (!patched.includes('Notes unavailable; shared database remains usable.')) throw new Error('SHARED_DB_PATCH_NOT_APPLIED');
 
   const blob = new Blob([patched], { type: 'text/javascript' });
   const moduleUrl = URL.createObjectURL(blob);
-  try {
-    await import(moduleUrl);
-  } finally {
-    URL.revokeObjectURL(moduleUrl);
-  }
+  try { await import(moduleUrl); }
+  finally { URL.revokeObjectURL(moduleUrl); }
 }
 
 boot().catch(error => {
