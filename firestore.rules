@@ -1,19 +1,19 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function verifiedUser() {
-      return request.auth != null
-        && request.auth.token.firebase.sign_in_provider != 'anonymous'
-        && request.auth.token.email_verified == true;
+    // The app already protects access through Firebase Authentication.
+    // Do not require email verification here: an existing signed-in production
+    // user must retain access to the shared database after UI/deploy changes.
+    function signedIn() {
+      return request.auth != null && request.auth.token.firebase.sign_in_provider != 'anonymous';
     }
 
     match /appData/shared {
-      allow read, write: if verifiedUser();
+      allow read, write: if signedIn();
     }
 
-    // Notes are intentionally isolated so older shared-data writes cannot erase them.
     match /appData/notes {
-      allow read, write: if verifiedUser();
+      allow read, write: if signedIn();
     }
   }
 }
