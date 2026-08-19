@@ -1,4 +1,4 @@
-const APP_URL = new URL(`app.js?runtime=20260819-3`, location.href);
+const APP_URL = new URL(`app.js?runtime=20260819-4`, location.href);
 const CONFIG_URL = new URL('firebase-config.js', location.href).href;
 
 async function boot() {
@@ -12,7 +12,8 @@ async function boot() {
   );
 
   // Shared Firestore is authoritative. Notes are deliberately non-blocking.
-  // A short retry + cache fallback makes Safari/network hiccups less destructive.
+  // The loader first asks the server, then falls back to the browser cache.
+  // A temporary notes failure must never blank the montage database.
   const loadServer = `async function loadServer(){
     if(!user||!online){
       serverReady=false;state=emptyState();notes=[];render();
@@ -61,15 +62,9 @@ async function boot() {
     return true;
   }`;
 
-  let patched = source.replace(
+  const patched = source.replace(
     /async function loadServer\(\)\{[\s\S]*?\}\n?function startRealtime/,
     `${loadServer}\nfunction startRealtime`
-  );
-
-  // Require verified email before entering the shared workspace.
-  patched = patched.replace(
-    /await F\.authMod\.signInWithEmailAndPassword\(auth,email,pass\)/,
-    `const credential=await F.authMod.signInWithEmailAndPassword(auth,email,pass); if(!credential.user.emailVerified){await F.authMod.signOut(auth); return authMessage('Подтвердите email по ссылке из письма и войдите снова.',true)}`
   );
 
   if (patched === source) throw new Error('PRODUCTION_PATCH_NOT_APPLIED');
