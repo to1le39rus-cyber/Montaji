@@ -20,13 +20,27 @@ jobs:
       - name: Checkout canonical production branch
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Run zero-dependency regression tests
         run: npm test
 
-      - name: Deploy Firebase Hosting
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MONTAG_39 }}'
-          projectId: montaj-39
-          channelId: live
+      - name: Install Firebase CLI
+        run: npm install --global firebase-tools
+
+      - name: Prepare Firebase service account
+        shell: bash
+        run: |
+          printf '%s' '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MONTAG_39 }}' > "$RUNNER_TEMP/firebase-service-account.json"
+
+      - name: Deploy Firebase Hosting and Firestore rules
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
+        run: firebase deploy --project montaj-39 --only hosting,firestore:rules --non-interactive
+
+      - name: Remove service account file
+        if: always()
+        run: rm -f "$RUNNER_TEMP/firebase-service-account.json"
