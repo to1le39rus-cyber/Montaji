@@ -1,38 +1,27 @@
-:root{--aa-ink:#111611;--aa-muted:#7b817b;--aa-olive:#68775b;--aa-dark:#263126;--aa-line:rgba(20,30,22,.10);--aa-soft:#e9eee6}
+:root{--aa-olive:#68775b;--aa-dark:#263126;--aa-line:rgba(20,30,22,.10);--aa-soft:#e9eee6}
 
-/* Mobile form: every control aligns to one clean left edge. */
+/* The date field was the one control that ignored the form grid on iOS. */
 @media (max-width:760px){
   #jobForm .form-row{display:grid;grid-template-columns:1fr;gap:14px}
   #jobForm .form-row>label{min-width:0;width:100%}
+  #jobForm label{display:grid;gap:7px}
   #jobDate,#jobSlot,#jobTime,#jobPhone,#jobPrice,#jobStore,#jobStatus,#jobCompletedDate{width:100%;min-width:0;height:50px}
   #jobDate{-webkit-appearance:none;appearance:none;text-align:left;text-align-last:left;padding-left:15px;padding-right:15px}
   #jobDate::-webkit-date-and-time-value{text-align:left;margin:0}
   #jobDate::-webkit-calendar-picker-indicator{opacity:.55;margin-left:auto}
-  #jobForm label{display:grid;gap:7px}
-  #jobForm .type-tabs{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;padding:2px 2px 9px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  #jobForm .type-tabs{display:flex;gap:7px;overflow-x:auto;overflow-y:hidden;padding:2px 2px 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
   #jobForm .type-tabs::-webkit-scrollbar{display:none}
-  #jobForm .type-tabs button{flex:0 0 auto;white-space:nowrap}
+  #jobForm .type-tabs button{flex:0 0 auto;min-height:42px;padding:0 14px;white-space:nowrap;border:1px solid var(--aa-line);border-radius:14px;background:var(--card);color:#5f675f;font-size:11px;font-weight:700}
+  #jobForm .type-tabs button.selected{background:var(--aa-dark);border-color:var(--aa-dark);color:#fff;box-shadow:0 7px 18px rgba(38,49,38,.14)}
 }
 
-.aa-next-card{margin:0 0 12px;padding:17px 17px 14px;border-radius:22px;background:var(--card);border:1px solid var(--line);box-shadow:0 10px 30px rgba(20,30,22,.05)}
-.aa-next-kicker{font-size:9px;letter-spacing:.14em;font-weight:800;color:var(--muted);margin-bottom:8px}
-.aa-next-main{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-.aa-next-main strong{display:block;font-size:19px;letter-spacing:-.025em}
-.aa-next-main span{display:block;margin-top:4px;color:var(--muted);font-size:11px}
-.aa-next-main>b{font-size:17px;white-space:nowrap}
-.aa-next-address{margin-top:10px;font-size:11px;color:#555d56;overflow-wrap:anywhere}
-.aa-next-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
-.aa-next-actions button,.aa-route-all button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:11px;padding:9px 11px;font-size:10px;font-weight:750}
-.aa-next-actions .aa-dark{background:var(--dark,var(--aa-dark));color:#fff;border-color:var(--dark,var(--aa-dark))}
-.aa-next-empty{display:grid;gap:4px}.aa-next-empty strong{font-size:14px}.aa-next-empty span{font-size:11px;color:var(--muted);line-height:1.45}
-.aa-warning{border-color:rgba(143,92,48,.18);background:#fbf5ee}
-.aa-check-btn{background:var(--soft)!important;color:var(--aa-dark)!important}
-.aa-client-meta{font-size:9px;color:var(--aa-olive);margin-top:4px}
-.aa-work-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0}.aa-work-summary>div{background:var(--soft);border-radius:15px;padding:11px}.aa-work-summary small{display:block;color:var(--muted);font-size:9px}.aa-work-summary b{display:block;margin-top:5px;font-size:14px}
-.aa-route-all{margin:8px 0 14px}.aa-route-all button{width:100%;background:var(--aa-dark);color:#fff;border-color:var(--aa-dark);padding:12px}
-.aa-work-row{width:100%;display:grid;grid-template-columns:76px 1fr auto;align-items:center;gap:10px;border:0;border-top:1px solid var(--line);background:none;padding:13px 0;text-align:left;color:var(--ink)}
-.aa-work-time{font-size:10px;color:var(--muted);font-weight:700}.aa-work-row b{display:block;font-size:12px}.aa-work-row small{display:block;color:var(--muted);font-size:9px;margin-top:4px;overflow-wrap:anywhere}.aa-work-row strong{font-size:11px}.aa-day-footer{margin-top:13px;padding:12px;border-radius:14px;background:var(--soft);font-size:10px;color:var(--muted);line-height:1.45}
-.aa-checklist{display:grid;gap:6px;margin:12px 0}.aa-check-row{display:flex!important;grid-template-columns:none!important;align-items:center;gap:11px;background:var(--soft);border-radius:14px;padding:13px}.aa-check-row input{width:19px;height:19px;margin:0;accent-color:var(--aa-olive)}.aa-check-row span{font-size:12px;font-weight:650}.aa-check-progress{font-size:10px;color:var(--aa-olive);font-weight:750;margin:10px 0 4px}
-.aa-modal .sheet{max-height:90svh;overflow:auto}.aa-modal .sheet-head small{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+/* Make the different job types feel like real modes, not a row of plain buttons. */
+#jobForm .type-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 12px}
+#jobForm .type-tabs button{transition:transform .15s ease,background .15s ease,border-color .15s ease,box-shadow .15s ease}
+#jobForm .type-tabs button:active{transform:scale(.97)}
+#jobForm #measureWrap{border:1px solid rgba(104,119,91,.18);border-radius:18px;padding:13px;background:var(--aa-soft);margin:4px 0 12px}
+#jobForm #measureWrap p{font-size:10px;line-height:1.45;color:var(--muted);margin:8px 0 0}
+#jobForm #slotWarning{border-radius:14px}
 
+/* Extra breathing room on desktop without changing the existing layout contract. */
 @media (min-width:761px){#jobForm .form-row{grid-template-columns:1fr 1fr}}
