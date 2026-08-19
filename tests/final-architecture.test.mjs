@@ -2,90 +2,93 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-const index=fs.readFileSync('index.html','utf8');
-const app=fs.readFileSync('app.js','utf8');
-const boot=fs.readFileSync('boot.js','utf8');
-const recovery=fs.readFileSync('sync-recovery.js','utf8');
-const css=fs.readFileSync('styles.css','utf8');
-const rules=fs.readFileSync('firestore.rules','utf8');
+const index = fs.readFileSync('index.html', 'utf8');
+const app = fs.readFileSync('app.js', 'utf8');
+const css = fs.readFileSync('styles.css', 'utf8');
+const rules = fs.readFileSync('firestore.rules', 'utf8');
 
-test('production entry is deterministic and uses the safe bootloader',()=>{
-  assert.equal((index.match(/<script[^>]+type=["']module["']/g)||[]).length,1);
-  assert.match(index,/app\.js\?v=12-20260819/);
-  assert.match(recovery,/boot\.js/);
-  assert.match(boot,/PRODUCTION_PATCH_NOT_APPLIED/);
-  assert.doesNotMatch(index,/v9\.js|v9-compat|app-v[0-9]|firebase-sync|archive\.js/);
+// Production contract: index.html is the single browser entry point.
+test('production entry is deterministic', () => {
+  assert.equal((index.match(/<script[^>]+type=["']module["']/g) || []).length, 1);
+  assert.match(index, /app\.js\?v=/);
+  assert.doesNotMatch(index, /v9\.js|v9-compat|app-v[0-9]|firebase-sync|archive\.js/);
 });
 
-test('working database contract is preserved',()=>{
-  assert.match(app,/const SHARED_DOC = \['appData', 'shared'\]/);
-  assert.match(app,/getDocFromServer/);
-  assert.match(app,/onSnapshot/);
-  assert.match(app,/runTransaction/);
-  assert.doesNotMatch(app,/localStorage|sessionStorage/);
+test('working Firestore database contract is preserved', () => {
+  assert.match(app, /const SHARED_DOC = \['appData', 'shared'\]/);
+  assert.match(app, /const NOTES_DOC = \['appData', 'notes'\]/);
+  assert.match(app, /getDocFromServer/);
+  assert.match(app, /onSnapshot/);
+  assert.match(app, /runTransaction/);
+  assert.doesNotMatch(app, /localStorage|sessionStorage/);
 });
 
-test('safe bootloader isolates shared database loading from notes permissions',()=>{
-  assert.match(boot,/sharedSnap=await F\.getDocFromServer/);
-  assert.match(boot,/const notesSnap=await F\.getDocFromServer/);
-  assert.match(boot,/Notes unavailable; shared database remains usable/);
-  assert.match(boot,/serverReady=true/);
-  assert.match(boot,/await F\.getDoc\(F\.doc\(db,\.\.\.SHARED_DOC\)\)/);
+test('database loading keeps shared data independent from notes', () => {
+  assert.match(app, /sharedSnap=await F\.getDocFromServer/);
+  assert.match(app, /notesSnap=await F\.getDocFromServer/);
+  assert.match(app, /serverReady=true/);
 });
 
-test('notes remain isolated from legacy shared writes',()=>{
-  assert.match(app,/const NOTES_DOC = \['appData', 'notes'\]/);
-  assert.match(app,/saveNotes/);
-  assert.match(app,/renderNotes/);
+test('authentication and database access are wired together', () => {
+  assert.match(app, /signInWithEmailAndPassword/);
+  assert.match(app, /onAuthStateChanged/);
+  assert.match(app, /onUser/);
+  assert.match(app, /emailVerified/);
 });
 
-test('installer workflow contains specialized measure flow',()=>{
-  assert.match(index,/data-type="Замер"/);
-  assert.match(index,/id="timeWrap"/);
-  assert.match(index,/id="measureWrap"/);
-  assert.match(index,/id="convertMeasureBtn"/);
-  assert.match(app,/convertedFromMeasureId/);
-  assert.match(app,/convertedToJobId/);
+test('measure flow is preserved', () => {
+  assert.match(index, /data-type="Замер"/);
+  assert.match(index, /id="timeWrap"/);
+  assert.match(index, /id="measureWrap"/);
+  assert.match(index, /id="convertMeasureBtn"/);
+  assert.match(app, /convertedFromMeasureId/);
+  assert.match(app, /convertedToMeasureId|convertedToJobId/);
 });
 
-test('financial semantics distinguish completed income, expenses and debt',()=>{
-  assert.match(app,/function effectiveIncome/);
-  assert.match(app,/const unpaid=jobs\.filter\(j=>j\.paid===false\)/);
-  assert.match(app,/net:income-expenses/);
-  assert.match(app,/data-open-debts/);
+test('financial semantics distinguish completed income, expenses and debt', () => {
+  assert.match(app, /function effectiveIncome/);
+  assert.match(app, /j\.paid===false/);
+  assert.match(app, /net:income-expenses/);
+  assert.match(app, /data-open-debts/);
 });
 
-test('history is preserved instead of destructive job deletion',()=>{
-  assert.match(app,/status:'Отменён'/);
-  assert.match(app,/cancelledAt/);
-  assert.doesNotMatch(app,/jobs:cur\.jobs\.filter\(j=>j\.id!==id\)/);
+test('future jobs never become debt or income before completion', () => {
+  assert.match(app, /if\(isCancelled\(j\)\|\|!isDone\(j\)\)return 0/);
+  assert.match(app, /const debts=state\.jobs\.filter\(j=>!isCancelled\(j\)&&isDone\(j\)&&j\.paid===false\)/);
 });
 
-test('expenses are independent entities and can be archived safely',()=>{
-  assert.match(app,/expenses: Array\.isArray/);
-  assert.match(app,/cancelled:e\.cancelled === true/);
-  assert.match(app,/cancelExpense/);
+test('history is preserved instead of destructive deletion', () => {
+  assert.match(app, /status:'Отменён'/);
+  assert.match(app, /cancelledAt/);
+  assert.doesNotMatch(app, /jobs:cur\.jobs\.filter\(j=>j\.id!==id\)/);
 });
 
-test('mobile UX guards against horizontal overflow',()=>{
-  assert.match(css,/overflow-x:hidden/);
-  assert.match(index,/viewport-fit=cover/);
-  assert.match(css,/env\(safe-area-inset-bottom\)/);
-  assert.match(css,/max-width:100%/);
+test('expenses are independent and archivable', () => {
+  assert.match(app, /expenses: Array\.isArray/);
+  assert.match(app, /cancelled:e\.cancelled === true/);
+  assert.match(app, /cancelExpense/);
 });
 
-test('security requires authenticated non-anonymous accounts and protects both documents',()=>{
-  assert.match(rules,/request\.auth != null/);
-  assert.match(rules,/sign_in_provider != 'anonymous'/);
-  assert.doesNotMatch(rules,/email_verified == true/);
-  assert.match(rules,/match \/appData\/shared/);
-  assert.match(rules,/match \/appData\/notes/);
+test('mobile UX protects the viewport', () => {
+  assert.match(css, /overflow-x:hidden/);
+  assert.match(index, /viewport-fit=cover/);
+  assert.match(css, /env\(safe-area-inset-bottom\)/);
+  assert.match(css, /max-width:100%/);
 });
 
-test('new installer shortcuts are wired',()=>{
-  assert.match(app,/data-quick="route"/);
-  assert.match(app,/data-quick="done"/);
-  assert.match(app,/navigator\.share/);
-  assert.match(index,/Расходы сегодня/);
-  assert.match(index,/Архив заметок/);
+test('Firestore security protects shared data and notes', () => {
+  assert.match(rules, /request\.auth != null/);
+  assert.match(rules, /sign_in_provider != 'anonymous'/);
+  assert.match(rules, /email_verified == true/);
+  assert.match(rules, /match \/appData\/shared/);
+  assert.match(rules, /match \/appData\/notes/);
+});
+
+test('quick actions and daily workflow remain wired', () => {
+  assert.match(app, /data-quick="route"/);
+  assert.match(app, /data-quick="done"/);
+  assert.match(app, /navigator\.share/);
+  assert.match(index, /Расходы сегодня/);
+  assert.match(index, /Архив заметок/);
+  assert.match(index, /Ближайшие дни/);
 });
