@@ -5,7 +5,7 @@ const index=fs.readFileSync('index.html','utf8');
 const v9=fs.readFileSync('v9.js','utf8');
 const rules=fs.readFileSync('firestore.rules','utf8');
 
-test('production entry is deterministic and cache-busted',()=>{assert.match(index,/app\.js\?v=9-core-20260818/);assert.match(index,/v9\.js\?v=20260819-2/);assert.equal((index.match(/<script[^>]+type=["']module["']/g)||[]).length,1);assert.doesNotMatch(index,/enhancement-v8\.js|app-v[0-9]|firebase-sync|archive\.js/)});
+test('production entry is deterministic and cache-busted',()=>{assert.match(index,/app\.js\?v=9-core-20260819-1/);assert.match(index,/v9\.js\?v=20260819-3/);assert.equal((index.match(/<script[^>]+type=["']module["']/g)||[]).length,1);assert.doesNotMatch(index,/enhancement-v8\.js|app-v[0-9]|firebase-sync|archive\.js/)});
 test('v9 JavaScript is standalone, browser-safe, and does not create a mutation loop',()=>{assert.match(v9,/^\(\(\) => \{/);assert.match(v9,/document\.readyState/);assert.match(v9,/DOMContentLoaded/);assert.match(v9,/import\(`https:\/\/www\.gstatic\.com\/firebase/);assert.doesNotMatch(v9,/new MutationObserver/)});
 test('v9 preserves the existing shared database contract',()=>{assert.match(v9,/const DOC=\['appData','shared'\]/);assert.match(v9,/expenses:\[\.\.\.\(cur\.expenses\|\|\[\]\),item\]/);assert.match(v9,/F\.runTransaction\(db/);assert.match(v9,/updatedBy:user\.uid/)});
 test('v9 isolates notes into a separate document so legacy writes cannot erase them',()=>{assert.match(v9,/const NOTES_DOC=\['appData','notes'\]/);assert.match(v9,/async function noteSave/);assert.match(v9,/notes:\[\.\.\.\(Array\.isArray\(cur\.notes\)\?cur\.notes:\[\]\)/)});
