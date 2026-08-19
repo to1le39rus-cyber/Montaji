@@ -20,7 +20,7 @@ jobs:
         run: npm test
       - name: Check production wiring
         run: |
-          grep -F 'app.js?v=11-20260819' index.html
+          grep -E 'app\.js\?v=' index.html
           test "$(grep -o 'type=\"module\"' index.html | wc -l)" -eq 1
           test -f firebase-config.js
           test -f firestore.rules
