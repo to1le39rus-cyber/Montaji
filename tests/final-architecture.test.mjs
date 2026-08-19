@@ -23,18 +23,18 @@ test('working Firestore database contract is preserved', () => {
   assert.doesNotMatch(app, /localStorage|sessionStorage/);
 });
 
-test('database boot isolates shared data from notes failures', () => {
-  assert.match(boot, /getDocFromServer\(F\.doc\(db,\.\.\.SHARED_DOC\)\)/);
-  assert.match(boot, /Notes unavailable; shared database remains usable/);
-  assert.match(boot, /signInAnonymously/);
+test('database boot keeps Firebase config resolvable and does not impose an auth workaround', () => {
+  assert.match(boot, /CONFIG_URL/);
+  assert.match(boot, /firebase-config\.js/);
+  assert.doesNotMatch(boot, /signInAnonymously/);
 });
 
-test('capacity invariant is enforced consistently', () => {
-  assert.match(boot, /function montageCount\(d\)\{return jobsForDate\(d\)\.filter\(j=>j\.type==='Монтаж'\)\.length;\}/);
-  assert.match(boot, /function freeSlot\(d\).*jobsForDate\(d\)/);
-  assert.match(boot, /j=>j\.id!==id&&!isCancelled\(j\)&&j\.type==='Монтаж'/);
-  assert.match(boot, /Сегодня уже занято 3\/3 монтажных окна/);
-  assert.match(boot, /На эту дату уже занято 3\/3 монтажных окна/);
+test('montage scheduling has no artificial daily capacity limit', () => {
+  assert.match(boot, /There is deliberately NO daily capacity limit/);
+  assert.match(boot, /conflict=null/);
+  assert.match(boot, /todayLoad/);
+  assert.doesNotMatch(boot, /Сегодня уже занято 3\/3 монтажных окна/);
+  assert.doesNotMatch(boot, /На эту дату уже занято 3\/3 монтажных окна/);
 });
 
 test('measure flow has all required DOM fields', () => {
