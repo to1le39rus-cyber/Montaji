@@ -33,6 +33,8 @@ test('capacity invariant is enforced consistently', () => {
   assert.match(boot, /function montageCount\(d\)\{return jobsForDate\(d\)\.filter\(j=>j\.type==='Монтаж'\)\.length;\}/);
   assert.match(boot, /function freeSlot\(d\).*jobsForDate\(d\)/);
   assert.match(boot, /j=>j\.id!==id&&!isCancelled\(j\)&&j\.type==='Монтаж'/);
+  assert.match(boot, /Сегодня уже занято 3\/3 монтажных окна/);
+  assert.match(boot, /На эту дату уже занято 3\/3 монтажных окна/);
 });
 
 test('measure flow has all required DOM fields', () => {
