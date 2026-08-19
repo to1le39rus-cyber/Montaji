@@ -5,9 +5,9 @@ const base='https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/qa-gate-2
 const [htmlRes,cssRes,uxRes]=await Promise.all([fetch(base+'index.html',{cache:'no-store'}),fetch(base+'styles.css',{cache:'no-store'}),fetch(base+'ux-upgrades.css',{cache:'no-store'})]);
 if(!htmlRes.ok)throw Error('HTML '+htmlRes.status);if(!cssRes.ok)throw Error('CSS '+cssRes.status);if(!uxRes.ok)throw Error('UX CSS '+uxRes.status);
 let h=await htmlRes.text();const css=await cssRes.text();const ux=await uxRes.text();
-h=h.replace(/<link[^>]+styles\.css[^>]*>/,'').replace(/<link[^>]+ux-upgrades\.css[^>]*>/,'').replace(/<script[^>]+boot\.js[^>]*><\/script>/,'');
+h=h.replace(/<link[^>]+styles\.css[^>]*>/,'').replace(/<link[^>]+ux-upgrades\.css[^>]*>/,'').replace(/<script[^>]+boot\.js[^>]*>/,'');
 h=h.replace('</head>','<style data-montaji-css>'+css+'</style><style data-montaji-ux>'+ux+'</style></head>');
-h=h.replace(/<script type="module"[^>]+src="boot\.js[^>]*><\/script>/,'<script type="module" src="'+base+'boot.js?v=20260820-3"></script>');
+h=h.replace(/<script type="module"[^>]+src="boot\.js[^>]*>/,'<script type="module" src="'+base+'boot.js?v=20260820-4">');
 document.open();document.write(h);document.close();
 }catch(e){document.getElementById('boot').innerHTML='<div><b>Не удалось загрузить приложение</b><br><small>'+e.message+'</small></div>'}})();
 </script></body></html>
