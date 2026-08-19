@@ -68,7 +68,8 @@ test('history is preserved instead of destructive deletion', () => {
 test('expenses are independent and archivable', () => {
   assert.match(app, /expenses: Array\.isArray/);
   assert.match(app, /cancelled:e\.cancelled === true/);
-  assert.match(app, /cancelExpense/);
+  assert.match(app, /cancelled:true/);
+  assert.match(app, /id="cancelExpense"/);
 });
 
 test('mobile UX protects the viewport', () => {
