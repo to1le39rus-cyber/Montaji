@@ -1,4 +1,4 @@
-const APP_URL = new URL(`app.js?runtime=20260819-2`, location.href);
+const APP_URL = new URL(`app.js?runtime=20260819-3`, location.href);
 const CONFIG_URL = new URL('firebase-config.js', location.href).href;
 
 async function boot() {
@@ -11,6 +11,8 @@ async function boot() {
     `import { firebaseConfig } from '${CONFIG_URL}';`
   );
 
+  // Shared Firestore is authoritative. Notes are deliberately non-blocking.
+  // A short retry + cache fallback makes Safari/network hiccups less destructive.
   const loadServer = `async function loadServer(){
     if(!user||!online){
       serverReady=false;state=emptyState();notes=[];render();
@@ -18,37 +20,59 @@ async function boot() {
       return false;
     }
     status('Подключаем общую базу…');
-    try{
-      const sharedSnap=await F.getDocFromServer(F.doc(db,...SHARED_DOC));
-      state=sharedSnap.exists()?normalize(sharedSnap.data().data):emptyState();
-      serverReady=true;
-      render();
-      status('● Общая база · синхронизировано','online');
+    let sharedSnap;
+    let lastErr;
+    for(let attempt=0;attempt<2;attempt++){
       try{
-        const notesSnap=await F.getDocFromServer(F.doc(db,...NOTES_DOC));
-        notes=currentNotesData(notesSnap);
-        renderNotes();
-      }catch(notesErr){
-        console.warn('Notes document unavailable; shared database remains usable.',notesErr);
-        notes=[];
-        renderNotes();
+        sharedSnap=await F.getDocFromServer(F.doc(db,...SHARED_DOC));
+        break;
+      }catch(err){
+        lastErr=err;
+        if(attempt===0) await new Promise(r=>setTimeout(r,450));
       }
-      return true;
-    }catch(err){
-      console.error('Shared database load failed',err);
+    }
+    if(!sharedSnap){
+      try{
+        sharedSnap=await F.getDoc(F.doc(db,...SHARED_DOC));
+      }catch(cacheErr){
+        lastErr=cacheErr;
+      }
+    }
+    if(!sharedSnap){
+      console.error('Shared database load failed',lastErr);
       serverReady=false;state=emptyState();notes=[];render();
       status('База недоступна','offline');
-      toast('Не удалось получить данные с сервера.','error');
+      const code=lastErr?.code?` [${lastErr.code}]`:'';
+      toast(`Не удалось получить данные с сервера.${code}`,'error');
       return false;
     }
+    state=sharedSnap.exists()?normalize(sharedSnap.data().data):emptyState();
+    serverReady=true;
+    render();
+    status('● Общая база · синхронизировано','online');
+    try{
+      const notesSnap=await F.getDocFromServer(F.doc(db,...NOTES_DOC));
+      notes=currentNotesData(notesSnap);
+    }catch(notesErr){
+      console.warn('Notes unavailable; shared database remains usable.',notesErr);
+      notes=[];
+    }
+    renderNotes();
+    return true;
   }`;
 
-  const patched = source.replace(
+  let patched = source.replace(
     /async function loadServer\(\)\{[\s\S]*?\}\n?function startRealtime/,
     `${loadServer}\nfunction startRealtime`
   );
 
-  if (patched === source) throw new Error('LOAD_SERVER_PATCH_NOT_FOUND');
+  // Require verified email before entering the shared workspace.
+  patched = patched.replace(
+    /await F\.authMod\.signInWithEmailAndPassword\(auth,email,pass\)/,
+    `const credential=await F.authMod.signInWithEmailAndPassword(auth,email,pass); if(!credential.user.emailVerified){await F.authMod.signOut(auth); return authMessage('Подтвердите email по ссылке из письма и войдите снова.',true)}`
+  );
+
+  if (patched === source) throw new Error('PRODUCTION_PATCH_NOT_APPLIED');
 
   const blob = new Blob([patched], { type: 'text/javascript' });
   const moduleUrl = URL.createObjectURL(blob);
