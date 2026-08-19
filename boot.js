@@ -1,4 +1,4 @@
-const APP_URL = new URL(`app.js?runtime=20260819-4`, location.href);
+const APP_URL = new URL(`app.js?runtime=20260819-5`, location.href);
 const CONFIG_URL = new URL('firebase-config.js', location.href).href;
 
 async function boot() {
@@ -42,8 +42,8 @@ async function boot() {
     if(!sharedSnap){
       console.error('Shared database load failed',lastErr);
       serverReady=false;state=emptyState();notes=[];render();
-      status('База недоступна','offline');
       const code=lastErr?.code?` [${lastErr.code}]`:'';
+      status(code.includes('permission-denied')?'Нет доступа к общей базе':'База недоступна','offline');
       toast(`Не удалось получить данные с сервера.${code}`,'error');
       return false;
     }
@@ -62,12 +62,51 @@ async function boot() {
     return true;
   }`;
 
-  const patched = source.replace(
+  const anonymousAuth = `async function onUser(u){
+    user=u;
+    unsubscribeShared?.();
+    unsubscribeNotes?.();
+    unsubscribeShared=unsubscribeNotes=null;
+    if(!u){
+      serverReady=false;state=emptyState();notes=[];showAuth(false);render();
+      status('Подключаем общую базу…');
+      try{
+        await F.authMod.signInAnonymously(auth);
+      }catch(err){
+        console.error('Anonymous auth failed',err);
+        showAuth(true);
+        authMessage('Не удалось подключиться к общей базе.',true);
+        status('База недоступна','offline');
+      }
+      return;
+    }
+    if(u.isAnonymous){
+      showAuth(false);
+      if(await loadServer()) startRealtime();
+      return;
+    }
+    if(!u.emailVerified){
+      await F.authMod.signOut(auth);
+      showAuth(true);
+      authMessage('Подтвердите email по ссылке из письма.',true);
+      return;
+    }
+    showAuth(false);
+    if(await loadServer()) startRealtime();
+  }`;
+
+  let patched = source.replace(
     /async function loadServer\(\)\{[\s\S]*?\}\n?function startRealtime/,
     `${loadServer}\nfunction startRealtime`
   );
+  patched = patched.replace(
+    /async function onUser\(u\)\{[\s\S]*?\}\n?\(async\(\)=>\{/,
+    `${anonymousAuth}\n(async()=>{`
+  );
 
   if (patched === source) throw new Error('PRODUCTION_PATCH_NOT_APPLIED');
+  if (!patched.includes('signInAnonymously')) throw new Error('ANONYMOUS_AUTH_PATCH_NOT_APPLIED');
+  if (!patched.includes('Notes unavailable; shared database remains usable.')) throw new Error('SHARED_DB_PATCH_NOT_APPLIED');
 
   const blob = new Blob([patched], { type: 'text/javascript' });
   const moduleUrl = URL.createObjectURL(blob);
