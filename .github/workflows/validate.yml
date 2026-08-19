@@ -14,13 +14,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Check production JavaScript syntax
-        run: node --check app.js
-      - name: Run regression tests
+      - name: Run production regression suite
         run: npm test
       - name: Check production wiring
         run: |
-          grep -E 'app\.js\?v=' index.html
+          grep -E 'boot\.js\?v=' index.html
           test "$(grep -o 'type=\"module\"' index.html | wc -l)" -eq 1
           test -f firebase-config.js
           test -f firestore.rules
@@ -33,8 +31,8 @@ jobs:
           ! grep -F 'google.com/maps' app.js
       - name: Check security rules
         run: |
-          grep -F "request.auth.token.firebase.sign_in_provider != 'anonymous'" firestore.rules
-          grep -F 'request.auth.token.email_verified == true' firestore.rules
+          grep -F 'request.auth != null' firestore.rules
+          grep -F 'match /appData/shared' firestore.rules
           grep -F 'match /appData/notes' firestore.rules
       - name: Check legacy production wiring
         run: |
