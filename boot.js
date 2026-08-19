@@ -1,5 +1,5 @@
 const RAW_BASE='https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/qa-gate-20260820/';
-const APP_URL=RAW_BASE+'app.js?runtime=20260820-3';
+const APP_URL=RAW_BASE+'app.js?runtime=20260820-4';
 
 async function boot(){
   const response=await fetch(APP_URL,{cache:'no-store'});
@@ -37,6 +37,19 @@ async function boot(){
       try{const notesSnap=await F.getDocFromServer(F.doc(db,...NOTES_DOC));notes=currentNotesData(notesSnap)}catch(notesErr){console.warn('Notes unavailable; shared database remains usable.',notesErr);notes=[]}renderNotes();return true;
     }
 function startRealtime`
+  );
+
+  // Make authentication failures impossible to miss on a phone.
+  source=source.replace(
+    /function bindAuth\(\)\{[\s\S]*?\}\nfunction currentNotesData/,
+    `function bindAuth(){
+      const form=$('#authForm'), submit=$('.auth-submit'), message=$('#authMessage');
+      if(form)form.onsubmit=async e=>{e.preventDefault();const email=$('#authEmail').value.trim(),pass=$('#authPassword').value;if(!online)return authMessage('Нет интернета.',true);if(!email||!pass)return authMessage('Введите email и пароль.',true);if(submit){submit.disabled=true;submit.textContent='Входим…'}authMessage('Проверяем данные…');try{await F.authMod.signInWithEmailAndPassword(auth,email,pass)}catch(err){console.error('AUTH_LOGIN_FAILED',err);authMessage(authError(err),true)}finally{if(submit){submit.disabled=false;submit.textContent='Войти'}}};
+      $('#signUpBtn').onclick=async()=>{const email=$('#authEmail').value.trim(),pass=$('#authPassword').value;if(!email||!pass)return authMessage('Введите email и пароль.',true);if(pass.length<6)return authMessage('Пароль должен быть не короче 6 символов.',true);try{const c=await F.authMod.createUserWithEmailAndPassword(auth,email,pass);await F.authMod.sendEmailVerification(c.user);await F.authMod.signOut(auth);authMessage('Письмо отправлено. Подтвердите email и войдите.')}catch(err){console.error('AUTH_SIGNUP_FAILED',err);authMessage(authError(err),true)}};
+      $('#resetBtn').onclick=async()=>{const email=$('#authEmail').value.trim();if(!email)return authMessage('Введите email.',true);try{await F.authMod.sendPasswordResetEmail(auth,email);authMessage('Ссылка для сброса отправлена.')}catch(err){console.error('AUTH_RESET_FAILED',err);authMessage(authError(err),true)}};
+      if(message){message.style.minHeight='24px';message.style.marginTop='14px';message.style.fontWeight='700';message.style.fontSize='14px';message.style.lineHeight='1.35'}
+    }
+function currentNotesData`
   );
 
   const blob=new Blob([source],{type:'text/javascript'});
