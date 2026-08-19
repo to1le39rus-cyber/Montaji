@@ -1,14 +1,12 @@
-const APP_URL = new URL('app.js?runtime=20260820-2', location.href);
-const CONFIG_URL = new URL('firebase-config.js', location.href).href;
+const APP_URL = new URL('app.js?runtime=20260820-4', location.href);
 
 async function boot(){
   const response = await fetch(APP_URL,{cache:'no-store'});
   if(!response.ok) throw new Error(`APP_LOAD_${response.status}`);
   let source = await response.text();
 
-  // app.js is the canonical product source. This loader only performs two
-  // explicit compatibility substitutions that are covered by regression tests:
-  // unlimited daily scheduling and resilient shared-database boot.
+  // Keep QA/runtime compatibility patches in the loader so the canonical
+  // application source stays intact.
   source = source.replace(
     "function jobsForDate(d){return state.jobs.filter(j=>!isCancelled(j)&&j.date===d);} function activeJobs(d){return jobsForDate(d).filter(j=>!isDone(j));} function montageCount(d){return activeJobs(d).filter(j=>j.type==='Монтаж').length;} function freeSlot(d){const used=new Set(activeJobs(d).filter(j=>j.type==='Монтаж').map(j=>String(j.slot)));return ['1','2','3'].find(s=>!used.has(s))||'3';}",
     "function jobsForDate(d){return state.jobs.filter(j=>!isCancelled(j)&&j.date===d);} function activeJobs(d){return jobsForDate(d).filter(j=>!isDone(j));} function montageCount(d){return jobsForDate(d).filter(j=>j.type==='Монтаж').length;} function freeSlot(d){return '1';}"
@@ -27,8 +25,16 @@ async function boot(){
   source = source.replace('<span>● 3/3</span>','<span>● монтажи</span>');
   source = source.replace("${c>=3?'full':c===2?'busy':c?'partial':''}", "${c>0?'busy':''}");
 
+  // IMPORTANT: bind the login form before the rest of the UI. If any
+  // non-auth UI binding throws on mobile, the native form submit must never
+  // reload the page and erase the entered credentials.
   source = source.replace(
-    /async function loadServer\(\)\{[\s\S]*?\}\nfunction startRealtime/,
+    "(async()=>{try{bindUI();bindAuth();await initFirebase();F.authMod.onAuthStateChanged(auth,onUser)}catch(e){console.error(e);showAuth(true);authMessage('Не удалось запустить приложение. Проверьте Firebase.',true)}})();",
+    "(async()=>{try{bindAuth();bindUI();await initFirebase();F.authMod.onAuthStateChanged(auth,onUser)}catch(e){console.error(e);showAuth(true);authMessage('Не удалось запустить приложение: '+(e?.message||'проверьте Firebase.'),true)}})();"
+  );
+
+  source = source.replace(
+    /async function loadServer\(\){[\s\S]*?\}\nfunction startRealtime/,
     `async function loadServer(){
       if(!user||!online){serverReady=false;state=emptyState();notes=[];render();status('Нет интернета · данные не загружены','offline');return false;}
       status('Подключаем общую базу…');
