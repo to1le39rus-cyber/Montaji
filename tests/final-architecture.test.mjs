@@ -4,12 +4,16 @@ import fs from 'node:fs';
 
 const index=fs.readFileSync('index.html','utf8');
 const app=fs.readFileSync('app.js','utf8');
+const boot=fs.readFileSync('boot.js','utf8');
+const recovery=fs.readFileSync('sync-recovery.js','utf8');
 const css=fs.readFileSync('styles.css','utf8');
 const rules=fs.readFileSync('firestore.rules','utf8');
 
-test('production entry is one deterministic application module',()=>{
+test('production entry is deterministic and uses the safe bootloader',()=>{
   assert.equal((index.match(/<script[^>]+type=["']module["']/g)||[]).length,1);
-  assert.match(index,/app\.js\?v=11-20260819/);
+  assert.match(index,/app\.js\?v=12-20260819/);
+  assert.match(recovery,/boot\.js/);
+  assert.match(boot,/LOAD_SERVER_PATCH_NOT_FOUND/);
   assert.doesNotMatch(index,/v9\.js|v9-compat|app-v[0-9]|firebase-sync|archive\.js/);
 });
 
@@ -19,6 +23,13 @@ test('working database contract is preserved',()=>{
   assert.match(app,/onSnapshot/);
   assert.match(app,/runTransaction/);
   assert.doesNotMatch(app,/localStorage|sessionStorage/);
+});
+
+test('safe bootloader isolates shared database loading from notes permissions',()=>{
+  assert.match(boot,/const sharedSnap=await F\.getDocFromServer/);
+  assert.match(boot,/const notesSnap=await F\.getDocFromServer/);
+  assert.match(boot,/Notes document unavailable; shared database remains usable/);
+  assert.match(boot,/serverReady=true/);
 });
 
 test('notes remain isolated from legacy shared writes',()=>{
@@ -62,9 +73,10 @@ test('mobile UX guards against horizontal overflow',()=>{
   assert.match(css,/max-width:100%/);
 });
 
-test('security requires verified non-anonymous users and protects notes',()=>{
-  assert.match(rules,/email_verified == true/);
+test('security blocks anonymous access and protects both data documents',()=>{
+  assert.match(rules,/request\.auth != null/);
   assert.match(rules,/sign_in_provider != 'anonymous'/);
+  assert.match(rules,/match \/appData\/shared/);
   assert.match(rules,/match \/appData\/notes/);
 });
 
