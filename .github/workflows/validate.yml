@@ -1,8 +1,8 @@
-name: Validate Montaji AA v9
+name: Validate Montaji AA production
 
 on:
   push:
-    branches: ["v9-final"]
+    branches: ["Astera-smart", "product-overhaul-20260819"]
   pull_request:
     branches: ["Astera-smart"]
 
@@ -15,15 +15,12 @@ jobs:
         with:
           node-version: 22
       - name: Check production JavaScript syntax
-        run: |
-          node --check app.js
-          node --check v9.js
+        run: node --check app.js
       - name: Run regression tests
         run: npm test
       - name: Check production wiring
         run: |
-          grep -F 'app.js?v=9-core-20260818' index.html
-          grep -F 'v9.js?v=20260818-1' index.html
+          grep -F 'app.js?v=10-20260819' index.html
           test "$(grep -o 'type=\"module\"' index.html | wc -l)" -eq 1
           test -f firebase-config.js
           test -f firestore.rules
@@ -38,6 +35,7 @@ jobs:
         run: |
           grep -F "request.auth.token.firebase.sign_in_provider != 'anonymous'" firestore.rules
           grep -F 'request.auth.token.email_verified == true' firestore.rules
+          grep -F 'match /appData/notes' firestore.rules
       - name: Check legacy production wiring
         run: |
-          ! grep -E 'app-v[0-9]|firebase-sync|archive.js|enhancement-v8.js' index.html
+          ! grep -E 'v9.js|v9-compat|app-v[0-9]|firebase-sync|archive.js|enhancement-v8.js' index.html

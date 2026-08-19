@@ -1,16 +1,77 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+
 const index=fs.readFileSync('index.html','utf8');
-const v9=fs.readFileSync('v9.js','utf8');
+const app=fs.readFileSync('app.js','utf8');
+const css=fs.readFileSync('styles.css','utf8');
 const rules=fs.readFileSync('firestore.rules','utf8');
 
-test('production entry is deterministic and cache-busted',()=>{assert.match(index,/app\.js\?v=9-core-20260819-1/);assert.match(index,/v9\.js\?v=20260819-3/);assert.equal((index.match(/<script[^>]+type=["']module["']/g)||[]).length,1);assert.doesNotMatch(index,/enhancement-v8\.js|app-v[0-9]|firebase-sync|archive\.js/)});
-test('v9 JavaScript is standalone, browser-safe, and does not create a mutation loop',()=>{assert.match(v9,/^\(\(\) => \{/);assert.match(v9,/document\.readyState/);assert.match(v9,/DOMContentLoaded/);assert.match(v9,/import\(`https:\/\/www\.gstatic\.com\/firebase/);assert.doesNotMatch(v9,/new MutationObserver/)});
-test('v9 preserves the existing shared database contract',()=>{assert.match(v9,/const DOC=\['appData','shared'\]/);assert.match(v9,/expenses:\[\.\.\.\(cur\.expenses\|\|\[\]\),item\]/);assert.match(v9,/F\.runTransaction\(db/);assert.match(v9,/updatedBy:user\.uid/)});
-test('v9 isolates notes into a separate document so legacy writes cannot erase them',()=>{assert.match(v9,/const NOTES_DOC=\['appData','notes'\]/);assert.match(v9,/async function noteSave/);assert.match(v9,/notes:\[\.\.\.\(Array\.isArray\(cur\.notes\)\?cur\.notes:\[\]\)/)});
-test('home has daily expenses plus active and archived notes',()=>{assert.match(v9,/Расходы сегодня/);assert.match(v9,/Сохранить расход/);assert.match(v9,/Архив заметок/);assert.match(v9,/data-note-archive/);assert.match(v9,/data-note-restore/)});
-test('expense form accepts any positive decimal amount and explicit date',()=>{assert.match(v9,/id="v9ExpDate" type="date"/);assert.match(v9,/type="number" min="0\.01" step="0\.01"/);assert.match(v9,/const amount=Number\(\$\('#v9ExpAmount',m\)\.value\)/)});
-test('calendar archive exposes jobs, income, expenses and net for the selected day',()=>{assert.match(v9,/bindCalendar/);assert.match(v9,/Архив дня/);assert.match(v9,/Открыть весь день/);assert.match(v9,/Монтажи и выезды/);assert.match(v9,/Расходы/);assert.match(v9,/net:income-exp/)});
-test('calendar archive can add an expense for the exact selected date',()=>{assert.match(v9,/openExpense\(d\)/);assert.match(v9,/id="v9ArcExp"/);assert.match(v9,/value="\$\{esc\(d\)\}"/)});
-test('authentication security rules remain required',()=>{assert.match(rules,/email_verified == true/);assert.match(rules,/sign_in_provider != 'anonymous'/)});
+test('production entry is one deterministic application module',()=>{
+  assert.equal((index.match(/<script[^>]+type=["']module["']/g)||[]).length,1);
+  assert.match(index,/app\.js\?v=10-20260819/);
+  assert.doesNotMatch(index,/v9\.js|v9-compat|app-v[0-9]|firebase-sync|archive\.js/);
+});
+
+test('working database contract is preserved',()=>{
+  assert.match(app,/const SHARED_DOC = \['appData', 'shared'\]/);
+  assert.match(app,/getDocFromServer/);
+  assert.match(app,/onSnapshot/);
+  assert.match(app,/runTransaction/);
+  assert.doesNotMatch(app,/localStorage|sessionStorage/);
+});
+
+test('notes remain isolated from legacy shared writes',()=>{
+  assert.match(app,/const NOTES_DOC = \['appData', 'notes'\]/);
+  assert.match(app,/saveNotes/);
+  assert.match(app,/renderNotes/);
+});
+
+test('installer workflow contains specialized measure flow',()=>{
+  assert.match(index,/data-type="Замер"/);
+  assert.match(index,/id="timeWrap"/);
+  assert.match(index,/id="measureWrap"/);
+  assert.match(index,/id="convertMeasureBtn"/);
+  assert.match(app,/convertedFromMeasureId/);
+  assert.match(app,/convertedToJobId/);
+});
+
+test('financial semantics distinguish completed income, expenses and debt',()=>{
+  assert.match(app,/function effectiveIncome/);
+  assert.match(app,/const unpaid=jobs\.filter\(j=>j\.paid===false\)/);
+  assert.match(app,/net:income-expenses/);
+  assert.match(app,/data-open-debts/);
+});
+
+test('history is preserved instead of destructive job deletion',()=>{
+  assert.match(app,/status:'Отменён'/);
+  assert.match(app,/cancelledAt/);
+  assert.doesNotMatch(app,/jobs:cur\.jobs\.filter\(j=>j\.id!==id\)/);
+});
+
+test('expenses are independent entities and can be archived safely',()=>{
+  assert.match(app,/expenses: Array\.isArray/);
+  assert.match(app,/cancelled:e\.cancelled === true/);
+  assert.match(app,/cancelExpense/);
+});
+
+test('mobile UX guards against horizontal overflow',()=>{
+  assert.match(css,/overflow-x:hidden/);
+  assert.match(index,/viewport-fit=cover/);
+  assert.match(css,/env\(safe-area-inset-bottom\)/);
+  assert.match(css,/max-width:100%/);
+});
+
+test('security requires verified non-anonymous users and protects notes',()=>{
+  assert.match(rules,/email_verified == true/);
+  assert.match(rules,/sign_in_provider != 'anonymous'/);
+  assert.match(rules,/match \/appData\/notes/);
+});
+
+test('new installer shortcuts are wired',()=>{
+  assert.match(app,/data-quick="route"/);
+  assert.match(app,/data-quick="done"/);
+  assert.match(app,/navigator\.share/);
+  assert.match(index,/Расходы сегодня/);
+  assert.match(index,/Архив заметок/);
+});

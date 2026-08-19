@@ -1,1 +1,0 @@
-GitHub Pages rebuild trigger for the Astera-smart production branch. No application data or Firebase configuration changed.
