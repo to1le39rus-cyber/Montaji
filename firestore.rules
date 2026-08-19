@@ -1,11 +1,10 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // The app already protects access through Firebase Authentication.
-    // Do not require email verification here: an existing signed-in production
-    // user must retain access to the shared database after UI/deploy changes.
     function signedIn() {
-      return request.auth != null && request.auth.token.firebase.sign_in_provider != 'anonymous';
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && request.auth.token.email_verified == true;
     }
 
     match /appData/shared {
