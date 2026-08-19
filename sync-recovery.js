@@ -1,4 +1,10 @@
 (function(){
+  const script=document.querySelector('script[type="module"][src*="app.js"]');
+  if(script && !script.dataset.finalBoot){
+    script.dataset.finalBoot='1';
+    script.src='boot.js?v=2';
+  }
+
   let tries=0;
   const max=6;
   function retry(){
