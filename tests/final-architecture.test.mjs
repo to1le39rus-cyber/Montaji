@@ -4,12 +4,13 @@ import fs from 'node:fs';
 
 const index = fs.readFileSync('index.html', 'utf8');
 const app = fs.readFileSync('app.js', 'utf8');
+const boot = fs.readFileSync('boot.js', 'utf8');
 const css = fs.readFileSync('styles.css', 'utf8');
 const rules = fs.readFileSync('firestore.rules', 'utf8');
 
 test('production entry is deterministic', () => {
   assert.equal((index.match(/<script[^>]+type=["']module["']/g) || []).length, 1);
-  assert.match(index, /app\.js\?v=/);
+  assert.match(index, /boot\.js\?v=/);
   assert.doesNotMatch(index, /v9\.js|v9-compat|app-v[0-9]|firebase-sync|archive\.js/);
 });
 
@@ -22,21 +23,25 @@ test('working Firestore database contract is preserved', () => {
   assert.doesNotMatch(app, /localStorage|sessionStorage/);
 });
 
-test('shared database loading is independent from notes', () => {
-  assert.match(app, /getDocFromServer/);
-  assert.match(app, /serverReady=true/);
+test('database boot isolates shared data from notes failures', () => {
+  assert.match(boot, /getDocFromServer\(F\.doc\(db,\.\.\.SHARED_DOC\)\)/);
+  assert.match(boot, /Notes unavailable; shared database remains usable/);
+  assert.match(boot, /signInAnonymously/);
 });
 
-test('transparent Firebase authentication is preserved', () => {
-  assert.match(app, /signInAnonymously/);
-  assert.match(app, /onAuthStateChanged/);
-  assert.match(app, /u\.isAnonymous/);
+test('capacity invariant is enforced consistently', () => {
+  assert.match(boot, /function montageCount\(d\)\{return jobsForDate\(d\)\.filter\(j=>j\.type==='Монтаж'\)\.length;\}/);
+  assert.match(boot, /function freeSlot\(d\).*jobsForDate\(d\)/);
+  assert.match(boot, /j=>j\.id!==id&&!isCancelled\(j\)&&j\.type==='Монтаж'/);
 });
 
-test('measure flow is preserved', () => {
+test('measure flow has all required DOM fields', () => {
   assert.match(index, /data-type="Замер"/);
   assert.match(index, /id="timeWrap"/);
   assert.match(index, /id="measureWrap"/);
+  assert.match(index, /id="measurePrice"/);
+  assert.match(index, /id="measurePaid"/);
+  assert.match(index, /id="measureCredit"/);
   assert.match(index, /id="convertMeasureBtn"/);
   assert.match(app, /convertedFromMeasureId/);
   assert.match(app, /convertedToJobId/);
@@ -73,7 +78,7 @@ test('mobile UX protects the viewport', () => {
   assert.match(css, /max-width:100%/);
 });
 
-test('Firestore security keeps anonymous auth inside the app contract', () => {
+test('Firestore security requires authenticated Firebase clients', () => {
   assert.match(rules, /request\.auth != null/);
   assert.match(rules, /match \/appData\/shared/);
   assert.match(rules, /match \/appData\/notes/);
@@ -82,6 +87,7 @@ test('Firestore security keeps anonymous auth inside the app contract', () => {
 test('quick actions and daily workflow remain wired', () => {
   assert.match(app, /data-quick="route"/);
   assert.match(app, /data-quick="done"/);
+  assert.match(app, /data-quick="paid"/);
   assert.match(app, /navigator\.share/);
   assert.match(index, /Расходы сегодня/);
   assert.match(index, /Архив заметок/);
