@@ -1,0 +1,1 @@
+Rollback marker: restore known-good e824e1e design build after production Firebase availability regression observed on 2026-08-20.
