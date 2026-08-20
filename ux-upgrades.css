@@ -1,34 +1,75 @@
-:root{--aa-ink:#111611;--aa-muted:#7b817b;--aa-olive:#68775b;--aa-dark:#263126;--aa-line:rgba(20,30,22,.10);--aa-soft:#e9eee6}
+:root{--aa-ink:#111611;--aa-muted:#7b817b;--aa-olive:#68775b;--aa-dark:#263126;--aa-line:rgba(20,30,22,.09);--aa-soft:#e9eee6}
 html,body{overflow-x:hidden;max-width:100%}
-#jobForm,#jobForm *{max-width:100%}
-#jobForm label{min-width:0;width:100%;display:grid;gap:7px;color:var(--aa-muted);font-size:10px;line-height:1.2}
-#jobForm input,#jobForm select,#jobForm textarea{width:100%;min-width:0;max-width:100%;border:1px solid var(--aa-line);border-radius:16px;background:var(--card);color:var(--aa-ink);padding:0 15px;outline:0;box-shadow:none}
+#jobForm,#jobForm *{max-width:100%;box-sizing:border-box}
+/* Premium form system */
+#jobForm label{min-width:0;width:100%;display:grid;gap:7px;color:var(--aa-muted);font-size:10px;line-height:1.2;font-weight:650;letter-spacing:.01em}
+#jobForm input,#jobForm select,#jobForm textarea{width:100%;min-width:0;border:1px solid var(--aa-line);border-radius:15px;background:#fafaf7;color:var(--aa-ink);padding:0 15px;outline:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.7);font-size:14px;transition:border-color .18s,box-shadow .18s,background .18s}
 #jobForm input,#jobForm select{height:50px}
-#jobForm textarea{padding-top:13px;padding-bottom:13px;resize:vertical;min-height:76px}
+#jobForm textarea{padding-top:13px;padding-bottom:13px;resize:vertical;min-height:82px;line-height:1.45}
+#jobForm input:focus,#jobForm select:focus,#jobForm textarea:focus{border-color:#93a08a;box-shadow:0 0 0 3px rgba(104,119,91,.11),inset 0 1px 0 rgba(255,255,255,.8);background:#fff}
 #jobDate{-webkit-appearance:none;appearance:none;text-align:left!important;text-align-last:left!important;padding-left:15px!important;padding-right:12px!important;color:var(--aa-ink)}
 #jobDate::-webkit-date-and-time-value{text-align:left;margin:0}
-#jobDate::-webkit-calendar-picker-indicator{margin-left:auto;opacity:.48}
+#jobDate::-webkit-calendar-picker-indicator{margin-left:auto;opacity:.42}
 #jobForm .form-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:100%;min-width:0}
 #jobForm .form-row>label{min-width:0}
-#jobForm .type-tabs{display:flex;gap:7px;width:100%;overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;margin:0 0 12px;padding:2px 1px 9px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+#jobForm .type-tabs{display:flex;gap:7px;width:100%;overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;margin:0 0 16px;padding:2px 1px 5px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 #jobForm .type-tabs::-webkit-scrollbar{display:none}
-#jobForm .type-tabs button{flex:0 0 auto;white-space:nowrap;border:1px solid var(--aa-line);background:var(--card);color:#1670d2;border-radius:999px;padding:10px 13px;font-size:11px;font-weight:700;transition:transform .15s ease,background .15s ease,border-color .15s ease,box-shadow .15s ease}
+#jobForm .type-tabs button{flex:0 0 auto;white-space:nowrap;border:1px solid rgba(20,30,22,.10);background:#f7f7f3;color:#626b62;border-radius:999px;padding:9px 13px;font-size:11px;font-weight:700;transition:transform .15s,background .15s,border-color .15s,box-shadow .15s}
 #jobForm .type-tabs button.selected{background:var(--aa-dark);color:#fff;border-color:var(--aa-dark);box-shadow:0 7px 18px rgba(38,49,38,.14)}
 #jobForm .type-tabs button:active{transform:scale(.97)}
-#jobForm #measureWrap{border:1px solid rgba(104,119,91,.18);border-radius:18px;padding:13px;background:var(--aa-soft);margin:4px 0 12px}
-#jobForm #measureWrap p{font-size:10px;line-height:1.45;color:var(--muted);margin:8px 0 0}
+#jobForm #measureWrap{border:1px solid rgba(104,119,91,.18);border-radius:18px;padding:14px;background:var(--aa-soft);margin:4px 0 13px}
+#jobForm #measureWrap p{font-size:10px;line-height:1.45;color:var(--aa-muted);margin:8px 0 0}
 #jobForm .check-label{display:flex;align-items:center;gap:8px;align-self:end;height:50px;color:var(--aa-dark)}
 #jobForm .check-label input{width:19px;height:19px;padding:0;accent-color:var(--aa-olive)}
 #jobForm .warning{border-radius:14px;padding:11px;background:#f7eee8;color:#8a4a3d;font-size:10px}
-#jobForm .form-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;position:sticky;bottom:0;padding:10px 0 calc(8px + env(safe-area-inset-bottom));background:linear-gradient(to bottom,transparent,var(--card) 18%)}
+#jobForm .form-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;position:sticky;bottom:0;padding:12px 0 calc(8px + env(safe-area-inset-bottom));background:linear-gradient(to bottom,transparent,var(--card) 20%)}
 #jobForm .form-actions .danger{grid-column:1/-1}
-.modal .sheet{width:min(100%,760px);max-width:760px;overflow-x:hidden;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+.modal .sheet{width:min(100%,760px);max-width:760px;max-height:min(94svh,920px);overflow-x:hidden;padding:11px 18px calc(14px + env(safe-area-inset-bottom));border-radius:28px 28px 0 0}
 .modal .sheet>*{min-width:0}
-.modal .sheet-head{position:sticky;top:0;z-index:2;background:var(--card);padding-top:3px}
-.job-card{min-width:0;overflow:hidden}.job-top,.job-details,.actions,.quick-actions{min-width:0}.job-client,.job-meta,.detail-line{overflow-wrap:anywhere;word-break:break-word}.actions>*{min-width:0;max-width:100%}.map-chip,.action-chip{white-space:nowrap}.card-status small{white-space:nowrap}
+.modal .sheet-head{position:sticky;top:-1px;z-index:4;background:var(--card);padding:4px 0 12px;margin-bottom:7px}
+.modal .sheet-head h2{font-size:25px;letter-spacing:-.045em}
+.modal .handle{width:36px;height:4px;margin-bottom:13px;background:rgba(100,110,100,.20)}
+/* Main screen: quieter hierarchy, stronger spacing, less generic-card feel */
+.topbar{padding-top:calc(13px + env(safe-area-inset-top));padding-bottom:11px}
+.brand{font-size:14px;letter-spacing:.11em}
+.top-date{font-size:11px}
+.hero-card{border-radius:28px;padding:22px 21px 18px;box-shadow:0 18px 42px rgba(31,43,34,.16)}
+.hero-income{font-size:46px;letter-spacing:-.06em}
+.period-strip{gap:8px;margin-bottom:24px}
+.period-strip>div{border-radius:18px;padding:13px 15px}
+.section-head{margin-top:26px}
+.section-head h2{font-size:16px}
+.insight{border-radius:16px;padding:12px 14px}
+.job-list{gap:9px}
+.job-card{border-radius:20px;padding:15px;box-shadow:0 7px 24px rgba(20,30,22,.045)}
+.job-client{font-size:17px}
+.amount{font-size:16px}
+.actions{gap:6px;margin-top:13px}
+.action-chip,.map-chip{border-radius:12px;padding:8px 10px;background:#f7f7f3}
+.quick-actions{gap:7px;margin-top:10px;padding-top:10px}
+.quick-actions button{min-height:39px;border-radius:12px}
+.inline-card,.chart-card{border-radius:20px;padding:15px}
+.upcoming-list{gap:7px}
+.upcoming{border-radius:16px;padding:11px 12px}
+.upcoming b{border-radius:10px}
+/* Bottom navigation should feel like a product, not a debug footer */
+.bottom-nav{padding:6px 9px calc(6px + env(safe-area-inset-bottom));background:rgba(255,255,255,.90);border-top:1px solid rgba(20,30,22,.07)}
+.nav{padding:4px 2px;gap:4px}
+.nav span{display:none}
+.nav small{font-size:10px;font-weight:600;letter-spacing:.01em}
+.nav.active small{background:var(--aa-soft);border-radius:10px;padding:5px 9px;color:var(--aa-dark)}
+.fab{width:56px;height:56px;border-radius:19px;bottom:calc(var(--nav) + 17px);font-size:29px;box-shadow:0 14px 30px rgba(31,43,34,.22)}
+/* Avoid accidental clipped/inline controls in every modal */
+.sheet form,.sheet form>*{min-width:0}
+.sheet form label,.sheet>label{white-space:normal}
+.sheet .form-row{align-items:start}
+.sheet .form-row label{min-width:0}
+.sheet .form-row label>input,.sheet .form-row label>select,.sheet .form-row label>textarea{min-width:0}
 .job-card.job-measure{background:linear-gradient(135deg,var(--card),#f7f7f1)}
-.job-card.job-done .quick-actions{display:none}.job-card .quick-actions button{min-height:38px}
-@media(max-width:560px){#jobForm .form-row{grid-template-columns:1fr}#jobForm .form-actions{grid-template-columns:1fr}#jobForm .form-actions .danger{grid-column:auto}}
-@media(min-width:761px){#jobForm .form-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.job-card.job-done .quick-actions{display:none}
+.job-card .quick-actions button{min-height:38px}
+@media(max-width:560px){#jobForm .form-row{grid-template-columns:1fr 1fr}.#jobForm .form-row{grid-template-columns:1fr 1fr}.form-row{grid-template-columns:1fr 1fr}.sheet{padding-left:15px;padding-right:15px}.sheet .form-row{grid-template-columns:1fr 1fr}.sheet .form-row label{min-width:0}.form-actions{grid-template-columns:1fr}.modal .sheet{padding-left:15px;padding-right:15px}}
+@media(max-width:390px){#jobForm .form-row,.sheet .form-row,.form-row{grid-template-columns:1fr}.money-highlights{grid-template-columns:repeat(2,1fr)}}
 body.dark #jobForm input,body.dark #jobForm select,body.dark #jobForm textarea{background:#171b17;color:#f3f5f1;border-color:rgba(255,255,255,.10)}
 body.dark #jobDate{color:#f3f5f1}
+body.dark .bottom-nav{background:rgba(21,28,22,.92)}
