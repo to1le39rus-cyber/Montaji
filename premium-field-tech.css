@@ -2,4 +2,43 @@
 /* Modern notes / sheet treatment: less neon, more editorial */
 .modal:has(#noteForm) .sheet{padding:22px 18px calc(18px + env(safe-area-inset-bottom));background:linear-gradient(180deg,#151a1b,#121718);border-color:rgba(255,255,255,.10)}
 .modal:has(#noteForm) .sheet-head{margin-bottom:18px}.modal:has(#noteForm) .eyebrow{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#7d8783}.modal:has(#noteForm) h2{font-size:30px;letter-spacing:-.035em;margin-top:6px}.modal:has(#noteForm) label{display:grid;gap:8px;color:#858f8b!important;font-size:12px;font-weight:650}.modal:has(#noteForm) input,.modal:has(#noteForm) textarea{border-radius:18px!important;background:#181e1f!important;border:1px solid rgba(255,255,255,.085)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}.modal:has(#noteForm) input:focus,.modal:has(#noteForm) textarea:focus{border-color:rgba(131,200,111,.32)!important;box-shadow:0 0 0 3px rgba(131,200,111,.06)}.modal:has(#noteForm) .wide{margin-top:8px;height:54px;border-radius:17px;font-size:15px;font-weight:750}.modal:has(#noteForm) .circle-btn{background:#181e1f}.note-card{background:#171d1e!important;border-color:rgba(255,255,255,.075)!important}.note-card strong{color:#edf0ec}.note-card p{color:#8e9894}
+/* DAYLIGHT THEME — warm graphite/stone, not sterile white */
+body.light-theme{--bg:#f3f1eb;--card:#fffdfa;--card-2:#f8f6f0;--card-3:#eeeae1;--ink:#1d211f;--muted:#69716c;--muted-2:#8b918c;--line:rgba(29,33,31,.10);--line-strong:rgba(29,33,31,.16);--olive:#66745f;--olive-dark:#e3e9df;--accent:#6e9c61;--accent-strong:#5f8d53;--success:#6e9c61;--warning:#b8892f;--danger:#c95f59;--info:#5476ae;--soft:#e8eee5;--shadow:0 12px 34px rgba(49,55,48,.10)}
+body.light-theme,body.light-theme html{background:var(--bg)!important;color:var(--ink)!important}
+body.light-theme .app{background:radial-gradient(760px 340px at 50% -160px,rgba(111,145,99,.10),transparent 68%),var(--bg)}
+body.light-theme .topbar{background:rgba(243,241,235,.86)!important;border-bottom:1px solid rgba(29,33,31,.07)!important}
+body.light-theme .brand,body.light-theme .section-head h2,body.light-theme .screen-head h1,body.light-theme .job-client,body.light-theme .amount,body.light-theme .setting-row,body.light-theme .system-note strong{color:var(--ink)}
+body.light-theme .circle-btn{background:#fffdfa;color:var(--ink);border-color:var(--line-strong)}
+body.light-theme .hero-card,body.light-theme .money-focus{background:linear-gradient(145deg,#e9eee5,#fffdfa);border-color:rgba(29,33,31,.09)}
+body.light-theme .hero-income,body.light-theme .money-value{color:var(--accent-strong)}
+body.light-theme .period-strip>div,body.light-theme .insight,body.light-theme .job-card,body.light-theme .inline-card,body.light-theme .chart-card,body.light-theme .settings-card,body.light-theme .system-note,body.light-theme .client-card,body.light-theme .upcoming{background:var(--card);border-color:var(--line);box-shadow:0 5px 18px rgba(49,55,48,.05)}
+body.light-theme .job-card:first-child{border-color:rgba(110,156,97,.28);box-shadow:0 8px 24px rgba(49,55,48,.08)}
+body.light-theme .job-card:first-child:before{background:var(--accent)}
+body.light-theme .detail-line,body.light-theme .job-meta,body.light-theme .note-card p,body.light-theme .upcoming em{color:var(--muted)}
+body.light-theme .status-pill{background:#eef1ed;color:#657066;border-color:rgba(29,33,31,.06)}
+body.light-theme .status-pill.done{background:#e6f0e2;color:#5f8855}.light-theme .status-pill.route{background:#e7edf7;color:#5273a8}.light-theme .status-pill.onsite{background:#f6eedb;color:#9a7528}.light-theme .status-pill.cancelled{background:#f7e5e3;color:#b85751}
+body.light-theme .action-chip,body.light-theme .map-chip,body.light-theme .primary-chip,body.light-theme .quick-actions button,body.light-theme .secondary{background:#f0eee8;color:#424a45;border-color:var(--line)}
+body.light-theme .primary-chip{background:#e8f0e5;color:#567c4e;border-color:rgba(110,156,97,.18)}
+body.light-theme .quick-actions button:last-child,body.light-theme .primary,body.light-theme .fab{background:var(--accent);color:#fff;box-shadow:0 7px 18px rgba(110,156,97,.16)}
+body.light-theme .bottom-nav{background:rgba(255,253,250,.90);border-color:rgba(29,33,31,.12);box-shadow:0 10px 30px rgba(49,55,48,.13)}
+body.light-theme .nav{color:#8b918c}.light-theme .nav.active{background:#e9eee5;color:var(--ink)}
+body.light-theme .nav.active small{color:var(--accent-strong)}
+body.light-theme .day{background:var(--card);border-color:var(--line);color:var(--ink)}
+body.light-theme .day span,body.light-theme .day i,body.light-theme .weekdays,body.light-theme .legend{color:var(--muted-2)}
+body.light-theme .day.full{background:#e8efe5;border-color:rgba(110,156,97,.20)}
+body.light-theme .day.today{outline-color:var(--accent)}
+body.light-theme .modal{background:rgba(24,28,25,.32)}
+body.light-theme .modal .sheet,body.light-theme .modal .sheet-head{background:#fffdfa;color:var(--ink);border-color:rgba(29,33,31,.10)}
+body.light-theme .handle{background:#c6cbc6}
+body.light-theme .modal input,body.light-theme .modal select,body.light-theme .modal textarea,body.light-theme #jobForm input,body.light-theme #jobForm select,body.light-theme #jobForm textarea{background:#f4f2ec!important;color:var(--ink)!important;border-color:rgba(29,33,31,.11)!important}
+body.light-theme .modal .type-tabs button{background:#f4f2ec!important;border-color:rgba(29,33,31,.09)!important;color:#66706a!important}
+body.light-theme .modal .type-tabs button.selected{background:#e7eee3!important;color:#54784c!important;border-color:rgba(110,156,97,.24)!important}
+body.light-theme .modal:has(#noteForm) .sheet{background:linear-gradient(180deg,#fffdfa,#f5f2ea);border-color:rgba(29,33,31,.10)}
+body.light-theme .modal:has(#noteForm) .eyebrow{color:#858d87}
+body.light-theme .modal:has(#noteForm) label{color:#707872!important}
+body.light-theme .modal:has(#noteForm) input,body.light-theme .modal:has(#noteForm) textarea{background:#f5f3ed!important;border-color:rgba(29,33,31,.10)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.9)}
+body.light-theme .modal:has(#noteForm) .circle-btn{background:#f3f1eb}
+body.light-theme .note-card{background:#fffdfa!important;border-color:var(--line)!important}
+body.light-theme .note-card strong{color:var(--ink)}
+body.light-theme #toast{color:#fff}
 @media(max-width:560px){.main{padding-left:15px;padding-right:15px}.hero-income{font-size:44px}.job-card{padding:15px}.job-client{font-size:16px}.bottom-nav{left:10px;right:10px}.fab{right:18px}}
