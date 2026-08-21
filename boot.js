@@ -1,12 +1,10 @@
-const APP_URL = new URL('app.js?runtime=20260821-1', location.href);
+const APP_URL = new URL('app.js?runtime=20260821-2', location.href);
 
 async function boot(){
   const response = await fetch(APP_URL,{cache:'no-store'});
   if(!response.ok) throw new Error(`APP_LOAD_${response.status}`);
   let source = await response.text();
 
-  // Keep QA/runtime compatibility patches in the loader so the canonical
-  // application source stays intact.
   source = source.replace(
     "function jobsForDate(d){return state.jobs.filter(j=>!isCancelled(j)&&j.date===d);} function activeJobs(d){return jobsForDate(d).filter(j=>!isDone(j));} function montageCount(d){return activeJobs(d).filter(j=>j.type==='Монтаж').length;} function freeSlot(d){const used=new Set(activeJobs(d).filter(j=>j.type==='Монтаж').map(j=>String(j.slot)));return ['1','2','3'].find(s=>!used.has(s))||'3';}",
     "function jobsForDate(d){return state.jobs.filter(j=>!isCancelled(j)&&j.date===d);} function activeJobs(d){return jobsForDate(d).filter(j=>!isDone(j));} function montageCount(d){return jobsForDate(d).filter(j=>j.type==='Монтаж').length;} function freeSlot(d){return '1';}"
@@ -25,8 +23,6 @@ async function boot(){
   source = source.replace('<span>● 3/3</span>','<span>● монтажи</span>');
   source = source.replace("${c>=3?'full':c===2?'busy':c?'partial':''}", "${c>0?'busy':''}");
 
-  // Bind authentication before the rest of the UI so a UI error cannot
-  // trigger a native form reload on mobile Safari.
   source = source.replace(
     "(async()=>{try{bindUI();bindAuth();await initFirebase();F.authMod.onAuthStateChanged(auth,onUser)}catch(e){console.error(e);showAuth(true);authMessage('Не удалось запустить приложение. Проверьте Firebase.',true)}})();",
     "(async()=>{try{bindAuth();bindUI();await initFirebase();F.authMod.onAuthStateChanged(auth,onUser)}catch(e){console.error(e);showAuth(true);authMessage('Не удалось запустить приложение: '+(e?.message||'проверьте Firebase.'),true)}})();"
@@ -37,52 +33,54 @@ async function boot(){
     `async function loadServer(){
       if(!user||!online){serverReady=false;state=emptyState();notes=[];render();status('Нет интернета · данные не загружены','offline');return false;}
       status('Подключаем общую базу…');
-      let sharedSnap=null,lastErr=null;
+      let sharedSnap=null,notesSnap=null,lastErr=null;
       try{sharedSnap=await F.getDocFromServer(F.doc(db,...SHARED_DOC));}
       catch(err){lastErr=err;try{sharedSnap=await F.getDoc(F.doc(db,...SHARED_DOC));}catch(cacheErr){lastErr=cacheErr;}}
-      if(!sharedSnap){
-        console.error('Shared database load failed',lastErr);
-        serverReady=false;state=emptyState();notes=[];render();
-        const code=lastErr?.code?' ['+lastErr.code+']':'';
-        status('База недоступна','offline');
-        toast('Не удалось получить общую базу.'+code,'error');
-        return false;
-      }
+      if(!sharedSnap){serverReady=false;state=emptyState();notes=[];render();status('База недоступна','offline');toast('Не удалось получить общую базу.','error');return false;}
       state=sharedSnap.exists()?normalize(sharedSnap.data().data):emptyState();
-      serverReady=true;render();status('● Общая база · синхронизировано','online');
-      try{const notesSnap=await F.getDocFromServer(F.doc(db,...NOTES_DOC));notes=currentNotesData(notesSnap);}
-      catch(notesErr){console.warn('Notes unavailable; shared database remains usable.',notesErr);notes=[];}
-      renderNotes();return true;
+      const embedded=sharedSnap.exists()?currentNotesData(sharedSnap):[];
+      try{notesSnap=await F.getDocFromServer(F.doc(db,...NOTES_DOC));notes=currentNotesData(notesSnap);if(!notes.length&&embedded.length)notes=embedded;}
+      catch(notesErr){console.warn('Notes document unavailable; using shared fallback.',notesErr);notes=embedded;}
+      serverReady=true;render();status('● Общая база · синхронизировано','online');renderNotes();return true;
     }
 function startRealtime`
   );
 
-  // Notes are a small shared dataset. Avoid the previous transaction path:
-  // it could fail on mobile even though the authenticated shared database
-  // was available. Use a normal Firestore read + set and surface the real
-  // Firebase error code if something still blocks the write.
   source = source.replace(
     /async function saveNotes\(mutator\)\{[\s\S]*?\}\nfunction jobsForDate/,
     `async function saveNotes(mutator){
       if(!serverReady||!online||!user)throw new Error('Нет соединения с общей базой');
       const ref=F.doc(db,...NOTES_DOC);
-      const snap=await F.getDoc(ref);
+      const sharedRef=F.doc(db,...SHARED_DOC);
+      const snap=await F.getDoc(ref).catch(()=>null);
       const cur={notes:currentNotesData(snap)};
       const next=await mutator(JSON.parse(JSON.stringify(cur)));
       const safeNotes=Array.isArray(next?.notes)?next.notes:[];
-      await F.setDoc(ref,{data:{notes:safeNotes},version:1,updatedAt:F.serverTimestamp(),updatedBy:user.uid},{merge:true});
-      notes=safeNotes;
-      renderNotes();
+      try{
+        await F.setDoc(ref,{data:{notes:safeNotes},version:1,updatedAt:F.serverTimestamp(),updatedBy:user.uid},{merge:true});
+      }catch(primaryErr){
+        console.warn('Primary notes document write failed; saving into shared document.',primaryErr);
+        await F.runTransaction(db,async tx=>{
+          const shared=await tx.get(sharedRef);
+          const data=shared.exists()?shared.data()?.data||{}:{};
+          tx.set(sharedRef,{data:{...data,notes:safeNotes},version:5,updatedAt:F.serverTimestamp(),updatedBy:user.uid},{merge:true});
+        });
+      }
+      notes=safeNotes;renderNotes();
     }
 function jobsForDate`
   );
 
-  // Persist a simple two-state theme. Dark remains the default; light is
-  // intentionally quieter and warm enough for daytime work.
+  source = source.replace(
+    /function startRealtime\(\)\{[\s\S]*?\nasync function saveShared/,
+    `function startRealtime(){unsubscribeShared?.();unsubscribeNotes?.();if(!user||!online)return;unsubscribeShared=F.onSnapshot(F.doc(db,...SHARED_DOC),snap=>{if(!online)return;state=snap.exists()?normalize(snap.data().data):emptyState();serverReady=true;render();const embedded=currentNotesData(snap);if(!unsubscribeNotes)notes=embedded;status('● Общая база · обновлено','online')},()=>{serverReady=false;status('Нет связи с общей базой','offline');toast('Потеряна связь с общей базой','error')});unsubscribeNotes=F.onSnapshot(F.doc(db,...NOTES_DOC),snap=>{if(!online)return;const remote=currentNotesData(snap);if(remote.length||snap.exists())notes=remote;renderNotes()},()=>{});}
+async function saveShared`
+  );
+
   source = source.replace(
     "function bindUI(){$('#themeBtn').onclick=()=>document.body.classList.toggle('dark');",
-    `function applyTheme(theme){document.body.classList.toggle('light-theme',theme==='light');document.body.classList.toggle('dark',theme!=='light');const b=$('#themeBtn');if(b)b.textContent=theme==='light'?'☾':'☼';localStorage.setItem('montaji-theme',theme);}
-function bindUI(){applyTheme(localStorage.getItem('montaji-theme')||'dark');$('#themeBtn').onclick=()=>applyTheme(document.body.classList.contains('light-theme')?'dark':'light');`
+    `function applyTheme(theme){document.body.classList.toggle('dark',theme==='dark');document.documentElement.dataset.theme=theme;const b=$('#themeBtn');if(b)b.textContent=theme==='dark'?'☀':'☾';try{localStorage.setItem('montaji-theme',theme)}catch(e){}}
+function bindUI(){applyTheme((()=>{try{return localStorage.getItem('montaji-theme')}catch(e){return null}})()||'light');$('#themeBtn').onclick=()=>applyTheme(document.body.classList.contains('dark')?'light':'dark');`
   );
 
   const blob = new Blob([source],{type:'text/javascript'});
