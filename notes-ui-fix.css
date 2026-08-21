@@ -1,0 +1,16 @@
+/* Notes + dark-mode readability patch */
+.note-card{position:relative;overflow:hidden}
+.note-card .note-top{align-items:flex-start;gap:12px}
+.note-card .note-top>div:last-child{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.note-card .note-due{display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:5px 9px;border-radius:999px;background:#eef1ff;color:#465bc9;font-size:11px;font-weight:750}
+.note-card .note-due.overdue{background:#fff0f2;color:#c03649}
+.note-card .note-delete{color:#c03649!important;background:#fff0f2!important;border-color:#f1d5da!important}
+.note-card.archived{opacity:.82}
+.dark h1,.dark h2,.dark h3,.dark .section-head h2,.dark .job-client,.dark .note-card strong,.dark .note-card p,.dark .upcoming b,.dark .client-card .job-client,.dark .settings-card h3,.dark .chart-card h3,.dark .system-note strong{color:#f8fafc!important}
+.dark .job-meta,.dark .detail-line,.dark .note-card .note-due,.dark .upcoming small,.dark .client-card small{color:#aab4c3!important}
+.dark .note-card .note-due{background:#293250!important;color:#b9c3ff!important}
+.dark .note-card .note-due.overdue{background:#43252c!important;color:#ff9aaa!important}
+.dark .note-card .note-delete{background:#43252c!important;color:#ff9aaa!important;border-color:#63323b!important}
+.dark .note-card{background:#182131!important;border-color:rgba(255,255,255,.09)!important}
+.dark .note-card .mini-btn{color:#e6eaff!important;background:#222c40!important;border-color:rgba(255,255,255,.10)!important}
+.dark .note-card .mini-btn.note-delete{color:#ff9aaa!important;background:#43252c!important}
