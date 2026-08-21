@@ -1,4 +1,4 @@
-const APP_URL = new URL('app.js?runtime=20260821-5', location.href);
+const APP_URL = new URL('app.js?runtime=20260821-6', location.href);
 
 async function boot(){
   const response = await fetch(APP_URL,{cache:'no-store'});
@@ -6,9 +6,10 @@ async function boot(){
   let source = await response.text();
 
   const themeCss=document.querySelector('link[href*="premium-field-tech.css"]');
-  if(themeCss)themeCss.href='premium-field-tech.css?v=20260821-5';
-  else{const l=document.createElement('link');l.rel='stylesheet';l.href='premium-field-tech.css?v=20260821-5';document.head.appendChild(l)}
+  if(themeCss)themeCss.href='premium-field-tech.css?v=20260821-6';
+  else{const l=document.createElement('link');l.rel='stylesheet';l.href='premium-field-tech.css?v=20260821-6';document.head.appendChild(l)}
   const notesCss=document.createElement('link');notesCss.rel='stylesheet';notesCss.href='notes-ui-fix.css?v=20260821-1';document.head.appendChild(notesCss);
+  const controlCss=document.createElement('link');controlCss.rel='stylesheet';controlCss.href='control-ui-fix.css?v=20260821-1';document.head.appendChild(controlCss);
 
   source = source.replace("function jobsForDate(d){return state.jobs.filter(j=>!isCancelled(j)&&j.date===d);} function activeJobs(d){return jobsForDate(d).filter(j=>!isDone(j));} function montageCount(d){return activeJobs(d).filter(j=>j.type==='Монтаж').length;} function freeSlot(d){const used=new Set(activeJobs(d).filter(j=>j.type==='Монтаж').map(j=>String(j.slot)));return ['1','2','3'].find(s=>!used.has(s))||'3';}","function jobsForDate(d){return state.jobs.filter(j=>!isCancelled(j)&&j.date===d);} function activeJobs(d){return jobsForDate(d).filter(j=>!isDone(j));} function montageCount(d){return jobsForDate(d).filter(j=>j.type==='Монтаж').length;} function freeSlot(d){return '1';}");
   source = source.replace("const d=$('#jobDate').value,s=$('#jobSlot').value,id=$('#jobId').value,conflict=editingType==='Монтаж'&&state.jobs.find(j=>j.id!==id&&!isCancelled(j)&&!isDone(j)&&j.type==='Монтаж'&&j.date===d&&String(j.slot)===s);","const d=$('#jobDate').value,s=$('#jobSlot').value,id=$('#jobId').value,conflict=null;");
@@ -22,7 +23,7 @@ async function boot(){
   source = source.replace(/function bindAuth\(\)\{[\s\S]*?\nfunction currentNotesData/,`function bindAuth(){
       const form=$('#authForm');
       if(form&&!form.dataset.bound){form.dataset.bound='1';form.addEventListener('submit',async e=>{e.preventDefault();e.stopPropagation();const email=$('#authEmail').value.trim(),pass=$('#authPassword').value;if(!online)return authMessage('Нет интернета.',true);if(!email||!pass)return authMessage('Введите email и пароль.',true);authMessage('Входим…');const button=form.querySelector('button[type="submit"]');if(button){button.disabled=true;button.textContent='Входим…';}try{await F.authMod.signInWithEmailAndPassword(auth,email,pass)}catch(err){authMessage(authError(err),true)}finally{if(button){button.disabled=false;button.textContent='Войти';}}},{passive:false});}
-      $('#signUpBtn')?.addEventListener('click',async()=>{const email=$('#authEmail').value.trim(),pass=$('#authPassword').value;if(!email||!pass)return authMessage('Введите email и пароль.',true);if(pass.length<6)return authMessage('Пароль должен быть не короче 6 символов.',true);try{const c=await F.authMod.createUserWithEmailAndPassword(auth,email,pass);await F.authMod.sendEmailVerification(c.user);await F.authMod.signOut(auth);authMessage('Письмо отправлено. Подтвердите email и войдите.')}catch(err){authMessage(authError(err),true)}});
+      $('#signUpBtn')?.addEventListener('click',async()=>{const email=$('#authEmail').value.trim(),pass=$('#authPassword').value;if(!email||!pass)return authMessage('Введите email и пароль.',true);if(pass.length<6)return authMessage('Пароль должен быть не короче 6 символов.');try{const c=await F.authMod.createUserWithEmailAndPassword(auth,email,pass);await F.authMod.sendEmailVerification(c.user);await F.authMod.signOut(auth);authMessage('Письмо отправлено. Подтвердите email и войдите.')}catch(err){authMessage(authError(err),true)}});
       $('#resetBtn')?.addEventListener('click',async()=>{const email=$('#authEmail').value.trim();if(!email)return authMessage('Введите email.',true);try{await F.authMod.sendPasswordResetEmail(auth,email);authMessage('Ссылка для сброса отправлена.')}catch(err){authMessage(authError(err),true)}});
     }
 function currentNotesData`);
@@ -56,7 +57,7 @@ function bindUI(){applyTheme((()=>{try{return localStorage.getItem('montaji-them
   const blob=new Blob([source],{type:'text/javascript'});const url=URL.createObjectURL(blob);try{await import(url)}finally{URL.revokeObjectURL(url)}
   setTimeout(()=>Promise.all([
     import('./notes-fix.js?v=20260821-4').catch(err=>console.error('notes fix load failed',err)),
-    import('./control-fix.js?v=20260821-1').catch(err=>console.error('control fix load failed',err))
+    import('./control-fix.js?v=20260821-2').catch(err=>console.error('control fix load failed',err))
   ]),900);
 }
 
