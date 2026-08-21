@@ -54,7 +54,10 @@ async function saveShared`);
 function bindUI(){applyTheme((()=>{try{return localStorage.getItem('montaji-theme')}catch(e){return null}})()||'light');$('#themeBtn').onclick=()=>applyTheme(document.body.classList.contains('dark')?'light':'dark');`);
 
   const blob=new Blob([source],{type:'text/javascript'});const url=URL.createObjectURL(blob);try{await import(url)}finally{URL.revokeObjectURL(url)}
-  setTimeout(()=>import('./notes-fix.js?v=20260821-4').catch(err=>console.error('notes fix load failed',err)),900);
+  setTimeout(()=>Promise.all([
+    import('./notes-fix.js?v=20260821-4').catch(err=>console.error('notes fix load failed',err)),
+    import('./control-fix.js?v=20260821-1').catch(err=>console.error('control fix load failed',err))
+  ]),900);
 }
 
 boot().catch(error=>{console.error('Montaji boot failed',error);const el=document.querySelector('#syncStatus');if(el){el.textContent='Ошибка запуска';el.dataset.state='offline';}const toast=document.querySelector('#toast');if(toast){toast.textContent='Не удалось запустить приложение.';toast.dataset.state='error';}});
