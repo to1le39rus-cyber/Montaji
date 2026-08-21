@@ -1,0 +1,27 @@
+/* Operational control queue + dark theme readability */
+.control-section{margin:24px 0 8px}
+.control-section[hidden]{display:none!important}
+.control-list{display:grid;gap:10px}
+.control-card{background:var(--card,#fff);border:1px solid var(--line,#e4e8ef);border-radius:18px;padding:15px;box-shadow:0 7px 22px rgba(16,24,40,.045)}
+.control-card.is-due{border-color:rgba(208,68,85,.42);box-shadow:0 8px 24px rgba(208,68,85,.08)}
+.control-main{min-width:0}.control-title{font-size:15px;font-weight:780;color:var(--ink,#111827);letter-spacing:-.01em}.control-meta{margin-top:5px;font-size:12px;font-weight:700;color:var(--muted,#667085)}.control-card.is-due .control-meta{color:var(--danger,#d04455)}
+.control-text,.control-result{margin-top:8px;font-size:13px;line-height:1.4;color:var(--muted,#667085)}.control-result{font-weight:650;color:var(--ink,#111827)}
+.control-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.control-actions button,.control-quick-row button{min-height:38px;border:1px solid var(--line-strong,#d5dbe5);border-radius:11px;background:var(--card-2,#f0f3f8);color:var(--ink,#111827);padding:0 12px;font:700 12px -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif}.control-actions button:last-child{background:var(--accent,#4f63d9);border-color:var(--accent,#4f63d9);color:#fff}.control-from-job{margin-top:12px;padding:12px;border:1px solid rgba(208,68,85,.25);background:rgba(208,68,85,.06);border-radius:14px;color:var(--ink,#111827);font-size:12px;line-height:1.4}.control-from-job button{margin-top:9px;min-height:38px;border:0;border-radius:11px;padding:0 13px;background:var(--danger,#d04455);color:#fff;font:750 12px -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif}
+.control-quick-label{margin-top:14px;margin-bottom:7px;font-size:11px;font-weight:750;color:var(--muted,#667085);text-transform:uppercase;letter-spacing:.08em}.control-quick-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:15px}.control-quick-row button{min-height:34px;padding:0 10px}.control-quick-row button:first-child{background:var(--soft,#eef1ff);border-color:#dbe1fb;color:var(--accent,#4f63d9)}
+.control-choice-body{padding:20px}.control-choice-title{font-size:14px;font-weight:750;color:var(--ink,#111827);margin-bottom:14px}.control-choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.control-choice-grid button{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:76px;padding:13px;border:1px solid var(--line,#e4e8ef);border-radius:14px;background:var(--card-2,#f0f3f8);color:var(--ink,#111827);text-align:left}.control-choice-grid strong{font-size:14px}.control-choice-grid span{font-size:11px;line-height:1.25;color:var(--muted,#667085)}.control-choice-grid button:first-child{background:var(--soft,#eef1ff);border-color:#dbe1fb}.control-custom-date{display:grid;gap:7px;margin:15px 0 12px;font-size:12px;font-weight:700;color:var(--muted,#667085)}
+/* Dark theme: headings and text must never fall back to dark light-theme values */
+body.dark,body.dark html{color-scheme:dark}
+body.dark .section-head h2,body.dark .section-head h2 *,body.dark h1,body.dark h2,body.dark h3,body.dark h4,body.dark .job-client,body.dark .client-name,body.dark .hero-row strong,body.dark .brand,body.dark .control-title,body.dark .control-result,body.dark .control-from-job{color:#f8fafc!important}
+body.dark .job-meta,body.dark .detail-line,body.dark .control-meta,body.dark .control-text,body.dark .control-choice-grid span{color:#aab4c3!important}
+body.dark .control-card{background:#182131!important;border-color:rgba(255,255,255,.09)!important;box-shadow:0 10px 28px rgba(0,0,0,.18)}
+body.dark .control-card.is-due{border-color:rgba(255,110,126,.45)!important;background:#1c2534!important}
+body.dark .control-actions button,body.dark .control-quick-row button,body.dark .control-choice-grid button{background:#202b3d!important;border-color:rgba(255,255,255,.12)!important;color:#f8fafc!important}
+body.dark .control-actions button:last-child{background:var(--accent)!important;border-color:var(--accent)!important;color:#111827!important}
+body.dark .control-from-job{background:rgba(255,110,126,.08)!important;border-color:rgba(255,110,126,.28)!important}
+body.dark .control-choice-grid button:first-child,body.dark .control-quick-row button:first-child{background:#293250!important;border-color:#3b4772!important;color:#fff!important}
+body.dark .control-choice-grid strong{color:#f8fafc!important}
+body.dark .control-custom-date{color:#aab4c3!important}
+body.dark .control-choice-modal .sheet,body.dark .control-form-modal .sheet{background:#182131!important;color:#f8fafc!important}
+body.dark .control-choice-modal .sheet-head,body.dark .control-form-modal .sheet-head{background:#182131!important;color:#f8fafc!important;border-color:rgba(255,255,255,.09)!important}
+body.dark .control-choice-modal input,body.dark .control-form-modal input,body.dark .control-form-modal textarea{background:#202b3d!important;color:#f8fafc!important;border-color:rgba(255,255,255,.12)!important}
+@media(max-width:480px){.control-choice-grid{grid-template-columns:1fr}.control-actions button{flex:1 1 auto}.control-card{padding:14px}}
