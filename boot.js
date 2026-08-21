@@ -1,4 +1,4 @@
-const APP_URL = new URL('app.js?runtime=20260821-2', location.href);
+const APP_URL = new URL('app.js?runtime=20260821-3', location.href);
 
 async function boot(){
   const response = await fetch(APP_URL,{cache:'no-store'});
@@ -6,8 +6,8 @@ async function boot(){
   let source = await response.text();
 
   const themeCss=document.querySelector('link[href*="premium-field-tech.css"]');
-  if(themeCss)themeCss.href='premium-field-tech.css?v=20260821-2';
-  else{const l=document.createElement('link');l.rel='stylesheet';l.href='premium-field-tech.css?v=20260821-2';document.head.appendChild(l)}
+  if(themeCss)themeCss.href='premium-field-tech.css?v=20260821-3';
+  else{const l=document.createElement('link');l.rel='stylesheet';l.href='premium-field-tech.css?v=20260821-3';document.head.appendChild(l)}
 
   source = source.replace(
     "function jobsForDate(d){return state.jobs.filter(j=>!isCancelled(j)&&j.date===d);} function activeJobs(d){return jobsForDate(d).filter(j=>!isDone(j));} function montageCount(d){return activeJobs(d).filter(j=>j.type==='Монтаж').length;} function freeSlot(d){const used=new Set(activeJobs(d).filter(j=>j.type==='Монтаж').map(j=>String(j.slot)));return ['1','2','3'].find(s=>!used.has(s))||'3';}",
@@ -28,7 +28,42 @@ async function boot(){
   source = source.replace("${c>=3?'full':c===2?'busy':c?'partial':''}", "${c>0?'busy':''}");
 
   source = source.replace(
-    "(async()=>{try{bindUI();bindAuth();await initFirebase();F.authMod.onAuthStateChanged(auth,onUser)}catch(e){console.error(e);showAuth(true);authMessage('Не удалось запустить приложение. Проверьте Firebase.',true)}})();",
+    /function bindAuth\(\)\{[\s\S]*?\nfunction currentNotesData/,
+    `function bindAuth(){
+      const form=$('#authForm');
+      if(form&&!form.dataset.bound){
+        form.dataset.bound='1';
+        form.addEventListener('submit',async e=>{
+          e.preventDefault();
+          e.stopPropagation();
+          const email=$('#authEmail').value.trim(),pass=$('#authPassword').value;
+          if(!online)return authMessage('Нет интернета.',true);
+          if(!email||!pass)return authMessage('Введите email и пароль.',true);
+          authMessage('Входим…');
+          const button=form.querySelector('button[type="submit"]');
+          if(button){button.disabled=true;button.textContent='Входим…';}
+          try{await F.authMod.signInWithEmailAndPassword(auth,email,pass)}
+          catch(err){authMessage(authError(err),true)}
+          finally{if(button){button.disabled=false;button.textContent='Войти';}}
+        },{passive:false});
+      }
+      $('#signUpBtn')?.addEventListener('click',async()=>{
+        const email=$('#authEmail').value.trim(),pass=$('#authPassword').value;
+        if(!email||!pass)return authMessage('Введите email и пароль.',true);
+        if(pass.length<6)return authMessage('Пароль должен быть не короче 6 символов.',true);
+        try{const c=await F.authMod.createUserWithEmailAndPassword(auth,email,pass);await F.authMod.sendEmailVerification(c.user);await F.authMod.signOut(auth);authMessage('Письмо отправлено. Подтвердите email и войдите.')}catch(err){authMessage(authError(err),true)}
+      });
+      $('#resetBtn')?.addEventListener('click',async()=>{
+        const email=$('#authEmail').value.trim();
+        if(!email)return authMessage('Введите email.',true);
+        try{await F.authMod.sendPasswordResetEmail(auth,email);authMessage('Ссылка для сброса отправлена.')}catch(err){authMessage(authError(err),true)}
+      });
+    }
+function currentNotesData`
+  );
+
+  source = source.replace(
+    "(async()=>{try{bindAuth();bindUI();await initFirebase();F.authMod.onAuthStateChanged(auth,onUser)}catch(e){console.error(e);showAuth(true);authMessage('Не удалось запустить приложение: '+(e?.message||'проверьте Firebase.'),true)}})();",
     "(async()=>{try{bindAuth();bindUI();await initFirebase();F.authMod.onAuthStateChanged(auth,onUser)}catch(e){console.error(e);showAuth(true);authMessage('Не удалось запустить приложение: '+(e?.message||'проверьте Firebase.'),true)}})();"
   );
 
@@ -37,9 +72,9 @@ async function boot(){
     `async function loadServer(){
       if(!user||!online){serverReady=false;state=emptyState();notes=[];render();status('Нет интернета · данные не загружены','offline');return false;}
       status('Подключаем общую базу…');
-      let sharedSnap=null,notesSnap=null,lastErr=null;
+      let sharedSnap=null,notesSnap=null;
       try{sharedSnap=await F.getDocFromServer(F.doc(db,...SHARED_DOC));}
-      catch(err){lastErr=err;try{sharedSnap=await F.getDoc(F.doc(db,...SHARED_DOC));}catch(cacheErr){lastErr=cacheErr;}}
+      catch(err){try{sharedSnap=await F.getDoc(F.doc(db,...SHARED_DOC));}catch(cacheErr){console.warn('Shared data unavailable',cacheErr);}}
       if(!sharedSnap){serverReady=false;state=emptyState();notes=[];render();status('База недоступна','offline');toast('Не удалось получить общую базу.','error');return false;}
       state=sharedSnap.exists()?normalize(sharedSnap.data().data):emptyState();
       const embedded=sharedSnap.exists()?currentNotesData(sharedSnap):[];
@@ -83,7 +118,7 @@ async function saveShared`
 
   source = source.replace(
     "function bindUI(){$('#themeBtn').onclick=()=>document.body.classList.toggle('dark');",
-    `function applyTheme(theme){document.body.classList.toggle('dark',theme==='dark');document.documentElement.dataset.theme=theme;document.querySelector('meta[name="theme-color"]')?.setAttribute('content',theme==='dark'?'#111318':'#f6f5f2');const b=$('#themeBtn');if(b)b.textContent=theme==='dark'?'☀':'☾';try{localStorage.setItem('montaji-theme',theme)}catch(e){}}
+    `function applyTheme(theme){document.body.classList.toggle('dark',theme==='dark');document.documentElement.dataset.theme=theme;document.querySelector('meta[name="theme-color"]')?.setAttribute('content',theme==='dark'?'#111827':'#f5f7fb');const b=$('#themeBtn');if(b)b.textContent=theme==='dark'?'☀':'☾';try{localStorage.setItem('montaji-theme',theme)}catch(e){}}
 function bindUI(){applyTheme((()=>{try{return localStorage.getItem('montaji-theme')}catch(e){return null}})()||'light');$('#themeBtn').onclick=()=>applyTheme(document.body.classList.contains('dark')?'light':'dark');`
   );
 
