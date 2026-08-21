@@ -1,4 +1,4 @@
-const APP_URL = new URL('app.js?runtime=20260820-4', location.href);
+const APP_URL = new URL('app.js?runtime=20260821-1', location.href);
 
 async function boot(){
   const response = await fetch(APP_URL,{cache:'no-store'});
@@ -25,9 +25,8 @@ async function boot(){
   source = source.replace('<span>● 3/3</span>','<span>● монтажи</span>');
   source = source.replace("${c>=3?'full':c===2?'busy':c?'partial':''}", "${c>0?'busy':''}");
 
-  // IMPORTANT: bind the login form before the rest of the UI. If any
-  // non-auth UI binding throws on mobile, the native form submit must never
-  // reload the page and erase the entered credentials.
+  // Bind authentication before the rest of the UI so a UI error cannot
+  // trigger a native form reload on mobile Safari.
   source = source.replace(
     "(async()=>{try{bindUI();bindAuth();await initFirebase();F.authMod.onAuthStateChanged(auth,onUser)}catch(e){console.error(e);showAuth(true);authMessage('Не удалось запустить приложение. Проверьте Firebase.',true)}})();",
     "(async()=>{try{bindAuth();bindUI();await initFirebase();F.authMod.onAuthStateChanged(auth,onUser)}catch(e){console.error(e);showAuth(true);authMessage('Не удалось запустить приложение: '+(e?.message||'проверьте Firebase.'),true)}})();"
@@ -56,6 +55,34 @@ async function boot(){
       renderNotes();return true;
     }
 function startRealtime`
+  );
+
+  // Notes are a small shared dataset. Avoid the previous transaction path:
+  // it could fail on mobile even though the authenticated shared database
+  // was available. Use a normal Firestore read + set and surface the real
+  // Firebase error code if something still blocks the write.
+  source = source.replace(
+    /async function saveNotes\(mutator\)\{[\s\S]*?\}\nfunction jobsForDate/,
+    `async function saveNotes(mutator){
+      if(!serverReady||!online||!user)throw new Error('Нет соединения с общей базой');
+      const ref=F.doc(db,...NOTES_DOC);
+      const snap=await F.getDoc(ref);
+      const cur={notes:currentNotesData(snap)};
+      const next=await mutator(JSON.parse(JSON.stringify(cur)));
+      const safeNotes=Array.isArray(next?.notes)?next.notes:[];
+      await F.setDoc(ref,{data:{notes:safeNotes},version:1,updatedAt:F.serverTimestamp(),updatedBy:user.uid},{merge:true});
+      notes=safeNotes;
+      renderNotes();
+    }
+function jobsForDate`
+  );
+
+  // Persist a simple two-state theme. Dark remains the default; light is
+  // intentionally quieter and warm enough for daytime work.
+  source = source.replace(
+    "function bindUI(){$('#themeBtn').onclick=()=>document.body.classList.toggle('dark');",
+    `function applyTheme(theme){document.body.classList.toggle('light-theme',theme==='light');document.body.classList.toggle('dark',theme!=='light');const b=$('#themeBtn');if(b)b.textContent=theme==='light'?'☾':'☼';localStorage.setItem('montaji-theme',theme);}
+function bindUI(){applyTheme(localStorage.getItem('montaji-theme')||'dark');$('#themeBtn').onclick=()=>applyTheme(document.body.classList.contains('light-theme')?'dark':'light');`
   );
 
   const blob = new Blob([source],{type:'text/javascript'});
