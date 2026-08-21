@@ -8,8 +8,8 @@ async function boot(){
   const themeCss=document.querySelector('link[href*="premium-field-tech.css"]');
   if(themeCss)themeCss.href='premium-field-tech.css?v=20260821-7';
   else{const l=document.createElement('link');l.rel='stylesheet';l.href='premium-field-tech.css?v=20260821-7';document.head.appendChild(l)}
-  const notesCss=document.createElement('link');notesCss.rel='stylesheet';notesCss.href='notes-ui-fix.css?v=20260821-2';document.head.appendChild(notesCss);
-  const controlCss=document.createElement('link');controlCss.rel='stylesheet';controlCss.href='control-ui-fix.css?v=20260821-1';document.head.appendChild(controlCss);
+  const notesCss=document.createElement('link');notesCss.rel='stylesheet';notesCss.href='https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/notes-ui-fix.css?v=20260821-3';document.head.appendChild(notesCss);
+  const controlCss=document.createElement('link');controlCss.rel='stylesheet';controlCss.href='https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/control-ui-fix.css?v=20260821-2';document.head.appendChild(controlCss);
 
   source = source.replace("function jobsForDate(d){return state.jobs.filter(j=>!isCancelled(j)&&j.date===d);} function activeJobs(d){return jobsForDate(d).filter(j=>!isDone(j));} function montageCount(d){return activeJobs(d).filter(j=>j.type==='Монтаж').length;} function freeSlot(d){const used=new Set(activeJobs(d).filter(j=>j.type==='Монтаж').map(j=>String(j.slot)));return ['1','2','3'].find(s=>!used.has(s))||'3';}","function jobsForDate(d){return state.jobs.filter(j=>!isCancelled(j)&&j.date===d);} function activeJobs(d){return jobsForDate(d).filter(j=>!isDone(j));} function montageCount(d){return jobsForDate(d).filter(j=>j.type==='Монтаж').length;} function freeSlot(d){return '1';}");
   source = source.replace("const d=$('#jobDate').value,s=$('#jobSlot').value,id=$('#jobId').value,conflict=editingType==='Монтаж'&&state.jobs.find(j=>j.id!==id&&!isCancelled(j)&&!isDone(j)&&j.type==='Монтаж'&&j.date===d&&String(j.slot)===s);","const d=$('#jobDate').value,s=$('#jobSlot').value,id=$('#jobId').value,conflict=null;");
@@ -56,8 +56,8 @@ function bindUI(){applyTheme((()=>{try{return localStorage.getItem('montaji-them
 
   const blob=new Blob([source],{type:'text/javascript'});const url=URL.createObjectURL(blob);try{await import(url)}finally{URL.revokeObjectURL(url)}
   setTimeout(()=>Promise.all([
-    import('./notes-fix.js?v=20260821-5').catch(err=>console.error('notes fix load failed',err)),
-    import('./control-fix.js?v=20260821-2').catch(err=>console.error('control fix load failed',err))
+    import('https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/notes-fix.js?v=20260821-6').catch(err=>console.error('notes fix load failed',err)),
+    import('https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/control-fix.js?v=20260821-3').catch(err=>console.error('control fix load failed',err))
   ]),900);
 }
 
