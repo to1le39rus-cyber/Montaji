@@ -126,6 +126,8 @@ function bindUI(){applyTheme((()=>{try{return localStorage.getItem('montaji-them
   const url = URL.createObjectURL(blob);
   try { await import(url); }
   finally { URL.revokeObjectURL(url); }
+  /* Notes fix is loaded after the Firebase app is initialized. */
+  setTimeout(()=>import('./notes-fix.js?v=20260821-2').catch(err=>console.error('notes fix load failed',err)),900);
 }
 
 boot().catch(error=>{
