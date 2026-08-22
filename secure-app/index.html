@@ -12,7 +12,7 @@
 <script type="module">
 (async()=>{
   const base='https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/';
-  const v='20260823-0120';
+  const v='20260823-0125';
   let capturedError='';
   const originalConsoleError=console.error.bind(console);
   console.error=(...args)=>{
@@ -42,7 +42,8 @@
     document.open();document.write(h);document.close();
     const match=config.match(/export\s+const\s+firebaseConfig\s*=\s*([\s\S]*?);\s*$/);
     if(!match)throw Error('Invalid Firebase config');
-    const source=app.replace("import { firebaseConfig } from './firebase-config.js';",`const firebaseConfig=${match[1]};`);
+    let source=app.replace("import { firebaseConfig } from './firebase-config.js';",`const firebaseConfig=${match[1]};`);
+    source=source.replace("$('#todayNoteBtn').onclick=()=>openNote();", "if($('#todayNoteBtn'))$('#todayNoteBtn').onclick=()=>openNote();");
     const appScript=document.createElement('script');
     appScript.type='module';
     appScript.textContent=source;
