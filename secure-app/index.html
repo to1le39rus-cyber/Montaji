@@ -13,7 +13,7 @@
 <script type="module">
 (async()=>{
   const base='https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/';
-  const v='20260823-0133';
+  const v='20260823-0134';
   let capturedError='';
   const debug=msg=>{capturedError=msg||capturedError;const el=document.getElementById('runtime-debug');if(el&&capturedError){el.textContent='Ошибка подключения базы: '+capturedError;el.style.display='block'}};
   const originalConsoleError=console.error.bind(console);
@@ -37,7 +37,7 @@
     let source=app.replace("import { firebaseConfig } from './firebase-config.js';",`const firebaseConfig=${match[1]};`);
     source=source.replace("$('#todayNoteBtn').onclick=()=>openNote();","if($('#todayNoteBtn'))$('#todayNoteBtn').onclick=()=>openNote();");
     source=source.replace('db=fs.getFirestore(app);','db=fs.getFirestore(app,{experimentalForceLongPolling:true,useFetchStreams:false});');
-    source=source.replace("status('База недоступна','offline');toast('Не удалось получить данные с сервера.','error');","status('База недоступна','offline');toast('Ошибка Firebase: '+(err?.code||err?.message||'unknown'),'error');debug(err?.code?`[${err.code}] ${err.message||''}`:err?.message||String(err));");
+    source=source.replace("status('База недоступна','offline');toast('Не удалось получить данные с сервера.','error');","status('База недоступна','offline');toast('Ошибка Firebase: '+(err?.code||err?.message||'unknown'),'error');");
     const appScript=document.createElement('script');appScript.type='module';appScript.textContent=source;appScript.dataset.appModule='1';document.body.appendChild(appScript);
     const ns=document.createElement('script');ns.type='module';ns.textContent=notesJs;ns.dataset.notesModule='1';document.body.appendChild(ns);
     setTimeout(()=>{if(capturedError)debug(capturedError)},5000);
