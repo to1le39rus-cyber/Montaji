@@ -47,6 +47,7 @@ function jobsForDate`);
 async function saveShared`);
   source = source.replace("function bindUI(){$('#themeBtn').onclick=()=>document.body.classList.toggle('dark');",`function applyTheme(theme){document.body.classList.toggle('dark',theme==='dark');document.documentElement.dataset.theme=theme;document.querySelector('meta[name="theme-color"]')?.setAttribute('content',theme==='dark'?'#111827':'#f5f7fb');const b=$('#themeBtn');if(b)b.textContent=theme==='dark'?'☀':'☾';try{localStorage.setItem('montaji-theme',theme)}catch(e){}}
 function bindUI(){applyTheme((()=>{try{return localStorage.getItem('montaji-theme')}catch(e){return null}})()||'light');$('#themeBtn').onclick=()=>applyTheme(document.body.classList.contains('dark')?'light':'dark');`);
+  source = source.replace("if(!u.emailVerified){await F.authMod.signOut(auth);showAuth(true);authMessage('Подтвердите email по ссылке из письма.',true);return}","");
   const blob=new Blob([source],{type:'text/javascript'});const url=URL.createObjectURL(blob);try{await import(url)}finally{URL.revokeObjectURL(url)}
   setTimeout(()=>Promise.all([
     import('./notes.js?v=20260822-1').catch(err=>console.error('Work Inbox load failed',err)),
