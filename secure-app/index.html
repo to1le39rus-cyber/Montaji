@@ -12,7 +12,7 @@
 <script type="module">
 (async()=>{
   const base='https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/';
-  const v='20260823-0125';
+  const v='20260823-0130';
   let capturedError='';
   const originalConsoleError=console.error.bind(console);
   console.error=(...args)=>{
@@ -54,12 +54,13 @@
     ns.textContent=notesJs;
     ns.dataset.notesModule='1';
     document.body.appendChild(ns);
-    setTimeout(()=>{
-      if(capturedError){
-        const el=document.getElementById('authMessage');
-        if(el){el.textContent=`Ошибка запуска: ${capturedError}`;el.className='auth-message auth-message--error'}
-      }
-    },150);
+    const report=()=>{
+      const el=document.getElementById('authMessage');
+      const sync=document.getElementById('syncStatus');
+      const failed=sync&&/База недоступна|Нет связи с общей базой/.test(sync.textContent||'');
+      if(el&&capturedError&&failed){el.textContent=`Ошибка базы: ${capturedError}`;el.className='auth-message auth-message--error';}
+    };
+    setTimeout(report,1000);setTimeout(report,3000);setTimeout(report,6000);
   }catch(e){
     console.error('Montaji production loader failed',e);
     const el=document.getElementById('boot');
