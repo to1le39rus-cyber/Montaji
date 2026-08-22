@@ -1,15 +1,14 @@
-const APP_URL = new URL('app.js?runtime=20260821-7', location.href);
+const APP_URL = new URL('app.js?runtime=20260822-1', location.href);
 
 async function boot(){
   const response = await fetch(APP_URL,{cache:'no-store'});
   if(!response.ok) throw new Error(`APP_LOAD_${response.status}`);
   let source = await response.text();
-
   const themeCss=document.querySelector('link[href*="premium-field-tech.css"]');
-  if(themeCss)themeCss.href='premium-field-tech.css?v=20260821-7';
-  else{const l=document.createElement('link');l.rel='stylesheet';l.href='premium-field-tech.css?v=20260821-7';document.head.appendChild(l)}
-  const notesCss=document.createElement('link');notesCss.rel='stylesheet';notesCss.href='https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/notes-ui-fix.css?v=20260821-3';document.head.appendChild(notesCss);
-  const controlCss=document.createElement('link');controlCss.rel='stylesheet';controlCss.href='https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/control-ui-fix.css?v=20260821-2';document.head.appendChild(controlCss);
+  if(themeCss)themeCss.href='premium-field-tech.css?v=20260822-1';
+  else{const l=document.createElement('link');l.rel='stylesheet';l.href='premium-field-tech.css?v=20260822-1';document.head.appendChild(l)}
+  const notesCss=document.createElement('link');notesCss.rel='stylesheet';notesCss.href='notes-ui.css?v=20260822-1';document.head.appendChild(notesCss);
+  const controlCss=document.createElement('link');controlCss.rel='stylesheet';controlCss.href='control-ui-fix.css?v=20260822-2';document.head.appendChild(controlCss);
 
   source = source.replace("function jobsForDate(d){return state.jobs.filter(j=>!isCancelled(j)&&j.date===d);} function activeJobs(d){return jobsForDate(d).filter(j=>!isDone(j));} function montageCount(d){return activeJobs(d).filter(j=>j.type==='Монтаж').length;} function freeSlot(d){const used=new Set(activeJobs(d).filter(j=>j.type==='Монтаж').map(j=>String(j.slot)));return ['1','2','3'].find(s=>!used.has(s))||'3';}","function jobsForDate(d){return state.jobs.filter(j=>!isCancelled(j)&&j.date===d);} function activeJobs(d){return jobsForDate(d).filter(j=>!isDone(j));} function montageCount(d){return jobsForDate(d).filter(j=>j.type==='Монтаж').length;} function freeSlot(d){return '1';}");
   source = source.replace("const d=$('#jobDate').value,s=$('#jobSlot').value,id=$('#jobId').value,conflict=editingType==='Монтаж'&&state.jobs.find(j=>j.id!==id&&!isCancelled(j)&&!isDone(j)&&j.type==='Монтаж'&&j.date===d&&String(j.slot)===s);","const d=$('#jobDate').value,s=$('#jobSlot').value,id=$('#jobId').value,conflict=null;");
@@ -19,7 +18,6 @@ async function boot(){
   source = source.replace("if(tc===3)advice.push('🔥 Завтра 3/3 монтажей — день полностью загружен');else if(tc===2)advice.push('✨ Завтра осталось одно монтажное окно');","if(tc>0)advice.push(`✨ Завтра запланировано ${tc} монтажей`);");
   source = source.replace('<span>● 3/3</span>','<span>● монтажи</span>');
   source = source.replace("${c>=3?'full':c===2?'busy':c?'partial':''}","${c>0?'busy':''}");
-
   source = source.replace(/function bindAuth\(\)\{[\s\S]*?\nfunction currentNotesData/,`function bindAuth(){
       const form=$('#authForm');
       if(form&&!form.dataset.bound){form.dataset.bound='1';form.addEventListener('submit',async e=>{e.preventDefault();e.stopPropagation();const email=$('#authEmail').value.trim(),pass=$('#authPassword').value;if(!online)return authMessage('Нет интернета.',true);if(!email||!pass)return authMessage('Введите email и пароль.',true);authMessage('Входим…');const button=form.querySelector('button[type="submit"]');if(button){button.disabled=true;button.textContent='Входим…';}try{await F.authMod.signInWithEmailAndPassword(auth,email,pass)}catch(err){authMessage(authError(err),true)}finally{if(button){button.disabled=false;button.textContent='Войти';}}},{passive:false});}
@@ -27,7 +25,6 @@ async function boot(){
       $('#resetBtn')?.addEventListener('click',async()=>{const email=$('#authEmail').value.trim();if(!email)return authMessage('Введите email.',true);try{await F.authMod.sendPasswordResetEmail(auth,email);authMessage('Ссылка для сброса отправлена.')}catch(err){authMessage(authError(err),true)}});
     }
 function currentNotesData`);
-
   source = source.replace(/async function loadServer\(\){[\s\S]*?\}\nfunction startRealtime/,`async function loadServer(){
       if(!user||!online){serverReady=false;state=emptyState();notes=[];render();status('Нет интернета · данные не загружены','offline');return false;}
       status('Подключаем общую базу…');let sharedSnap=null,notesSnap=null;
@@ -38,7 +35,6 @@ function currentNotesData`);
       serverReady=true;render();status('● Общая база · синхронизировано','online');renderNotes();return true;
     }
 function startRealtime`);
-
   source = source.replace(/async function saveNotes\(mutator\)\{[\s\S]*?\}\nfunction jobsForDate/,`async function saveNotes(mutator){
       if(!serverReady||!online||!user)throw new Error('Нет соединения с общей базой');
       const ref=F.doc(db,...NOTES_DOC),sharedRef=F.doc(db,...SHARED_DOC),snap=await F.getDoc(ref).catch(()=>null),cur={notes:currentNotesData(snap)};
@@ -47,18 +43,14 @@ function startRealtime`);
       notes=safeNotes;renderNotes();
     }
 function jobsForDate`);
-
   source = source.replace(/function startRealtime\(\)\{[\s\S]*?\nasync function saveShared/,`function startRealtime(){unsubscribeShared?.();unsubscribeNotes?.();if(!user||!online)return;unsubscribeShared=F.onSnapshot(F.doc(db,...SHARED_DOC),snap=>{if(!online)return;state=snap.exists()?normalize(snap.data().data):emptyState();serverReady=true;render();status('● Общая база · обновлено','online')},()=>{serverReady=false;status('Нет связи с общей базой','offline');toast('Потеряна связь с общей базой','error')});unsubscribeNotes=F.onSnapshot(F.doc(db,...NOTES_DOC),snap=>{if(!online)return;const remote=currentNotesData(snap);if(remote.length||snap.exists())notes=remote;renderNotes()},()=>{});}
 async function saveShared`);
-
   source = source.replace("function bindUI(){$('#themeBtn').onclick=()=>document.body.classList.toggle('dark');",`function applyTheme(theme){document.body.classList.toggle('dark',theme==='dark');document.documentElement.dataset.theme=theme;document.querySelector('meta[name="theme-color"]')?.setAttribute('content',theme==='dark'?'#111827':'#f5f7fb');const b=$('#themeBtn');if(b)b.textContent=theme==='dark'?'☀':'☾';try{localStorage.setItem('montaji-theme',theme)}catch(e){}}
 function bindUI(){applyTheme((()=>{try{return localStorage.getItem('montaji-theme')}catch(e){return null}})()||'light');$('#themeBtn').onclick=()=>applyTheme(document.body.classList.contains('dark')?'light':'dark');`);
-
   const blob=new Blob([source],{type:'text/javascript'});const url=URL.createObjectURL(blob);try{await import(url)}finally{URL.revokeObjectURL(url)}
   setTimeout(()=>Promise.all([
-    import('https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/notes-fix.js?v=20260821-6').catch(err=>console.error('notes fix load failed',err)),
-    import('https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/control-fix.js?v=20260821-3').catch(err=>console.error('control fix load failed',err))
-  ]),900);
+    import('./notes.js?v=20260822-1').catch(err=>console.error('Work Inbox load failed',err)),
+    import('./control-fix.js?v=20260822-2').catch(err=>console.error('control runtime load failed',err))
+  ]),150);
 }
-
 boot().catch(error=>{console.error('Montaji boot failed',error);const el=document.querySelector('#syncStatus');if(el){el.textContent='Ошибка запуска';el.dataset.state='offline';}const toast=document.querySelector('#toast');if(toast){toast.textContent='Не удалось запустить приложение.';toast.dataset.state='error';}});
