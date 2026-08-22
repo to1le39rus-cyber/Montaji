@@ -12,7 +12,19 @@
 <script type="module">
 (async()=>{
   const base='https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/';
-  const v='20260823-0112';
+  const v='20260823-0120';
+  let capturedError='';
+  const originalConsoleError=console.error.bind(console);
+  console.error=(...args)=>{
+    try{
+      const e=args.find(x=>x instanceof Error)||args.find(x=>x&&typeof x==='object'&&(x.code||x.message));
+      if(e) capturedError=`${e.code?`[${e.code}] `:''}${e.message||String(e)}`;
+      else if(args.length) capturedError=args.map(String).join(' ');
+    }catch{}
+    originalConsoleError(...args);
+  };
+  window.addEventListener('error',e=>{if(e?.error)capturedError=`${e.error.code?`[${e.error.code}] `:''}${e.error.message||String(e.error)}`});
+  window.addEventListener('unhandledrejection',e=>{const r=e?.reason;if(r)capturedError=`${r.code?`[${r.code}] `:''}${r.message||String(r)}`});
   try{
     const get=async p=>{const r=await fetch(base+p+'?v='+v,{cache:'no-store'});if(!r.ok)throw Error(p+' HTTP '+r.status);return r.text()};
     const [index,css,ux,premium,config,notesCss,app,notesJs]=await Promise.all([
@@ -41,6 +53,12 @@
     ns.textContent=notesJs;
     ns.dataset.notesModule='1';
     document.body.appendChild(ns);
+    setTimeout(()=>{
+      if(capturedError){
+        const el=document.getElementById('authMessage');
+        if(el){el.textContent=`Ошибка запуска: ${capturedError}`;el.className='auth-message auth-message--error'}
+      }
+    },150);
   }catch(e){
     console.error('Montaji production loader failed',e);
     const el=document.getElementById('boot');
