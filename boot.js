@@ -1,9 +1,19 @@
-const APP_URL = new URL('app.js?runtime=20260821-3', location.href);
+import { firebaseConfig } from './firebase-config.js';
+
+const APP_URL = new URL('app.js?runtime=20260822-4', location.href);
 
 async function boot(){
   const response = await fetch(APP_URL,{cache:'no-store'});
   if(!response.ok) throw new Error(`APP_LOAD_${response.status}`);
   let source = await response.text();
+
+  // app.js is evaluated from a Blob URL below. Relative imports from a Blob URL
+  // cannot resolve './firebase-config.js', so inject the already-loaded config
+  // before creating the module. This is the critical startup dependency.
+  source = source.replace(
+    "import { firebaseConfig } from './firebase-config.js';",
+    `const firebaseConfig=${JSON.stringify(firebaseConfig)};`
+  );
 
   const themeCss=document.querySelector('link[href*="premium-field-tech.css"]');
   if(themeCss)themeCss.href='premium-field-tech.css?v=20260821-3';
@@ -60,11 +70,6 @@ async function boot(){
       });
     }
 function currentNotesData`
-  );
-
-  source = source.replace(
-    "(async()=>{try{bindAuth();bindUI();await initFirebase();F.authMod.onAuthStateChanged(auth,onUser)}catch(e){console.error(e);showAuth(true);authMessage('Не удалось запустить приложение: '+(e?.message||'проверьте Firebase.'),true)}})();",
-    "(async()=>{try{bindAuth();bindUI();await initFirebase();F.authMod.onAuthStateChanged(auth,onUser)}catch(e){console.error(e);showAuth(true);authMessage('Не удалось запустить приложение: '+(e?.message||'проверьте Firebase.'),true)}})();"
   );
 
   source = source.replace(
