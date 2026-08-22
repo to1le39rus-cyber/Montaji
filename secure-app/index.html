@@ -13,25 +13,16 @@
 <script type="module">
 (async()=>{
   const base='https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/';
-  const v='20260823-0132';
+  const v='20260823-0133';
   let capturedError='';
   const debug=msg=>{capturedError=msg||capturedError;const el=document.getElementById('runtime-debug');if(el&&capturedError){el.textContent='Ошибка подключения базы: '+capturedError;el.style.display='block'}};
   const originalConsoleError=console.error.bind(console);
-  console.error=(...args)=>{
-    try{
-      const e=args.find(x=>x instanceof Error)||args.find(x=>x&&typeof x==='object'&&(x.code||x.message));
-      if(e) debug(`${e.code?`[${e.code}] `:''}${e.message||String(e)}`);
-      else if(args.length) debug(args.map(String).join(' '));
-    }catch{}
-    originalConsoleError(...args);
-  };
+  console.error=(...args)=>{try{const e=args.find(x=>x instanceof Error)||args.find(x=>x&&typeof x==='object'&&(x.code||x.message));if(e)debug(`${e.code?`[${e.code}] `:''}${e.message||String(e)}`);else if(args.length)debug(args.map(String).join(' '))}catch{}originalConsoleError(...args)};
   window.addEventListener('error',e=>{if(e?.error)debug(`${e.error.code?`[${e.error.code}] `:''}${e.error.message||String(e.error)}`)});
   window.addEventListener('unhandledrejection',e=>{const r=e?.reason;if(r)debug(`${r.code?`[${r.code}] `:''}${r.message||String(r)}`)});
   try{
     const get=async p=>{const r=await fetch(base+p+'?v='+v,{cache:'no-store'});if(!r.ok)throw Error(p+' HTTP '+r.status);return r.text()};
-    const [index,css,ux,premium,config,notesCss,app,notesJs]=await Promise.all([
-      get('index.html'),get('styles.css'),get('ux-upgrades.css'),get('premium-field-tech.css'),get('firebase-config.js'),get('notes.css'),get('app.js'),get('notes.js')
-    ]);
+    const [index,css,ux,premium,config,notesCss,app,notesJs]=await Promise.all([get('index.html'),get('styles.css'),get('ux-upgrades.css'),get('premium-field-tech.css'),get('firebase-config.js'),get('notes.css'),get('app.js'),get('notes.js')]);
     let h=index;
     h=h.replace(/<link rel="stylesheet" href="styles\.css\?v=[^"]+">/,'<style id="app-styles">'+css+'</style>');
     h=h.replace(/<link rel="stylesheet" href="ux-upgrades\.css\?v=[^"]+">/,'<style id="app-ux-styles">'+ux+'</style>');
@@ -42,27 +33,15 @@
     h=h.replace(/<link rel="manifest" href="manifest\.json">/,'').replace(/<link rel="icon" href="icon\.svg">/,'');
     h=h.replace('</head>','<style id="notes-styles">'+notesCss+'</style></head>');
     document.open();document.write(h);document.close();
-    const match=config.match(/export\s+const\s+firebaseConfig\s*=\s*([\s\S]*?);\s*$/);
-    if(!match)throw Error('Invalid Firebase config');
+    const match=config.match(/export\s+const\s+firebaseConfig\s*=\s*([\s\S]*?);\s*$/);if(!match)throw Error('Invalid Firebase config');
     let source=app.replace("import { firebaseConfig } from './firebase-config.js';",`const firebaseConfig=${match[1]};`);
-    source=source.replace("$('#todayNoteBtn').onclick=()=>openNote();", "if($('#todayNoteBtn'))$('#todayNoteBtn').onclick=()=>openNote();");
-    const appScript=document.createElement('script');
-    appScript.type='module';
-    appScript.textContent=source;
-    appScript.dataset.appModule='1';
-    document.body.appendChild(appScript);
-    const ns=document.createElement('script');
-    ns.type='module';
-    ns.textContent=notesJs;
-    ns.dataset.notesModule='1';
-    document.body.appendChild(ns);
+    source=source.replace("$('#todayNoteBtn').onclick=()=>openNote();","if($('#todayNoteBtn'))$('#todayNoteBtn').onclick=()=>openNote();");
+    source=source.replace('db=fs.getFirestore(app);','db=fs.getFirestore(app,{experimentalForceLongPolling:true,useFetchStreams:false});');
+    source=source.replace("status('База недоступна','offline');toast('Не удалось получить данные с сервера.','error');","status('База недоступна','offline');toast('Ошибка Firebase: '+(err?.code||err?.message||'unknown'),'error');debug(err?.code?`[${err.code}] ${err.message||''}`:err?.message||String(err));");
+    const appScript=document.createElement('script');appScript.type='module';appScript.textContent=source;appScript.dataset.appModule='1';document.body.appendChild(appScript);
+    const ns=document.createElement('script');ns.type='module';ns.textContent=notesJs;ns.dataset.notesModule='1';document.body.appendChild(ns);
     setTimeout(()=>{if(capturedError)debug(capturedError)},5000);
-  }catch(e){
-    debug(`${e?.code?`[${e.code}] `:''}${e?.message||String(e)}`);
-    console.error('Montaji production loader failed',e);
-    const el=document.getElementById('boot');
-    if(el)el.innerHTML='<div><b>Ошибка запуска приложения</b><br><small>Не удалось загрузить рабочий модуль.</small></div>';
-  }
+  }catch(e){debug(`${e?.code?`[${e.code}] `:''}${e?.message||String(e)}`);console.error('Montaji production loader failed',e);const el=document.getElementById('boot');if(el)el.innerHTML='<div><b>Ошибка запуска приложения</b><br><small>Не удалось загрузить рабочий модуль.</small></div>'}
 })();
 </script>
 </body>
