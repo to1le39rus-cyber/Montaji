@@ -12,7 +12,7 @@
 <script type="module">
 (async()=>{
   const base='https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/';
-  const v='20260823-0103';
+  const v='20260823-0112';
   try{
     const get=async p=>{const r=await fetch(base+p+'?v='+v,{cache:'no-store'});if(!r.ok)throw Error(p+' HTTP '+r.status);return r.text()};
     const [index,css,ux,premium,config,notesCss,app,notesJs]=await Promise.all([
@@ -31,9 +31,11 @@
     const match=config.match(/export\s+const\s+firebaseConfig\s*=\s*([\s\S]*?);\s*$/);
     if(!match)throw Error('Invalid Firebase config');
     const source=app.replace("import { firebaseConfig } from './firebase-config.js';",`const firebaseConfig=${match[1]};`);
-    const blob=new Blob([source],{type:'text/javascript'});
-    const appUrl=URL.createObjectURL(blob);
-    try{await import(appUrl)}finally{URL.revokeObjectURL(appUrl)}
+    const appScript=document.createElement('script');
+    appScript.type='module';
+    appScript.textContent=source;
+    appScript.dataset.appModule='1';
+    document.body.appendChild(appScript);
     const ns=document.createElement('script');
     ns.type='module';
     ns.textContent=notesJs;
