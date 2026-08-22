@@ -12,10 +12,11 @@
 <script type="module">
 (async()=>{
   const base='https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/';
+  const v='20260823-0103';
   try{
-    const get=async p=>{const r=await fetch(base+p,{cache:'no-store'});if(!r.ok)throw Error(p+' HTTP '+r.status);return r.text()};
-    const [index,css,ux,premium,config,notesCss,boot,notesJs]=await Promise.all([
-      get('index.html'),get('styles.css'),get('ux-upgrades.css'),get('premium-field-tech.css'),get('firebase-config.js'),get('notes.css'),get('boot.js'),get('notes.js')
+    const get=async p=>{const r=await fetch(base+p+'?v='+v,{cache:'no-store'});if(!r.ok)throw Error(p+' HTTP '+r.status);return r.text()};
+    const [index,css,ux,premium,config,notesCss,app,notesJs]=await Promise.all([
+      get('index.html'),get('styles.css'),get('ux-upgrades.css'),get('premium-field-tech.css'),get('firebase-config.js'),get('notes.css'),get('app.js'),get('notes.js')
     ]);
     let h=index;
     h=h.replace(/<link rel="stylesheet" href="styles\.css\?v=[^"]+">/,'<style id="app-styles">'+css+'</style>');
@@ -27,18 +28,21 @@
     h=h.replace(/<link rel="manifest" href="manifest\.json">/,'').replace(/<link rel="icon" href="icon\.svg">/,'');
     h=h.replace('</head>','<style id="notes-styles">'+notesCss+'</style></head>');
     document.open();document.write(h);document.close();
-
-    const cfg=JSON.stringify(config);
-    let b=boot
-      .replace("import { firebaseConfig } from './firebase-config.js';",`const firebaseConfig=${cfg};`)
-      .replace(/const APP_URL = new URL\('[^']+'\s*,\s*location\.href\);/,`const APP_URL = new URL('${base}app.js');`);
-    const bs=document.createElement('script');bs.type='module';bs.textContent=b;document.body.appendChild(bs);
-
-    const ns=document.createElement('script');ns.type='module';ns.textContent=notesJs;ns.dataset.notesModule='1';document.body.appendChild(ns);
+    const match=config.match(/export\s+const\s+firebaseConfig\s*=\s*([\s\S]*?);\s*$/);
+    if(!match)throw Error('Invalid Firebase config');
+    const source=app.replace("import { firebaseConfig } from './firebase-config.js';",`const firebaseConfig=${match[1]};`);
+    const blob=new Blob([source],{type:'text/javascript'});
+    const appUrl=URL.createObjectURL(blob);
+    try{await import(appUrl)}finally{URL.revokeObjectURL(appUrl)}
+    const ns=document.createElement('script');
+    ns.type='module';
+    ns.textContent=notesJs;
+    ns.dataset.notesModule='1';
+    document.body.appendChild(ns);
   }catch(e){
+    console.error('Montaji production loader failed',e);
     const el=document.getElementById('boot');
-    if(el)el.innerHTML='<div><b>Не удалось загрузить приложение</b><br><small>'+String(e?.message||e)+'</small></div>';
-    console.error('Montaji production adapter failed',e);
+    if(el)el.innerHTML='<div><b>Ошибка запуска приложения</b><br><small>Не удалось загрузить рабочий модуль. Обновите страницу.</small></div>';
   }
 })();
 </script>
