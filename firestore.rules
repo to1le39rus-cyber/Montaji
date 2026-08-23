@@ -16,3 +16,5 @@ service cloud.firestore {
     }
   }
 }
+
+// Production deployment checkpoint: publish the unchanged rules with the app.
