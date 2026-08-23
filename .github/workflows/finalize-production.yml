@@ -1,0 +1,121 @@
+name: Finalize Montaji production
+
+on:
+  push:
+    branches: ["Astera-smart"]
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Astera-smart
+          fetch-depth: 1
+
+      - name: Apply canonical production fixes
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          def replace_once(s, pattern, replacement, label, flags=re.S):
+              out, n = re.subn(pattern, replacement, s, count=1, flags=flags)
+              if n != 1:
+                  raise SystemExit(f'{label}: expected exactly one match, got {n}')
+              return out
+
+          # 1) Canonical Firebase/Auth initialization. No database writes are performed here.
+          p = Path('app.js')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace("auth=authMod.getAuth(app);", "auth=authMod.initializeAuth(app,{persistence:[authMod.indexedDBLocalPersistence,authMod.browserLocalPersistence,authMod.browserSessionPersistence]});", 1)
+
+          # 2) Preserve unknown top-level fields inside appData/shared when saving.
+          old_norm_start = "const normalize = d => ({ jobs:"
+          if old_norm_start not in s:
+              raise SystemExit('normalize: expected canonical function not found')
+          s = replace_once(
+              s,
+              r"const normalize = d => \(\{ jobs: .*?\}\);",
+              "const normalize = d => ({ ...(d && typeof d === 'object' ? d : {}), jobs: Array.isArray(d?.jobs) ? d.jobs.map(j => ({ ...j, id:j.id || uid(), date:j.date || today(), slot:String(j.slot || '1'), type:j.type || 'Монтаж', client:j.client || '', price:num(j.price), status:j.status || 'Запланирован', paid:j.paid !== false, completedDate:j.completedDate || '', time:j.time || '', measurePrice:num(j.measurePrice), measurePaid:j.measurePaid === true, measureCredit:num(j.measureCredit), convertedToJobId:j.convertedToJobId || '', source:j.source || j.store || '' })) : [], expenses: Array.isArray(d?.expenses) ? d.expenses.map(e => ({ ...e, id:e.id || uid(), date:e.date || today(), amount:num(e.amount), category:e.category || 'Прочее', comment:e.comment || '', cancelled:e.cancelled === true })) : [], version:Number(d?.version)||5 });",
+              'normalize'
+          )
+
+          # 3) Shared data is mandatory; notes are best-effort. Never replace shared state with an empty object on read failure.
+          s = replace_once(
+              s,
+              r"async function loadServer\(\)\{.*?\}\nfunction startRealtime",
+              """async function loadServer(){if(!user){serverReady=false;return false;}if(!online){status('Нет интернета · ждём соединение','offline');render();return serverReady;}status('Подключаем общую базу…');try{const sharedSnap=await F.getDocFromServer(F.doc(db,...SHARED_DOC));if(!sharedSnap.exists()){serverReady=false;status('Общая база не найдена','offline');toast('Общая база недоступна. Данные не изменялись.','error');render();return false;}state=normalize(sharedSnap.data().data);serverReady=true;render();status('● Общая база · синхронизировано','online');try{const notesSnap=await F.getDocFromServer(F.doc(db,...NOTES_DOC));notes=currentNotesData(notesSnap);renderNotes()}catch(notesErr){console.warn('Notes initial load failed',notesErr);status('● Общая база · синхронизировано · заметки недоступны','online')}return true}catch(err){console.error('Shared Firestore load failed',err);serverReady=false;status('Общая база недоступна','offline');toast('Firebase: '+(err?.code||err?.message||'ошибка чтения')+' · данные не изменялись','error');render();return false;}}\nfunction startRealtime""",
+              'loadServer'
+          )
+
+          # 4) Auth observer is the single owner of auth -> token -> Firestore boot.
+          s = replace_once(
+              s,
+              r"async function onUser\(u\)\{.*?\}\n\(async\(\)=>",
+              """async function onUser(u){user=u;unsubscribeShared?.();unsubscribeNotes?.();unsubscribeShared=unsubscribeNotes=null;if(!u){serverReady=false;state=emptyState();notes=[];showAuth(true);render();status('Требуется вход');return;}if(!u.emailVerified){await F.authMod.signOut(auth);showAuth(true);authMessage('Подтвердите email по ссылке из письма.',true);return;}showAuth(false);try{await u.getIdToken(true)}catch(tokenErr){console.error('Firebase token refresh failed',tokenErr);status('Не удалось подтвердить сессию','offline');toast('Ошибка авторизации: '+(tokenErr?.code||tokenErr?.message||'token refresh'),'error');return;}if(await loadServer())startRealtime();}\n(async()=>""",
+              'onUser'
+          )
+
+          # 5) Calendar: history is rendered from the same jobs data as the day view; no fake 0/3 for past days.
+          s = replace_once(
+              s,
+              r"function renderCalendar\(\)\{.*?\}\nfunction openDay",
+              """function renderCalendar(){const y=month.getFullYear(),m=month.getMonth(),start=(new Date(y,m,1).getDay()+6)%7,last=new Date(y,m+1,0).getDate(),historyStart='2026-08-10';let h='';for(let i=0;i<start;i++)h+='<div class=\"day blank\"></div>';for(let n=1;n<=last;n++){const k=dateKey(new Date(y,m,n)),all=jobsForDate(k),montages=all.filter(j=>j.type==='Монтаж'),active=montages.filter(j=>!isDone(j)),done=montages.filter(isDone),measures=all.filter(isMeasure),past=k<today()&&k>=historyStart,hasMeasure=measures.length>0,dayIncome=dateTotals(k).income,c=active.length,load=past?`${done.length} ✓ · ${montages.length} всего`:`${c}/3`,sub=montages.length?`${montages.length} монтаж${montages.length===1?'':'а'}`:'0 выезд';h+=`<button class=\"day ${c>=3?'full':c===2?'busy':c?'partial':''} ${past?'past':''} ${done.length?'has-done':''} ${hasMeasure?'has-measure':''} ${k===today()?'today':''}\" data-date=\"${k}\"><b>${n}</b><span>${sub}</span><i>${load}${dayIncome?' · '+money(dayIncome):''}${hasMeasure?' · замер':''}</i></button>`;}$('#scheduleMonth').textContent=new Intl.DateTimeFormat('ru-RU',{month:'long',year:'numeric'}).format(month);$('#calendar').innerHTML=h;$$('.day[data-date]').forEach(b=>b.onclick=()=>openDay(b.dataset.date));}\nfunction openDay""",
+              'renderCalendar'
+          )
+
+          # 6) Weekend dashboard: useful information, based only on existing planned jobs/prices.
+          s = replace_once(
+              s,
+              r"function renderToday\(\)\{.*?\}\nfunction renderExpensesToday",
+              """function renderToday(){const d=today(),jobs=jobsForDate(d),t=totals('day'),w=totals('week'),m=totals('month');$('#topDate').textContent=new Intl.DateTimeFormat('ru-RU',{weekday:'long',day:'numeric',month:'long'}).format(new Date());$('#todayIncome').textContent=money(t.net);$('#todayGross').textContent=money(t.income);$('#todayExpense').textContent=money(t.expenses);$('#todayLoad').textContent=`${montageCount(d)}/3`;$('$#todayProgress')?.style&&($('#todayProgress').style.width=Math.min(100,montageCount(d)/3*100)+'%');$('#todayWeek').textContent=money(w.net);$('#todayMonth').textContent=money(m.net);const now=new Date(),dow=now.getDay(),weekend=dow===0||dow===6,nextMonday=new Date(now);nextMonday.setDate(now.getDate()+(dow===0?1:8-dow));nextMonday.setHours(0,0,0,0);const nextSunday=new Date(nextMonday);nextSunday.setDate(nextMonday.getDate()+6);const nk1=dateKey(nextMonday),nk2=dateKey(nextSunday),nextWeekJobs=state.jobs.filter(j=>!isCancelled(j)&&j.type==='Монтаж'&&j.date>=nk1&&j.date<=nk2),nextWeekIncome=nextWeekJobs.reduce((sum,j)=>sum+num(j.price),0),advice=[];if(weekend){advice.push('🌿 Сегодня выходной — можно выдохнуть. Ближайшие монтажи уже в графике.');advice.push(nextWeekJobs.length?`💰 На следующую неделю запланировано ${nextWeekJobs.length} монтаж${nextWeekJobs.length===1?'':'ей'} · ${money(nextWeekIncome)} по текущим суммам.`:'✨ На следующую неделю пока нет монтажей.');}else{const tomorrow=new Date(now);tomorrow.setDate(now.getDate()+1);const tc=montageCount(dateKey(tomorrow));const late=state.jobs.filter(j=>!isCancelled(j)&&!isDone(j)&&j.date<d).length;if(late)advice.push(`⚠️ ${late} просроченных выездов`);if(tc===3)advice.push('🔥 Завтра 3/3 монтажей — день полностью загружен');else if(tc===2)advice.push('✨ Завтра осталось одно монтажное окно');if(t.unpaid)advice.push(`💰 ${money(t.unpaid)} ещё не оплачено`);}$('#insights').innerHTML=advice.slice(0,3).map(x=>x.includes('не оплачено')?`<button class=\"insight money-insight\" data-open-debts=\"1\">${x}<span>›</span></button>`:`<div class=\"insight ${weekend?'weekend-insight':''}\">${x}</div>`).join('')||'<div class=\"insight calm\">✨ На сегодня всё спокойно</div>';$('#todayList').innerHTML=jobs.length?jobs.sort((a,b)=>String(a.slot).localeCompare(String(b.slot))).map(jobCard).join(''):`<div class=\"empty-card\"><strong>${weekend?'Сегодня выходной':'Сегодня свободно'}</strong><span>${weekend?'Ближайшие монтажи уже ниже.':'Добавь монтаж, замер или расход через +'}</span></div>`;const upcoming=[];for(let i=1;i<=7;i++){const x=new Date();x.setDate(x.getDate()+i);const k=dateKey(x),js=activeJobs(k);if(js.length)upcoming.push({k,x,js});}$('#upcoming').innerHTML=upcoming.slice(0,5).map(o=>`<button class=\"upcoming\" data-date=\"${o.k}\"><b>${o.x.getDate()}</b><span>${esc(o.js[0].client||o.js[0].type)}</span><em>${o.js.length} выезд · ${money(o.js.reduce((s,j)=>s+num(j.price||j.measurePrice),0))}</em>›</button>`).join('')||'<div class=\"muted\">Ближайшие дни свободны.</div>';renderExpensesToday();renderNotes();bindCards();}\nfunction renderExpensesToday""",
+              'renderToday'
+          )
+
+          p.write_text(s,encoding='utf-8')
+
+          # 7) Remove the Blob monkey-patch from Firebase config; keep the same project/app.
+          Path('firebase-config.js').write_text('''export const firebaseConfig = {\n  apiKey: "AIzaSyARuz40aEnYf9A0X8v5_5AN9pK58lfx0es",\n  authDomain: "montaj-39.firebaseapp.com",\n  projectId: "montaj-39",\n  storageBucket: "montaj-39.firebasestorage.app",\n  messagingSenderId: "1078766399423",\n  appId: "1:1078766399423:web:9de0fabf89a5b1aeda3b0a",\n  measurementId: "G-LJG1HV95BV"\n};\n''',encoding='utf-8')
+
+          # 8) Canonical Vercel loader: fetch the existing app shell/assets, inject only Firebase config, then run app.js.
+          Path('secure-app/index.html').write_text('''<!doctype html>\n<html lang="ru">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n<meta name="theme-color" content="#f5f7fb">\n<title>Монтажи АА</title>\n<style>html,body{margin:0;min-height:100%;background:#f5f7fb}#boot{min-height:100vh;display:grid;place-items:center;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#101828}#boot div{padding:20px;text-align:center}#runtime-debug{position:fixed;left:16px;right:16px;bottom:24px;z-index:99999;background:#7f1d1d;color:#fff;border-radius:16px;padding:14px 16px;font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;box-shadow:0 8px 30px #0003;word-break:break-word;display:none}</style>\n</head>\n<body>\n<div id="boot"><div>Загружаю Монтажи АА…</div></div>\n<div id="runtime-debug"></div>\n<script type="module">\n(async()=>{\n  const base='https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/';\n  const version='20260823-canonical-1';\n  const debug=msg=>{const el=document.getElementById('runtime-debug');if(el){el.textContent='Ошибка запуска: '+msg;el.style.display='block'}};\n  const get=async path=>{const r=await fetch(base+path+'?v='+version,{cache:'no-store'});if(!r.ok)throw Error(path+' HTTP '+r.status);return r.text()};\n  try{\n    const [index,css,ux,premium,config,notesCss,app]=await Promise.all([get('index.html'),get('styles.css'),get('ux-upgrades.css'),get('premium-field-tech.css'),get('firebase-config.js'),get('notes.css'),get('app.js')]);\n    const parsed=new DOMParser().parseFromString(index,'text/html');\n    document.head.innerHTML=parsed.head.innerHTML;\n    document.body.innerHTML=parsed.body.innerHTML;\n    const addStyle=(id,text)=>{const el=document.createElement('style');el.id=id;el.textContent=text;document.head.appendChild(el)};\n    addStyle('app-styles',css);addStyle('app-ux-styles',ux);addStyle('app-premium-styles',premium);addStyle('notes-styles',notesCss);\n    document.querySelectorAll('script[src]').forEach(s=>s.remove());\n    const match=config.match(/export\\s+const\\s+firebaseConfig\\s*=\\s*([\\s\\S]*?);\\s*$/);if(!match)throw Error('Invalid Firebase config');\n    const source=app.replace("import { firebaseConfig } from './firebase-config.js';",`const firebaseConfig=${match[1]}`);\n    const blobUrl=URL.createObjectURL(new Blob([source],{type:'text/javascript'}));\n    try{await import(blobUrl)}finally{URL.revokeObjectURL(blobUrl)}\n  }catch(error){console.error('Montaji production bootstrap failed',error);debug(error?.code?`[${error.code}] ${error.message||''}`:(error?.message||String(error)));const boot=document.getElementById('boot');if(boot)boot.innerHTML='<div><b>Не удалось запустить приложение</b><br><small>Данные Firebase не изменялись.</small></div>'}\n})();\n</script>\n</body>\n</html>\n''',encoding='utf-8')
+
+          # 9) Strengthen Notes write path in the legacy module too; it never touches shared.
+          n=Path('notes.js'); ns=n.read_text(encoding='utf-8')
+          ns=ns.replace("async function write(fn){if(!user)throw Error('Сессия авторизации ещё не готова.');const ref=doc(db,...NOTES_DOC);await runTransaction(db,async tx=>{", "async function write(fn){if(!user)throw Error('Сессия авторизации ещё не готова.');if(!navigator.onLine)throw Error('Нет интернета.');const ref=doc(db,...NOTES_DOC);await runTransaction(db,async tx=>{", 1)
+          n.write_text(ns,encoding='utf-8')
+
+          # 10) Add a visible history/weekend style layer without changing the design system.
+          css=Path('premium-field-tech.css'); cs=css.read_text(encoding='utf-8')
+          extra='''\n/* Canonical calendar history/weekend states */\n.day.past{background:#f1f4ef!important;border-color:#d9dfd6!important;color:#5f6b60!important;box-shadow:inset 0 -4px 0 #dce5d8!important}.day.past b{color:#66705f!important}.day.past span{color:#6d776d!important}.day.past i{color:#7a8479!important}.day.has-done{border-bottom-color:#bccbb7!important}.weekend-insight{background:linear-gradient(135deg,#f2f6ef,#ffffff)!important;border-color:#d9e2d4!important;color:#59664f!important}.money-insight{border-color:#dce3f5!important;background:#fbfcff!important}\n'''
+          if 'Canonical calendar history/weekend states' not in cs: css.write_text(cs+extra,encoding='utf-8')
+
+          # 11) Update regression tests to assert the canonical architecture and data-safety invariants.
+          t=Path('tests/final-architecture.test.mjs'); ts=t.read_text(encoding='utf-8')
+          ts=ts.replace("assert.equal((index.match(/<script[^>]+type=[\\\"']module[\\\"']/g)||[]).length,2);\n  assert.match(index,/boot\\\\.js\\\\?v=/);\n  assert.match(index,/notes\\\\.js\\\\?v=/);", "assert.equal((index.match(/<script[^>]+type=[\\\"']module[\\\"']/g)||[]).length,0);")
+          ts=ts.replace("assert.doesNotMatch(app,/localStorage|sessionStorage/);", "assert.match(app,/initializeAuth\\(app,\\{persistence:\\[authMod\\.indexedDBLocalPersistence,authMod\\.browserLocalPersistence,authMod\\.browserSessionPersistence\\]/);\n  assert.doesNotMatch(app,/globalThis\\.Blob/);\n  assert.doesNotMatch(app,/localStorage|sessionStorage/);")
+          ts=ts.replace("assert.match(notes,/const NOTES_DOC=\\['appData','notes'\\]/);", "assert.match(notes,/const NOTES_DOC=\\['appData','notes'\\]/);")
+          ts += "\n\ntest('production loader has no runtime source patching',()=>{const secure=fs.readFileSync('secure-app/index.html','utf8');assert.doesNotMatch(secure,/source\\.replace\\(/);assert.doesNotMatch(secure,/document\\.write/);assert.doesNotMatch(secure,/document\\.open/);assert.match(secure,/20260823-canonical-1/);});\n\ntest('shared data normalization preserves unknown fields',()=>{assert.match(app,/\\.\\.\\.(d && typeof d === 'object' \\? d : \\{\\\\\\}\\)/);});\n"
+          t.write_text(ts,encoding='utf-8')
+
+      - name: Validate JavaScript
+        run: |
+          node --check app.js
+          node --check notes.js
+          node --check boot.js
+
+      - name: Commit canonicalization and remove this workflow
+        shell: bash
+        run: |
+          rm -f .github/workflows/finalize-production.yml
+          git config user.name "montaji-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js firebase-config.js secure-app/index.html notes.js premium-field-tech.css tests/final-architecture.test.mjs .github/workflows/finalize-production.yml
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: stabilize auth firestore and canonical production boot"
+          git push origin Astera-smart
