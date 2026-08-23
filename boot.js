@@ -42,6 +42,11 @@ async function start(){
     "async function loadServer(){if(!user||!online){serverReady=false;state=emptyState();notes=[];render();status('Нет интернета · данные не загружены','offline');return false;}status('Подключаем общую базу…');try{const [sharedSnap,notesSnap]=await Promise.all([F.getDocFromServer(F.doc(db,...SHARED_DOC)),F.getDocFromServer(F.doc(db,...NOTES_DOC))]);state=sharedSnap.exists()?normalize(sharedSnap.data().data):emptyState();notes=currentNotesData(notesSnap);serverReady=true;render();status('● Общая база · синхронизировано','online');return true;}catch(err){console.error(err);serverReady=false;state=emptyState();notes=[];render();status('База недоступна','offline');toast('Ошибка Firebase: '+(err?.code||err?.message||'unknown'),'error');return false;}}",
     "async function loadServer(){if(!user||!online){serverReady=false;state=emptyState();notes=[];render();status('Нет интернета · данные не загружены','offline');return false;}status('Подключаем общую базу…');try{const sharedSnap=await F.getDocFromServer(F.doc(db,...SHARED_DOC));state=sharedSnap.exists()?normalize(sharedSnap.data().data):emptyState();serverReady=true;render();status('● Общая база · синхронизировано','online');try{const notesSnap=await F.getDocFromServer(F.doc(db,...NOTES_DOC));notes=currentNotesData(notesSnap);renderNotes()}catch(notesErr){console.warn('notes load failed',notesErr);notes=[];renderNotes()}return true;}catch(err){console.error(err);serverReady=false;state=emptyState();notes=[];render();status('База недоступна','offline');toast('Ошибка Firebase: '+(err?.code||err?.message||'unknown'),'error');return false;}}"
   );
+  // Force a fresh Firebase ID token before the first Firestore request.
+  source=source.replace(
+    "showAuth(false);if(await loadServer())startRealtime();",
+    "showAuth(false);await user.getIdToken(true);if(await loadServer())startRealtime();"
+  );
   const blob=new Blob([source],{type:'text/javascript'});
   const url=URL.createObjectURL(blob);
   try{await import(url)}finally{URL.revokeObjectURL(url)}
