@@ -13,7 +13,7 @@
 <script type="module">
 (async()=>{
   const base='https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/';
-  const v='20260823-0134';
+  const v='20260823-1045';
   let capturedError='';
   const debug=msg=>{capturedError=msg||capturedError;const el=document.getElementById('runtime-debug');if(el&&capturedError){el.textContent='Ошибка подключения базы: '+capturedError;el.style.display='block'}};
   const originalConsoleError=console.error.bind(console);
@@ -36,8 +36,16 @@
     const match=config.match(/export\s+const\s+firebaseConfig\s*=\s*([\s\S]*?);\s*$/);if(!match)throw Error('Invalid Firebase config');
     let source=app.replace("import { firebaseConfig } from './firebase-config.js';",`const firebaseConfig=${match[1]};`);
     source=source.replace("$('#todayNoteBtn').onclick=()=>openNote();","if($('#todayNoteBtn'))$('#todayNoteBtn').onclick=()=>openNote();");
-    source=source.replace('db=fs.getFirestore(app);','db=fs.getFirestore(app,{experimentalForceLongPolling:true,useFetchStreams:false});');
+    // Transport is configured in app.js with initializeFirestore(). Do not patch getFirestore() here.
     source=source.replace("status('База недоступна','offline');toast('Не удалось получить данные с сервера.','error');","status('База недоступна','offline');toast('Ошибка Firebase: '+(err?.code||err?.message||'unknown'),'error');");
+    source=source.replace(
+      "async function onUser(u){user=u;unsubscribeShared?.();unsubscribeNotes?.();unsubscribeShared=unsubscribeNotes=null;if(!u){serverReady=false;state=emptyState();notes=[];showAuth(true);render();status('Требуется вход');return}if(!u.emailVerified){await F.authMod.signOut(auth);showAuth(true);authMessage('Подтвердите email по ссылке из письма.',true);return}showAuth(false);if(await loadServer())startRealtime();}",
+      "async function onUser(u){user=u;unsubscribeShared?.();unsubscribeNotes?.();unsubscribeShared=unsubscribeNotes=null;if(!u){serverReady=false;state=emptyState();notes=[];showAuth(true);render();status('Требуется вход');return}if(!u.emailVerified){await F.authMod.signOut(auth);showAuth(true);authMessage('Подтвердите email по ссылке из письма.',true);return}showAuth(false);try{await u.getIdToken(true)}catch(tokenErr){console.error('Firebase ID token refresh failed',tokenErr);status('Не удалось подтвердить сессию','offline');toast('Ошибка авторизации: '+(tokenErr?.code||'token-refresh-failed'),'error');return}if(await loadServer())startRealtime();}"
+    );
+    source=source.replace(
+      "async function loadServer(){if(!user||!online){serverReady=false;state=emptyState();notes=[];render();status('Нет интернета · данные не загружены','offline');return false;}status('Подключаем общую базу…');try{const [sharedSnap,notesSnap]=await Promise.all([F.getDocFromServer(F.doc(db,...SHARED_DOC)),F.getDocFromServer(F.doc(db,...NOTES_DOC))]);state=sharedSnap.exists()?normalize(sharedSnap.data().data):emptyState();notes=currentNotesData(notesSnap);serverReady=true;render();status('● Общая база · синхронизировано','online');return true;}catch(err){console.error(err);serverReady=false;state=emptyState();notes=[];render();status('База недоступна','offline');toast('Ошибка Firebase: '+(err?.code||err?.message||'unknown'),'error');return false;}}",
+      "async function loadServer(){if(!user||!online){serverReady=false;state=emptyState();notes=[];render();status('Нет интернета · данные не загружены','offline');return false;}status('Подключаем общую базу…');try{const sharedSnap=await F.getDocFromServer(F.doc(db,...SHARED_DOC));state=sharedSnap.exists()?normalize(sharedSnap.data().data):emptyState();serverReady=true;render();status('● Общая база · синхронизировано','online');try{const notesSnap=await F.getDocFromServer(F.doc(db,...NOTES_DOC));notes=currentNotesData(notesSnap);renderNotes()}catch(notesErr){console.warn('notes load failed',notesErr);notes=[];renderNotes()}return true;}catch(err){console.error(err);serverReady=false;state=emptyState();notes=[];render();status('База недоступна','offline');toast('Ошибка Firebase: '+(err?.code||err?.message||'unknown'),'error');return false;}}"
+    );
     const appScript=document.createElement('script');appScript.type='module';appScript.textContent=source;appScript.dataset.appModule='1';document.body.appendChild(appScript);
     const ns=document.createElement('script');ns.type='module';ns.textContent=notesJs;ns.dataset.notesModule='1';document.body.appendChild(ns);
     setTimeout(()=>{if(capturedError)debug(capturedError)},5000);
