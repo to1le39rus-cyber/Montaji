@@ -1,0 +1,64 @@
+name: Apply calendar and notes fix
+
+on:
+  push:
+    branches: ["Astera-smart"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Astera-smart
+          fetch-depth: 1
+
+      - name: Patch production app
+        shell: python
+        run: |
+          from pathlib import Path
+
+          p = Path('app.js')
+          s = p.read_text()
+          start = s.index('function renderToday(){')
+          end = s.index('function renderExpensesToday(){', start)
+          today_fn = r'''function renderToday(){const d=today(),jobs=jobsForDate(d),t=totals('day'),w=totals('week'),m=totals('month');$('#topDate').textContent=new Intl.DateTimeFormat('ru-RU',{weekday:'long',day:'numeric',month:'long'}).format(new Date());$('#todayIncome').textContent=money(t.net);$('#todayGross').textContent=money(t.income);$('#todayExpense').textContent=money(t.expenses);$('#todayLoad').textContent=`${montageCount(d)}/3`;$('#todayProgress').style.width=Math.min(100,montageCount(d)/3*100)+'%';$('#todayWeek').textContent=money(w.net);$('#todayMonth').textContent=money(m.net);const advice=[],now=new Date(),dow=now.getDay(),weekend=dow===0||dow===6,nextMonday=new Date(now);nextMonday.setDate(now.getDate()+(dow===0?1:8-dow));nextMonday.setHours(0,0,0,0);const nextSunday=new Date(nextMonday);nextSunday.setDate(nextMonday.getDate()+6);const nk1=dateKey(nextMonday),nk2=dateKey(nextSunday),nextWeekJobs=state.jobs.filter(j=>!isCancelled(j)&&j.type==='Монтаж'&&j.date>=nk1&&j.date<=nk2),nextWeekIncome=nextWeekJobs.reduce((sum,j)=>sum+num(j.price),0),tomorrow=new Date(now);tomorrow.setDate(now.getDate()+1);const tc=montageCount(dateKey(tomorrow)),late=state.jobs.filter(j=>!isCancelled(j)&&!isDone(j)&&j.date<d).length;if(weekend){advice.push('🌿 Сегодня выходной — монтажей нет, можно спокойно выдохнуть и восстановиться.');if(nextWeekJobs.length)advice.push(`💰 На следующую неделю уже запланировано ${nextWeekJobs.length} ${nextWeekJobs.length===1?'монтаж':'монтажа'} на ${money(nextWeekIncome)}.`);else advice.push('✨ На следующую неделю пока нет монтажей — можно спокойно добрать график.');}else{if(late)advice.push(`⚠️ ${late} просроченных выездов`);if(tc===3)advice.push('🔥 Завтра 3/3 монтажей — день полностью загружен');else if(tc===2)advice.push('✨ Завтра осталось одно монтажное окно');if(t.unpaid)advice.push(`💰 ${money(t.unpaid)} ещё не оплачено`);if(nextWeekJobs.length)advice.push(`📈 Следующая неделя: ${nextWeekJobs.length} монтажей · ${money(nextWeekIncome)} по плану`);}$('#insights').innerHTML=advice.slice(0,3).map((x,i)=>{const cls=x.includes('не оплачено')?'insight money-insight':(weekend&&i===0?'insight weekend-insight':'insight');return x.includes('не оплачено')?`<button class="${cls}" data-open-debts="1">${x}<span>›</span></button>`:`<div class="${cls}">${x}</div>`}).join('')||'<div class="insight calm">✨ На сегодня всё спокойно</div>';$('#todayList').innerHTML=jobs.length?jobs.sort((a,b)=>String(a.slot).localeCompare(String(b.slot))).map(jobCard).join(''):'<div class="empty-card"><strong>Сегодня свободно</strong><span>${weekend?'Воскресенье — отдыхай. Ближайшие монтажи уже ниже.':'Добавь монтаж, замер или расход через +'}</span></div>';const upcoming=[];for(let i=1;i<=7;i++){const x=new Date();x.setDate(x.getDate()+i);const k=dateKey(x),js=activeJobs(k);if(js.length)upcoming.push({k,x,js});}$('#upcoming').innerHTML=upcoming.slice(0,5).map(o=>`<button class="upcoming" data-date="${o.k}"><b>${o.x.getDate()}</b><span>${esc(o.js[0].client||o.js[0].type)}</span><em>${o.js.length} выезд · ${money(o.js.reduce((s,j)=>s+(j.price||j.measurePrice||0),0))}</em>›</button>`).join('')||'<div class="muted">Ближайшие дни свободны.</div>';renderExpensesToday();renderNotes();bindCards();}'''
+          s = s[:start] + today_fn + s[end:]
+
+          start = s.index('function renderCalendar(){')
+          end = s.index('function openDay(', start)
+          cal_fn = r'''function renderCalendar(){const y=month.getFullYear(),m=month.getMonth(),start=(new Date(y,m,1).getDay()+6)%7,last=new Date(y,m+1,0).getDate(),historyStart='2026-08-10';let h='';for(let i=0;i<start;i++)h+='<div class="day blank"></div>';for(let n=1;n<=last;n++){const k=dateKey(new Date(y,m,n)),all=jobsForDate(k),montages=all.filter(j=>j.type==='Монтаж'),active=montages.filter(j=>!isDone(j)),done=montages.filter(isDone),measures=all.filter(isMeasure),past=k<today()&&k>=historyStart,hasMeasure=measures.length>0,dayIncome=dateTotals(k).income,c=active.length,load=past?`${done.length} ✓ · ${montages.length} всего`:`${c}/3`,sub=past?(dayIncome?money(dayIncome):`${montages.length} монтаж${montages.length===1?'':'а'}`):(montages.length?`${montages.length} монтаж${montages.length===1?'':'а'}`:'0 выезд');h+=`<button class="day ${c>=3?'full':c===2?'busy':c?'partial':''} ${past?'past':''} ${done.length?'has-done':''} ${hasMeasure?'has-measure':''} ${k===today()?'today':''}" data-date="${k}"><b>${n}</b><span>${sub}</span><i>${load}${hasMeasure?' · замер':''}</i></button>`;}$('#scheduleMonth').textContent=new Intl.DateTimeFormat('ru-RU',{month:'long',year:'numeric'}).format(month);$('#calendar').innerHTML=h;$$('.day[data-date]').forEach(b=>b.onclick=()=>openDay(b.dataset.date));}'''
+          s = s[:start] + cal_fn + s[end:]
+          p.write_text(s)
+
+          n = Path('notes.js')
+          ns = n.read_text()
+          old_write = "async function write(fn){if(!user)throw Error('Сессия авторизации ещё не готова.');const ref=doc(db,...NOTES_DOC);await runTransaction(db,async tx=>{const s=await tx.get(ref),cur=(Array.isArray(s.data()?.data?.notes)?s.data().data.notes:[]).map(norm),next=fn(cur);tx.set(ref,{data:{notes:next},version:2,updatedAt:serverTimestamp(),updatedBy:user.uid},{merge:true})})}"
+          new_write = "async function write(fn){if(!user)throw Error('Сессия авторизации ещё не готова.');if(!navigator.onLine)throw Error('Нет интернета.');try{await user.getIdToken(true);const ref=doc(db,...NOTES_DOC);await runTransaction(db,async tx=>{const s=await tx.get(ref),cur=(Array.isArray(s.data()?.data?.notes)?s.data().data.notes:[]).map(norm),next=fn(cur);tx.set(ref,{data:{notes:next},version:2,updatedAt:serverTimestamp(),updatedBy:user.uid},{merge:true})})}catch(e){console.error('Work Inbox Firestore write failed',e);throw Error(e?.code?`Firebase: ${e.code}`:(e?.message||'Не удалось записать заметку.'));}}"
+          if old_write not in ns: raise SystemExit('notes write pattern not found')
+          ns = ns.replace(old_write,new_write)
+          old_connect = "function connect(app){try{auth=getAuth(app);db=getFirestore(app)}catch(e){console.error('Work Inbox Firebase init failed',e);return false}onAuthStateChanged(auth,u=>{user=u;if(unsub){unsub();unsub=null}if(!u)return;ensureUI();unsub=onSnapshot(doc(db,...NOTES_DOC),s=>{notes=(Array.isArray(s.data()?.data?.notes)?s.data().data.notes:[]).map(norm);render()},err=>{console.error('Work Inbox realtime failed',err);notify('Не удалось подключить общие заметки.',true)});render()})}"
+          new_connect = "function connect(app){try{auth=getAuth(app);db=getFirestore(app)}catch(e){console.error('Work Inbox Firebase init failed',e);return false}onAuthStateChanged(auth,async u=>{user=u;if(unsub){unsub();unsub=null}if(!u)return;try{await u.getIdToken(true)}catch(e){console.error('Work Inbox token refresh failed',e);notify('Не удалось подтвердить авторизацию для заметок.',true);return}ensureUI();unsub=onSnapshot(doc(db,...NOTES_DOC),s=>{notes=(Array.isArray(s.data()?.data?.notes)?s.data().data.notes:[]).map(norm);render()},err=>{console.error('Work Inbox realtime failed',err);notify(`Не удалось подключить общие заметки: ${err?.code||'ошибка'}`,true)});render()})}"
+          if old_connect not in ns: raise SystemExit('notes connect pattern not found')
+          ns = ns.replace(old_connect,new_connect)
+          n.write_text(ns)
+
+          css = Path('premium-field-tech.css')
+          cs = css.read_text()
+          extra = '''\n/* Calendar history + weekend motivation */\n.day.past{background:#f1f4ef!important;border-color:#d9dfd6!important;color:#5f6b60!important;box-shadow:inset 0 -4px 0 #dce5d8!important}.day.past b{color:#66705f!important}.day.past span{color:#6d776d!important}.day.past i{color:#7a8479!important}.day.has-done{border-bottom-color:#bccbb7!important}.weekend-insight{background:linear-gradient(135deg,#f2f6ef,#ffffff)!important;border-color:#d9e2d4!important;color:#59664f!important}.money-insight{border-color:#dce3f5!important;background:#fbfcff!important}.insight{line-height:1.35!important}\n'''
+          if 'Calendar history + weekend motivation' not in cs: css.write_text(cs+extra)
+
+      - name: Commit patch
+        shell: bash
+        run: |
+          git config user.name "montaji-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js notes.js premium-field-tech.css
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: restore notes saving and calendar history"
+          git push origin Astera-smart
