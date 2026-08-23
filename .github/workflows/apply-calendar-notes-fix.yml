@@ -53,12 +53,28 @@ jobs:
           extra = '''\n/* Calendar history + weekend motivation */\n.day.past{background:#f1f4ef!important;border-color:#d9dfd6!important;color:#5f6b60!important;box-shadow:inset 0 -4px 0 #dce5d8!important}.day.past b{color:#66705f!important}.day.past span{color:#6d776d!important}.day.past i{color:#7a8479!important}.day.has-done{border-bottom-color:#bccbb7!important}.weekend-insight{background:linear-gradient(135deg,#f2f6ef,#ffffff)!important;border-color:#d9e2d4!important;color:#59664f!important}.money-insight{border-color:#dce3f5!important;background:#fbfcff!important}.insight{line-height:1.35!important}\n'''
           if 'Calendar history + weekend motivation' not in cs: css.write_text(cs+extra)
 
+          # Production loader fix: Safari throws "Attempted to assign to readonly property"
+          # when the loader mutates a binding declared with const during startup.
+          ip = Path('secure-app/index.html')
+          ih = ip.read_text()
+          old = "const [index,css,ux,premium,config,notesCss,app,notesJs]=await Promise.all(["
+          new = "const [index,css,ux,premiumBase,config,notesCss,app,notesJs]=await Promise.all(["
+          if old in ih:
+              ih = ih.replace(old,new,1)
+              marker = "    let h=index;\n"
+              if marker not in ih:
+                  raise SystemExit('secure loader marker not found')
+              ih = ih.replace(marker, "    let premium=premiumBase;\n" + marker, 1)
+          elif "const [index,css,ux,premiumBase,config,notesCss,app,notesJs]=" not in ih:
+              raise SystemExit('secure loader binding pattern not found')
+          ip.write_text(ih)
+
       - name: Commit patch
         shell: bash
         run: |
           git config user.name "montaji-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app.js notes.js premium-field-tech.css
+          git add app.js notes.js premium-field-tech.css secure-app/index.html
           git diff --cached --quiet && exit 0
           git commit -m "fix: restore notes saving and calendar history"
           git push origin Astera-smart
