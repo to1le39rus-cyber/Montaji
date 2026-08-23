@@ -1,23 +1,18 @@
 export const firebaseConfig = (() => {
-  // Production loader executes app.js from a Blob URL. Patch only that generated
-  // module so Firebase Auth uses explicit durable browser persistence on iOS Safari.
-  const NativeBlob = globalThis.Blob;
+  const NativeBlob = globalThis.Blob
   if (NativeBlob && !globalThis.__montajiAuthPersistencePatched) {
     globalThis.Blob = function MontajiBlob(parts, options) {
-      let nextParts = parts;
+      let nextParts = parts
       try {
-        const first = Array.isArray(parts) ? parts[0] : null;
+        const first = Array.isArray(parts) ? parts[0] : null
         if (typeof first === 'string' && first.includes('authMod.getAuth(app);')) {
-          nextParts = [first.replace(
-            'authMod.getAuth(app);',
-            'authMod.initializeAuth(app,{persistence:[authMod.indexedDBLocalPersistence,authMod.browserLocalPersistence,authMod.browserSessionPersistence]});'
-          )];
+          nextParts = [first.replace('authMod.getAuth(app);', 'authMod.initializeAuth(app,{persistence:[authMod.indexedDBLocalPersistence,authMod.browserLocalPersistence,authMod.browserSessionPersistence]});')]
         }
       } catch (_) {}
-      return new NativeBlob(nextParts, options);
-    };
-    globalThis.Blob.prototype = NativeBlob.prototype;
-    globalThis.__montajiAuthPersistencePatched = true;
+      return new NativeBlob(nextParts, options)
+    }
+    globalThis.Blob.prototype = NativeBlob.prototype
+    globalThis.__montajiAuthPersistencePatched = true
   }
   return {
     apiKey: "AIzaSyARuz40aEnYf9A0X8v5_5AN9pK58lfx0es",
@@ -27,5 +22,5 @@ export const firebaseConfig = (() => {
     messagingSenderId: "1078766399423",
     appId: "1:1078766399423:web:9de0fabf89a5b1aeda3b0a",
     measurementId: "G-LJG1HV95BV"
-  };
+  }
 })();
