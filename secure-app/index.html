@@ -13,7 +13,7 @@
 <script type="module">
 (async()=>{
   const base='https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/';
-  const v='20260823-1115';
+  const v='20260823-1125';
   let capturedError='';
   const debug=msg=>{capturedError=msg||capturedError;const el=document.getElementById('runtime-debug');if(el&&capturedError){el.textContent='Ошибка подключения базы: '+capturedError;el.style.display='block'}};
   const originalConsoleError=console.error.bind(console);
@@ -22,7 +22,8 @@
   window.addEventListener('unhandledrejection',e=>{const r=e?.reason;if(r)debug(`${r.code?`[${r.code}] `:''}${r.message||String(r)}`)});
   try{
     const get=async p=>{const r=await fetch(base+p+'?v='+v,{cache:'no-store'});if(!r.ok)throw Error(p+' HTTP '+r.status);return r.text()};
-    const [index,css,ux,premium,config,notesCss,app,notesJs]=await Promise.all([get('index.html'),get('styles.css'),get('ux-upgrades.css'),get('premium-field-tech.css'),get('firebase-config.js'),get('notes.css'),get('app.js'),get('notes.js')]);
+    const [index,css,ux,premiumBase,config,notesCss,app,notesJs]=await Promise.all([get('index.html'),get('styles.css'),get('ux-upgrades.css'),get('premium-field-tech.css'),get('firebase-config.js'),get('notes.css'),get('app.js'),get('notes.js')]);
+    let premium=premiumBase;
     let h=index;
     h=h.replace(/<link rel="stylesheet" href="styles\.css\?v=[^"]+">/,'<style id="app-styles">'+css+'</style>');
     h=h.replace(/<link rel="stylesheet" href="ux-upgrades\.css\?v=[^"]+">/,'<style id="app-ux-styles">'+ux+'</style>');
