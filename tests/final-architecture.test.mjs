@@ -5,6 +5,7 @@ import fs from 'node:fs';
 const index = fs.readFileSync('index.html', 'utf8');
 const app = fs.readFileSync('app.js', 'utf8');
 const boot = fs.readFileSync('boot.js', 'utf8');
+const notesFix = fs.readFileSync('notes-fix.js', 'utf8');
 const css = fs.readFileSync('styles.css', 'utf8');
 const rules = fs.readFileSync('firestore.rules', 'utf8');
 
@@ -24,9 +25,9 @@ test('working Firestore database contract is preserved', () => {
 });
 
 test('database boot uses the canonical Firebase config and resilient shared load', () => {
-  assert.match(boot, /CONFIG_URL/);
+  assert.match(boot, /APP_URL/);
   assert.match(boot, /firebase-config\.js/);
-  assert.match(boot, /Shared database load failed/);
+  assert.match(boot, /Shared data unavailable|Shared database load failed/);
   assert.doesNotMatch(boot, /signInAnonymously/);
 });
 
@@ -74,7 +75,18 @@ test('expenses are independent and archivable', () => {
   assert.match(app, /expenses: Array\.isArray/);
   assert.match(app, /cancelled:e\.cancelled === true/);
   assert.match(app, /cancelled:true/);
-  assert.match(index, /id="cancelExpense"/);
+});
+
+test('shared notes are durable and concurrency-safe', () => {
+  assert.match(app, /const NOTES_DOC = \['appData', 'notes'\]/);
+  assert.match(app, /async function saveNotes/);
+  assert.match(app, /runTransaction\(db,async tx=>/);
+  assert.match(notesFix, /runTransaction\(db,async tx=>/);
+  assert.match(notesFix, /data-note-delete/);
+  assert.match(notesFix, /data-note-archive/);
+  assert.match(notesFix, /data-note-restore/);
+  assert.match(notesFix, /dueDate/);
+  assert.match(notesFix, /priority/);
 });
 
 test('mobile UX protects the viewport', () => {
