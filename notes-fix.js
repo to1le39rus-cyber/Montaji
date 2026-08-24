@@ -36,7 +36,8 @@
     for(let i=0;i<40&&!auth.currentUser;i++)await wait(250);
     if(!auth.currentUser){console.warn('notes runtime: no authenticated user');return}
     const snap=fs.onSnapshot(ref,s=>{const data=s.exists()?s.data()?.data||{}:{},list=Array.isArray(data.notes)?data.notes.map(normalize):[];render(list)},err=>console.error('notes realtime failed',err));
-    const observer=new MutationObserver(()=>{const active=document.querySelector('#activeNotes');if(active&&!active.dataset.notesV2)refresh()});observer.observe(document.body,{subtree:true,childList:true});
+    const observer=new MutationObserver(()=>{const active=document.querySelector('#activeNotes');if(active&&!active.querySelector('.notes-v2-card,.notes-empty'))refresh()});
+    observer.observe(document.body,{subtree:true,childList:true});
     await refresh();
     window.addEventListener('beforeunload',()=>{snap?.();observer.disconnect()});
   }catch(err){console.error('notes runtime init failed',err)}
