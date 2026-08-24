@@ -53,6 +53,10 @@
         `const APP_URL = new URL('${base}app.js');`
       );
       source = source.replace(
+        'let source = await response.text();',
+        `let source = await response.text();\n  source = source.replace("import { firebaseConfig } from './firebase-config.js';", ${JSON.stringify(config)});`
+      );
+      source = source.replace(
         "const themeCss=document.querySelector('link[href*=\"premium-field-tech.css\"]');",
         "const themeCss=document.querySelector('link[href*=\"premium-field-tech.css\"],style[data-source=\"premium-field-tech.css\"]');"
       );
@@ -65,8 +69,12 @@
         "const controlCss=document.createElement('link');controlCss.rel='stylesheet';controlCss.href=`${base}control-ui-fix.css?v=20260821-1`;document.head.appendChild(controlCss);"
       );
       source = source.replace(
-        "source = source.replace(\"import { firebaseConfig } from './firebase-config.js';\", ${JSON.stringify(config)});",
-        `source = source.replace("import { firebaseConfig } from './firebase-config.js';", ${JSON.stringify(config)});`
+        "import('./notes-fix.js?v=20260821-4')",
+        `import('${base}notes-fix.js?v=20260821-4')`
+      );
+      source = source.replace(
+        "import('./control-fix.js?v=20260821-2')",
+        `import('${base}control-fix.js?v=20260821-2')`
       );
 
       const script = document.createElement('script');
