@@ -1,14 +1,10 @@
-/* МОНТАЖИ — shared operational notes v1
-   Single UI/runtime for notes. Firestore writes are transaction-safe.
-   Backward compatible with existing appData/notes documents. */
+/* МОНТАЖИ — shared operational notes v1 */
+if(!window.__montajiNotesV1Started){
+window.__montajiNotesV1Started=true;
 (async()=>{
   const V='10.14.1';
   try{
-    const [appMod,authMod,fs]=await Promise.all([
-      import(`https://www.gstatic.com/firebasejs/${V}/firebase-app.js`),
-      import(`https://www.gstatic.com/firebasejs/${V}/firebase-auth.js`),
-      import(`https://www.gstatic.com/firebasejs/${V}/firebase-firestore.js`)
-    ]);
+    const [appMod,authMod,fs]=await Promise.all([import(`https://www.gstatic.com/firebasejs/${V}/firebase-app.js`),import(`https://www.gstatic.com/firebasejs/${V}/firebase-auth.js`),import(`https://www.gstatic.com/firebasejs/${V}/firebase-firestore.js`)]);
     const app=appMod.getApp('montaji-aa-production'),auth=authMod.getAuth(app),db=fs.getFirestore(app),ref=fs.doc(db,'appData','notes');
     const esc=s=>String(s??'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[m]));
     const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;
@@ -18,11 +14,7 @@
     const toast=(text,kind='normal')=>{let el=document.querySelector('#toast');if(!el){el=document.createElement('div');el.id='toast';document.body.append(el)}el.textContent=text;el.dataset.state=kind;clearTimeout(window.__notesToastTimer);window.__notesToastTimer=setTimeout(()=>el.remove(),3200)};
     const normalize=n=>({id:n?.id||uid(),title:String(n?.title||'').trim(),text:String(n?.text||'').trim(),dueDate:n?.dueDate||'',priority:n?.priority==='high'?'high':'normal',archived:n?.archived===true,createdAt:n?.createdAt||new Date().toISOString(),updatedAt:n?.updatedAt||new Date().toISOString(),updatedBy:n?.updatedBy||''});
     const readNotes=async()=>{const snap=await fs.getDoc(ref);const data=snap.exists()?snap.data()?.data||{}:{};return Array.isArray(data.notes)?data.notes.map(normalize):[]};
-    const updateNotes=async mutator=>{
-      const u=auth.currentUser;if(!u)throw new Error('NO_AUTH');let result=[];
-      await fs.runTransaction(db,async tx=>{const snap=await tx.get(ref),data=snap.exists()?snap.data()?.data||{}:{},current=Array.isArray(data.notes)?data.notes.map(normalize):[],next=await mutator(JSON.parse(JSON.stringify(current)));result=(Array.isArray(next)?next:current).map(normalize);tx.set(ref,{data:{notes:result},version:3,updatedAt:fs.serverTimestamp(),updatedBy:u.uid},{merge:true})});
-      return result;
-    };
+    const updateNotes=async mutator=>{const u=auth.currentUser;if(!u)throw new Error('NO_AUTH');let result=[];await fs.runTransaction(db,async tx=>{const snap=await tx.get(ref),data=snap.exists()?snap.data()?.data||{}:{},current=Array.isArray(data.notes)?data.notes.map(normalize):[],next=await mutator(JSON.parse(JSON.stringify(current)));result=(Array.isArray(next)?next:current).map(normalize);tx.set(ref,{data:{notes:result},version:3,updatedAt:fs.serverTimestamp(),updatedBy:u.uid},{merge:true})});return result};
     const dueState=n=>!n.archived&&n.dueDate?(n.dueDate<today()?'overdue':n.dueDate===today()?'today':'upcoming'):'none';
     const sortNotes=(a,b)=>{const rank={overdue:0,today:1,upcoming:2,none:3},ra=rank[dueState(a)],rb=rank[dueState(b)];if(ra!==rb)return ra-rb;if(a.priority!==b.priority)return a.priority==='high'?-1:1;return(a.dueDate||'9999-12-31').localeCompare(b.dueDate||'9999-12-31')||String(b.updatedAt).localeCompare(String(a.updatedAt))};
     let cached=[],lastFingerprint='',renderTimer=null;
@@ -38,10 +30,10 @@
     document.addEventListener('click',async e=>{const add=e.target.closest?.('#todayNoteBtn');if(add){e.preventDefault();e.stopImmediatePropagation();openNote();return}const edit=e.target.closest?.('[data-note-edit]');if(edit){e.preventDefault();e.stopImmediatePropagation();const n=cached.find(x=>x.id===edit.dataset.noteEdit);if(n)openNote(n);return}const archive=e.target.closest?.('[data-note-archive]');if(archive){e.preventDefault();e.stopImmediatePropagation();const id=archive.dataset.noteArchive;try{await updateNotes(cs=>cs.map(n=>n.id===id?{...n,archived:true,updatedAt:new Date().toISOString()}:n));await refresh();toast('Заметка отправлена в архив','success')}catch(err){console.error(err);toast('Не удалось архивировать','error')}return}const restore=e.target.closest?.('[data-note-restore]');if(restore){e.preventDefault();e.stopImmediatePropagation();const id=restore.dataset.noteRestore;try{await updateNotes(cs=>cs.map(n=>n.id===id?{...n,archived:false,updatedAt:new Date().toISOString()}:n));await refresh();toast('Заметка возвращена','success')}catch(err){console.error(err);toast('Не удалось вернуть заметку','error')}return}const del=e.target.closest?.('[data-note-delete]');if(del){e.preventDefault();e.stopImmediatePropagation();const n=cached.find(x=>x.id===del.dataset.noteDelete);if(!n)return;if(!(await askDelete(n)))return;try{await updateNotes(cs=>cs.filter(x=>x.id!==n.id));await refresh();toast('Заметка удалена','success')}catch(err){console.error(err);toast('Не удалось удалить заметку','error')}return}},true);
     document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelector('[data-notes-modal]')?.remove()});
     const observer=new MutationObserver(()=>{const active=document.querySelector('#activeNotes');if(active&&!document.querySelector('[data-notes-modal]'))scheduleRender()});observer.observe(document.body,{subtree:true,childList:true});
-    const getAuthUser=()=>new Promise(resolve=>{if(auth.currentUser)return resolve(auth.currentUser);let settled=false;const finish=u=>{if(settled)return;settled=true;clearTimeout(timer);try{off()}catch(e){}resolve(u||null)};const off=authMod.onAuthStateChanged(auth,u=>{if(u)finish(u)});const timer=setTimeout(()=>finish(null),7000)});
-    const currentUser=await getAuthUser();
-    if(!currentUser){console.warn('Notes runtime: no authenticated user');return}
-    let offSnap=fs.onSnapshot(ref,snap=>{const data=snap.exists()?snap.data()?.data||{}:{};cached=Array.isArray(data.notes)?data.notes.map(normalize):[];render(cached)},err=>console.warn('Notes realtime error',err));
+    const getAuthUser=()=>new Promise(resolve=>{if(auth.currentUser)return resolve(auth.currentUser);let settled=false;let timer;const off=authMod.onAuthStateChanged(auth,u=>{if(u)finish(u)});const finish=u=>{if(settled)return;settled=true;clearTimeout(timer);try{off()}catch(e){}resolve(u||null)};timer=setTimeout(()=>finish(null),7000)});
+    const currentUser=await getAuthUser();if(!currentUser){console.warn('Notes runtime: no authenticated user');return}
+    const offSnap=fs.onSnapshot(ref,snap=>{const data=snap.exists()?snap.data()?.data||{}:{};cached=Array.isArray(data.notes)?data.notes.map(normalize):[];render(cached)},err=>console.warn('Notes realtime error',err));
     await refresh();window.__montajiNotesV1={refresh,openNote};window.addEventListener('beforeunload',()=>offSnap?.());
   }catch(err){console.error('Notes runtime init failed',err)}
 })();
+}
