@@ -1,42 +1,66 @@
-/* Notes + dark-mode readability patch */
-.note-card{position:relative;overflow:hidden}
-.note-card .note-top{align-items:flex-start;gap:12px}
-.note-card .note-top>div:last-child{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.note-card .note-due{display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:5px 9px;border-radius:999px;background:#eef1ff;color:#465bc9;font-size:11px;font-weight:750}
-.note-card .note-due.overdue{background:#fff0f2;color:#c03649}
-.note-card .note-delete{color:#c03649!important;background:#fff0f2!important;border-color:#f1d5da!important}
-.note-card.archived{opacity:.82}
-.dark h1,.dark h2,.dark h3,.dark .section-head h2,.dark .job-client,.dark .note-card strong,.dark .note-card p,.dark .upcoming b,.dark .client-card .job-client,.dark .settings-card h3,.dark .chart-card h3,.dark .system-note strong{color:#f8fafc!important}
-.dark .job-meta,.dark .detail-line,.dark .note-card .note-due,.dark .upcoming small,.dark .client-card small{color:#aab4c3!important}
-.dark .note-card .note-due{background:#293250!important;color:#b9c3ff!important}
-.dark .note-card .note-due.overdue{background:#43252c!important;color:#ff9aaa!important}
-.dark .note-card .note-delete{background:#43252c!important;color:#ff9aaa!important;border-color:#63323b!important}
-.dark .note-card{background:#182131!important;border-color:rgba(255,255,255,.09)!important}
-.dark .note-card .mini-btn{color:#e6eaff!important;background:#222c40!important;border-color:rgba(255,255,255,.10)!important}
-.dark .note-card .mini-btn.note-delete{color:#ff9aaa!important;background:#43252c!important}
+/* MONTAЖИ — Notes v2 UI
+   Calm field-service UX: compact cards, clear status, explicit destructive action,
+   large touch targets and no decorative noise.
+*/
+#toast:empty{display:none!important}
 
-/* Force readability for every major dark-mode heading. */
-body.dark,.dark{color:#f8fafc!important}
-body.dark h1,body.dark h2,body.dark h3,body.dark h4,body.dark .screen-head h1,body.dark .section-head h2,body.dark .sheet h2,body.dark .sheet-section,body.dark .job-client,body.dark .amount,body.dark .control-title,body.dark .control-text,body.dark .note-card strong,body.dark .note-card p,body.dark .period-strip b,body.dark .upcoming span,body.dark .inline-card h2,body.dark .chart-card h2,body.dark .settings-card span,body.dark .settings-card b{color:#f8fafc!important}
-body.dark .eyebrow,body.dark .section-head small,body.dark .top-date,body.dark .job-meta,body.dark .detail-line,body.dark .control-meta,body.dark .note-card small,body.dark .upcoming em,body.dark .muted{color:#aab4c3!important}
+.notes-v2-card{padding:14px 0!important;border-top:1px solid var(--line)!important;background:transparent!important;border-radius:0!important;box-shadow:none!important}
+.notes-v2-card:first-child{border-top:0!important}
+.notes-v2-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.notes-v2-copy{min-width:0;flex:1}
+.notes-v2-title{font-size:14px!important;line-height:1.28!important;font-weight:780!important;letter-spacing:-.015em!important;color:var(--ink)!important;overflow-wrap:anywhere}
+.notes-v2-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:7px;min-height:18px}
+.note-due-line{font-size:10px!important;color:var(--muted)!important;font-weight:650!important}
+.note-badge{display:inline-flex;align-items:center;min-height:22px;padding:4px 8px;border-radius:999px;font-size:9px!important;font-weight:800!important;letter-spacing:.02em}
+.note-badge-control{background:#eef0ff!important;color:#4f58c8!important}
+.note-badge-important{background:#f5efe3!important;color:#8b682e!important}
+.note-badge-urgent{background:#fff0f0!important;color:#b74747!important}
+.note-badge-danger{background:#ffe9ea!important;color:#b83e49!important}
+.notes-v2-text{margin-top:8px!important;font-size:12px!important;line-height:1.48!important;color:var(--muted)!important;white-space:pre-wrap!important;overflow-wrap:anywhere}
+.notes-v2-actions{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:5px!important;flex-wrap:wrap!important;flex-shrink:0!important}
+.notes-v2-actions .mini-btn{min-height:32px!important;padding:7px 9px!important;border:1px solid var(--line)!important;background:var(--soft)!important;border-radius:10px!important;color:var(--ink)!important;font-size:10px!important;font-weight:720!important}
+.notes-v2-actions .mini-btn.note-delete{color:#b74747!important;background:#fff2f2!important;border-color:#f0d6d6!important}
+.notes-v2-card.archived{opacity:.68!important}
+.notes-v2-card.archived .notes-v2-title{text-decoration:line-through!important}
+.notes-empty{display:grid!important;gap:4px!important;padding:8px 0 5px!important;color:var(--muted)!important}
+.notes-empty strong{font-size:13px!important;color:var(--ink)!important;font-weight:760!important}
+.notes-empty span{font-size:11px!important;line-height:1.4!important}
+.notes-archive-empty{padding:9px 0!important;color:var(--muted)!important;font-size:11px!important}
 
-/* Operational control */
-.control-section{margin-top:18px}
-.control-list{display:grid;gap:8px}
-.control-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:13px 14px;box-shadow:0 8px 24px rgba(20,30,22,.035)}
-.control-card.is-due{border-color:#d6a0a0;box-shadow:0 8px 24px rgba(160,70,70,.08)}
-.control-title{font-size:14px;font-weight:750;letter-spacing:-.01em}
-.control-meta{font-size:10px;color:var(--muted);margin-top:5px;font-weight:650}
-.control-text{font-size:11px;line-height:1.45;color:#5d645e;margin-top:7px;white-space:pre-wrap}
-.control-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:9px;border-top:1px solid var(--line)}
-.control-actions button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:8px 10px;font-size:10px;font-weight:700}
-.control-actions button:last-child{background:var(--olive-dark);color:#fff;border-color:var(--olive-dark)}
-.control-from-job{margin:8px 0 0;padding:11px 12px;border:1px solid #e1c9c4;border-radius:14px;background:#fff6f3;color:#7e4c44;font-size:10px;line-height:1.4}
-.control-from-job[hidden]{display:none!important}
-.control-from-job button{margin-top:8px;border:0;border-radius:10px;background:#8f4d45;color:#fff;padding:9px 11px;font-size:10px;font-weight:750}
-body.dark .control-card{background:#182131!important;border-color:rgba(255,255,255,.10)!important}
-body.dark .control-card.is-due{border-color:#70444a!important}
-body.dark .control-actions button{background:#222c40!important;color:#f8fafc!important;border-color:rgba(255,255,255,.10)!important}
-body.dark .control-actions button:last-child{background:#7f8cff!important;color:#fff!important;border-color:#7f8cff!important}
-body.dark .control-from-job{background:#332327!important;border-color:#63323b!important;color:#ffb6bf!important}
-body.dark .control-from-job button{background:#9b5962!important;color:#fff!important}
+.notes-v2-modal{z-index:400!important;background:rgba(18,22,19,.42)!important;backdrop-filter:blur(9px)!important;-webkit-backdrop-filter:blur(9px)!important}
+.notes-v2-sheet{background:#fbfbf8!important;border-radius:28px 28px 0 0!important;padding:15px 17px calc(24px + env(safe-area-inset-bottom))!important;box-shadow:0 -22px 70px rgba(22,27,23,.18)!important}
+.notes-v2-sheet .sheet-head{margin-bottom:16px!important}
+.notes-v2-sheet .sheet-head h2{font-size:24px!important;letter-spacing:-.04em!important;color:var(--ink)!important}
+.notes-v2-sheet label{font-size:10px!important;color:var(--muted)!important;font-weight:720!important}
+.notes-v2-sheet input,.notes-v2-sheet textarea{min-height:50px!important;background:#fff!important;border:1px solid #dfe1dc!important;border-radius:13px!important;color:var(--ink)!important}
+.notes-v2-sheet textarea{min-height:104px!important;line-height:1.45!important}
+.notes-v2-sheet input:focus,.notes-v2-sheet textarea:focus{border-color:#9299e8!important;box-shadow:0 0 0 4px rgba(91,99,216,.10)!important;outline:none!important}
+.notes-v2-field-label{margin:15px 0 7px!important;font-size:10px!important;color:var(--muted)!important;font-weight:800!important;text-transform:uppercase!important;letter-spacing:.08em!important}
+.notes-v2-segment{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important}
+.notes-v2-segment.notes-priority{grid-template-columns:repeat(3,1fr)!important}
+.notes-v2-segment button,.notes-date-quick button{min-height:42px!important;border:1px solid var(--line)!important;background:#f4f5f1!important;border-radius:11px!important;color:#555c55!important;font-size:11px!important;font-weight:720!important}
+.notes-v2-segment button.selected{background:#eef0ff!important;border-color:#d8dcff!important;color:#4f58c8!important}
+.notes-date-quick{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:6px!important}
+.notes-date-quick button{font-size:10px!important;padding:5px!important}
+.notes-v2-form-actions{display:grid!important;gap:7px!important;margin-top:16px!important}
+.notes-v2-form-actions .primary{min-height:50px!important;font-size:13px!important}
+.notes-delete-large{min-height:44px!important;background:#fff1f1!important;color:#b74747!important;border:1px solid #f0d6d6!important}
+
+/* Keep dark mode readable if it is toggled, but the light theme remains the primary product UI. */
+body.dark .notes-v2-card{border-color:rgba(255,255,255,.09)!important}
+body.dark .notes-v2-title,body.dark .notes-empty strong,body.dark .notes-v2-sheet .sheet-head h2{color:#f8fafc!important}
+body.dark .notes-v2-text,body.dark .note-due-line,body.dark .notes-empty span,body.dark .notes-archive-empty{color:#aab4c3!important}
+body.dark .notes-v2-actions .mini-btn{background:#222c40!important;color:#f8fafc!important;border-color:rgba(255,255,255,.10)!important}
+body.dark .notes-v2-actions .mini-btn.note-delete{background:#43252c!important;color:#ff9aaa!important;border-color:#63323b!important}
+body.dark .notes-v2-sheet{background:#1c2029!important}
+body.dark .notes-v2-sheet input,body.dark .notes-v2-sheet textarea{background:#222832!important;color:#f8fafc!important;border-color:rgba(255,255,255,.12)!important}
+body.dark .notes-v2-segment button,body.dark .notes-date-quick button{background:#252a33!important;color:#dfe4ec!important;border-color:rgba(255,255,255,.10)!important}
+body.dark .notes-v2-segment button.selected{background:#2a3047!important;color:#b9c0ff!important;border-color:#3a4160!important}
+body.dark .notes-delete-large{background:#43252c!important;color:#ff9aaa!important;border-color:#63323b!important}
+
+@media(max-width:430px){
+  .notes-v2-head{display:block!important}
+  .notes-v2-actions{justify-content:flex-start!important;margin-top:9px!important}
+  .notes-v2-actions .mini-btn{min-height:34px!important}
+  .notes-date-quick{grid-template-columns:repeat(2,1fr)!important}
+}
