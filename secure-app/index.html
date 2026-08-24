@@ -29,9 +29,20 @@
         h=h.replace(/<link rel="manifest" href="manifest\.json">/,'').replace(/<link rel="icon" href="icon\.svg">/,'');
         document.open();document.write(h);document.close();
 
-        // Run the canonical app source, then provide a safe retry path for a
-        // transient Firestore server-read failure. No database data is changed.
-        const source=app.replace("import { firebaseConfig } from './firebase-config.js';",config);
+        // Keep the canonical app source, but make the initial Firestore read
+        // non-fatal. Realtime listeners are started independently so a single
+        // failed server read (including the optional notes document) cannot
+        // blank the working database. No stored data is changed here.
+        let source=app.replace("import { firebaseConfig } from './firebase-config.js';",config);
+        source=source.replace(
+          /async function loadServer\(\)\{[\s\S]*?\n\}\nfunction startRealtime/,
+          `async function loadServer(){if(!user||!online){serverReady=false;status('Нет интернета · данные не загружены','offline');return false;}status('Подключаем общую базу…');try{const sharedSnap=await F.getDocFromServer(F.doc(db,...SHARED_DOC));if(sharedSnap.exists()){state=normalize(sharedSnap.data().data);serverReady=true;render();status('● Общая база · синхронизировано','online')}else{state=emptyState();serverReady=true;render();status('● Общая база · синхронизировано','online')}try{const notesSnap=await F.getDocFromServer(F.doc(db,...NOTES_DOC));notes=currentNotesData(notesSnap);renderNotes()}catch(notesErr){console.warn('Notes read skipped:',notesErr)}return true}catch(err){console.error('Initial Firestore read failed; realtime path remains active:',err);status('Ожидаем связь с общей базой…','offline');return false;}}\nfunction startRealtime`
+        );
+        source=source.replace(
+          /async function onUser\(u\)\{[\s\S]*?\n\}\n\(async\(\)=>\{/,
+          `async function onUser(u){user=u;unsubscribeShared?.();unsubscribeNotes?.();unsubscribeShared=unsubscribeNotes=null;if(!u){serverReady=false;state=emptyState();notes=[];showAuth(true);render();status('Требуется вход');return}if(!u.emailVerified){await F.authMod.signOut(auth);showAuth(true);authMessage('Подтвердите email по ссылке из письма.',true);return}showAuth(false);startRealtime();await loadServer();}\n(async()=>{`
+        );
+
         const script=document.createElement('script');
         script.type='module';
         script.textContent=source;
@@ -43,14 +54,14 @@
           const status=document.querySelector('#syncStatus');
           if(!status)return;
           const text=status.textContent||'';
-          if(/База недоступна|Нет связи с общей базой/.test(text)&&attempts<6){attempts+=1;retry()}
+          if(/База недоступна|Нет связи с общей базой|Ожидаем связь/.test(text)&&attempts<8){attempts+=1;retry()}
           if(/синхронизировано|обновлено/.test(text))clearInterval(timer);
         },2000);
 
         const observer=new MutationObserver(()=>{
           const status=document.querySelector('#syncStatus');
           if(!status)return;
-          const failed=/База недоступна|Нет связи с общей базой/.test(status.textContent||'');
+          const failed=/База недоступна|Нет связи с общей базой|Ожидаем связь/.test(status.textContent||'');
           let button=document.querySelector('#safeDbRetry');
           if(failed&&!button){
             button=document.createElement('button');
