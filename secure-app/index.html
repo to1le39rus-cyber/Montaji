@@ -28,11 +28,42 @@
         h=h.replace(/<script type="module" src="boot\.js\?v=[^"]+"><\/script>/,'');
         h=h.replace(/<link rel="manifest" href="manifest\.json">/,'').replace(/<link rel="icon" href="icon\.svg">/,'');
         document.open();document.write(h);document.close();
+
+        // Run the canonical app source, then provide a safe retry path for a
+        // transient Firestore server-read failure. No database data is changed.
         const source=app.replace("import { firebaseConfig } from './firebase-config.js';",config);
         const script=document.createElement('script');
         script.type='module';
         script.textContent=source;
         document.body.appendChild(script);
+
+        const retry=()=>window.dispatchEvent(new Event('online'));
+        let attempts=0;
+        const timer=setInterval(()=>{
+          const status=document.querySelector('#syncStatus');
+          if(!status)return;
+          const text=status.textContent||'';
+          if(/База недоступна|Нет связи с общей базой/.test(text)&&attempts<6){attempts+=1;retry()}
+          if(/синхронизировано|обновлено/.test(text))clearInterval(timer);
+        },2000);
+
+        const observer=new MutationObserver(()=>{
+          const status=document.querySelector('#syncStatus');
+          if(!status)return;
+          const failed=/База недоступна|Нет связи с общей базой/.test(status.textContent||'');
+          let button=document.querySelector('#safeDbRetry');
+          if(failed&&!button){
+            button=document.createElement('button');
+            button.id='safeDbRetry';
+            button.type='button';
+            button.textContent='Повторить подключение';
+            button.style.cssText='position:fixed;z-index:9999;right:18px;top:112px;padding:10px 14px;border:0;border-radius:12px;background:#5f6d4c;color:#fff;font:600 14px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.15)';
+            button.onclick=()=>{button.remove();retry()};
+            document.body.appendChild(button);
+          }
+          if(!failed&&button)button.remove();
+        });
+        observer.observe(document.documentElement,{childList:true,subtree:true,characterData:true});
       }catch(e){
         const el=document.getElementById('boot');
         if(el)el.innerHTML='<div><b>Не удалось загрузить приложение</b><br><small>'+String(e?.message||e)+'</small></div>';
