@@ -15,9 +15,9 @@
   <div id="boot"><div>Загружаю Монтажи АА…</div></div>
   <script type="module">
     (async()=>{
-      const base='https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/';
+      const base='https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/0808a814366717d81a035dafb7aa02e8aa8b8b32/';
       try{
-        const get=async p=>{const r=await fetch(base+p,{cache:'no-store'});if(!r.ok)throw Error(p+' HTTP '+r.status);return r.text()};
+        const get=async p=>{const r=await fetch(base+p+'?v=0808a814',{cache:'no-store'});if(!r.ok)throw Error(p+' HTTP '+r.status);return r.text()};
         const [index,css,ux,premium,app,config]=await Promise.all([
           get('index.html'),get('styles.css'),get('ux-upgrades.css'),get('premium-field-tech.css'),get('app.js'),get('firebase-config.js')
         ]);
@@ -29,10 +29,6 @@
         h=h.replace(/<link rel="manifest" href="manifest\.json">/,'').replace(/<link rel="icon" href="icon\.svg">/,'');
         document.open();document.write(h);document.close();
 
-        // Keep the canonical app source, but make the initial Firestore read
-        // non-fatal. Realtime listeners are started independently so a single
-        // failed server read (including the optional notes document) cannot
-        // blank the working database. No stored data is changed here.
         let source=app.replace("import { firebaseConfig } from './firebase-config.js';",config);
         source=source.replace(
           /async function loadServer\(\)\{[\s\S]*?\n\}\nfunction startRealtime/,
@@ -40,7 +36,7 @@
         );
         source=source.replace(
           /async function onUser\(u\)\{[\s\S]*?\n\}\n\(async\(\)=>\{/,
-          `async function onUser(u){user=u;unsubscribeShared?.();unsubscribeNotes?.();unsubscribeShared=unsubscribeNotes=null;if(!u){serverReady=false;state=emptyState();notes=[];showAuth(true);render();status('Требуется вход');return}if(!u.emailVerified){await F.authMod.signOut(auth);showAuth(true);authMessage('Подтвердите email по ссылке из письма.',true);return}showAuth(false);startRealtime();await loadServer();}\n(async()=>{`
+          `async function onUser(u){user=u;unsubscribeShared?.();unsubscribeNotes?.();unsubscribeShared=unsubscribeNotes=null;if(!u){serverReady=false;state=emptyState();notes=[];showAuth(true);render();status('Требуется вход');return}if(!u.emailVerified){await F.authMod.signOut(auth);showAuth(true);authMessage('Подтвердите email по ссылке.',true);return}showAuth(false);startRealtime();await loadServer();}\n(async()=>{`
         );
 
         const script=document.createElement('script');
