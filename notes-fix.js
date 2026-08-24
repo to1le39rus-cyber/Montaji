@@ -1,41 +1,130 @@
-/* MONТАЖИ — operational shared notes */
+/* МОНТАЖИ — shared operational notes v1
+   Single UI/runtime for notes. Firestore writes are transaction-safe.
+   Backward compatible with existing appData/notes documents. */
 (async()=>{
-  const FIREBASE_VERSION='10.14.1';
-  try{
-    const [appMod,authMod,fs]=await Promise.all([
-      import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app.js`),
-      import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth.js`),
-      import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-firestore.js`)
-    ]);
-    const app=appMod.getApp('montaji-aa-production'),auth=authMod.getAuth(app),db=fs.getFirestore(app),ref=fs.doc(db,'appData','notes');
-    const esc=s=>String(s??'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[m]));
-    const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;
-    const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
-    const fmtDate=d=>d?new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'short',year:'numeric'}).format(new Date(`${d}T12:00:00`)):'';
-    const toast=(text,kind='normal')=>{let el=document.querySelector('#toast');if(!el){el=document.createElement('div');el.id='toast';document.body.append(el)}el.textContent=text;el.dataset.state=kind;clearTimeout(window.__notesToastTimer);window.__notesToastTimer=setTimeout(()=>el.remove(),3400)};
-    const readNotes=async()=>{const snap=await fs.getDoc(ref);const data=snap.exists()?snap.data()?.data||{}:{};return Array.isArray(data.notes)?data.notes:[]};
-    const writeNotes=async notes=>{const user=auth.currentUser;if(!user)throw new Error('NO_AUTH');await fs.setDoc(ref,{data:{notes},version:2,updatedAt:fs.serverTimestamp(),updatedBy:user.uid},{merge:true});};
-    const getNotes=async()=>{try{return await readNotes()}catch(e){console.error(e);return[]}};
-    function renderCustomNotes(list){
-      const active=document.querySelector('#activeNotes'),archive=document.querySelector('#archivedNotes');if(!active||!archive)return;
-      const sort=(a,b)=>(a.dueDate||'9999-12-31').localeCompare(b.dueDate||'9999-12-31')||(b.updatedAt||'').localeCompare(a.updatedAt||'');
-      const a=list.filter(n=>n.archived!==true).slice().sort(sort),ar=list.filter(n=>n.archived===true).slice().sort(sort);
-      const card=n=>{const due=n.dueDate?fmtDate(n.dueDate):'';const overdue=n.dueDate&&n.dueDate<today()&&!n.archived;return `<div class="note-card ${n.archived?'archived':''}" data-note-id="${esc(n.id)}" data-note-title="${esc(n.title)}"><div class="note-top"><div><strong>${esc(n.title||'Заметка')}</strong>${due?`<div class="note-due ${overdue?'overdue':''}">${overdue?'⚠️ Просрочено':'📅'} ${esc(due)}</div>`:''}</div><div class="note-actions"><button type="button" class="mini-btn" data-note-edit="${esc(n.id)}">Изм.</button>${n.archived?`<button type="button" class="mini-btn" data-note-restore="${esc(n.id)}">Вернуть</button>`:`<button type="button" class="mini-btn" data-note-archive="${esc(n.id)}">Архив</button>`}<button type="button" class="mini-btn note-delete" data-note-delete="${esc(n.id)}">Удалить</button></div></div>${n.text?`<p>${esc(n.text)}</p>`:''}</div>`};
-      active.innerHTML=a.length?a.map(card).join(''):'<div class="muted">Активных заметок нет</div>';
-      archive.innerHTML=ar.length?ar.map(card).join(''):'<div class="muted">Архив пуст</div>';
-    }
-    const refresh=async()=>renderCustomNotes(await getNotes());
-    const openNote=(n=null)=>{const m=document.createElement('div');m.className='modal open';m.dataset.noteId=n?.id||'';m.innerHTML=`<div class="backdrop"></div><div class="sheet"><div class="sheet-head"><div><div class="eyebrow">Общие заметки</div><h2>${n?'Изменить заметку':'Новая заметка'}</h2></div><button class="circle-btn" data-close>×</button></div><form id="noteForm"><label>Что нужно сделать<input id="nTitle" required placeholder="Например: позвонить по рекламации" value="${esc(n?.title||'')}"></label><label>Подробности<textarea id="nText" rows="4" placeholder="Что именно нужно не забыть?">${esc(n?.text||'')}</textarea></label><label>Когда<input id="nDue" type="date" value="${esc(n?.dueDate||'')}"></label><button class="primary wide" type="submit">Сохранить</button></form></div>`;document.body.append(m);m.querySelector('.backdrop').onclick=()=>m.remove();m.querySelector('[data-close]').onclick=()=>m.remove();};
-    document.addEventListener('submit',async e=>{const form=e.target;if(!(form instanceof HTMLFormElement)||form.id!=='noteForm')return;e.preventDefault();e.stopImmediatePropagation();const modal=form.closest('.modal'),id=modal?.dataset?.noteId||'',title=form.querySelector('#nTitle')?.value.trim()||'',text=form.querySelector('#nText')?.value.trim()||'',dueDate=form.querySelector('#nDue')?.value||'';if(!title)return toast('Напишите, что нужно сделать','error');const button=form.querySelector('button[type=submit]');if(button){button.disabled=true;button.textContent='Сохраняем…'}try{const notes=await readNotes(),old=notes.find(n=>n.id===id),item={id:id||uid(),title,text,dueDate,archived:old?.archived===true,updatedAt:new Date().toISOString()};await writeNotes([...notes.filter(n=>n.id!==item.id),item]);modal?.remove();await refresh();toast('Заметка сохранена','success')}catch(err){console.error(err);toast('Не удалось сохранить заметку','error');if(button){button.disabled=false;button.textContent='Сохранить'}}},true);
-    document.addEventListener('click',async e=>{
-      const add=e.target.closest?.('#todayNoteBtn,#dayNote,[data-add-type="Заметка"]');if(add){e.preventDefault();e.stopImmediatePropagation();add.closest('.modal')?.remove();openNote();return;}
-      const edit=e.target.closest?.('[data-note-edit]');if(edit){e.preventDefault();e.stopImmediatePropagation();const n=(await getNotes()).find(x=>x.id===edit.dataset.noteEdit);if(n)openNote(n);return;}
-      const archive=e.target.closest?.('[data-note-archive]');if(archive){e.preventDefault();e.stopImmediatePropagation();const id=archive.dataset.noteArchive;try{const notes=await readNotes();await writeNotes(notes.map(n=>n.id===id?{...n,archived:true,updatedAt:new Date().toISOString()}:n));await refresh();toast('Заметка отправлена в архив','success')}catch(err){toast('Не удалось архивировать','error')}return;}
-      const restore=e.target.closest?.('[data-note-restore]');if(restore){e.preventDefault();e.stopImmediatePropagation();const id=restore.dataset.noteRestore;try{const notes=await readNotes();await writeNotes(notes.map(n=>n.id===id?{...n,archived:false,updatedAt:new Date().toISOString()}:n));await refresh();toast('Заметка возвращена','success')}catch(err){toast('Не удалось вернуть заметку','error')}return;}
-      const del=e.target.closest?.('[data-note-delete]');if(del){e.preventDefault();e.stopImmediatePropagation();const id=del.dataset.noteDelete,n=(await getNotes()).find(x=>x.id===id);if(!n)return;if(!confirm(`Удалить заметку «${n.title||'Без названия'}» навсегда?`))return;try{const notes=await readNotes();await writeNotes(notes.filter(x=>x.id!==id));await refresh();toast('Заметка удалена','success')}catch(err){toast('Не удалось удалить заметку','error')}return;}
-    },true);
-    const observer=new MutationObserver(()=>{const active=document.querySelector('#activeNotes');if(active&&!active.dataset.customNotesReady){active.dataset.customNotesReady='1';refresh()}});observer.observe(document.body,{subtree:true,childList:true});
-    const notesSnap=fs.onSnapshot(ref,snap=>{const data=snap.exists()?snap.data()?.data||{}:{};renderCustomNotes(Array.isArray(data.notes)?data.notes:[])},()=>{});
-    setTimeout(refresh,300);window.addEventListener('beforeunload',()=>notesSnap?.());
-  }catch(err){console.error('notes runtime init failed',err)}
+  const V='10.14.1';
+  const waitForUser=()=>new Promise(resolve=>{
+    let done=false,off=()=>{};
+    const finish=u=>{if(done)return;done=true;try{off()}catch(e){}resolve(u||null)};
+    try{
+      const app=window.firebase?.apps?.[0];
+      if(app){}
+    }catch(e){}
+    Promise.all([
+      import(`https://www.gstatic.com/firebasejs/${V}/firebase-app.js`),
+      import(`https://www.gstatic.com/firebasejs/${V}/firebase-auth.js`),
+      import(`https://www.gstatic.com/firebasejs/${V}/firebase-firestore.js`)
+    ]).then(async([appMod,authMod,fs])=>{
+      const app=appMod.getApp('montaji-aa-production');
+      const auth=authMod.getAuth(app);
+      const db=fs.getFirestore(app);
+      const ref=fs.doc(db,'appData','notes');
+      const esc=s=>String(s??'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[m]));
+      const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;
+      const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+      const addDays=(days)=>{const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+days);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+      const fmt=d=>d?new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long'}).format(new Date(`${d}T12:00:00`)):'';
+      const toast=(text,kind='normal')=>{let el=document.querySelector('#toast');if(!el){el=document.createElement('div');el.id='toast';document.body.append(el)}el.textContent=text;el.dataset.state=kind;clearTimeout(window.__notesToastTimer);window.__notesToastTimer=setTimeout(()=>el.remove(),3200)};
+      const normalize=n=>({id:n?.id||uid(),title:String(n?.title||'').trim(),text:String(n?.text||'').trim(),dueDate:n?.dueDate||'',priority:n?.priority==='high'?'high':'normal',archived:n?.archived===true,createdAt:n?.createdAt||new Date().toISOString(),updatedAt:n?.updatedAt||new Date().toISOString(),updatedBy:n?.updatedBy||''});
+      const readNotes=async()=>{const snap=await fs.getDoc(ref);const data=snap.exists()?snap.data()?.data||{}:{};return Array.isArray(data.notes)?data.notes.map(normalize):[]};
+      const updateNotes=async mutator=>{
+        const u=auth.currentUser;if(!u)throw new Error('NO_AUTH');
+        let result=[];
+        await fs.runTransaction(db,async tx=>{
+          const snap=await tx.get(ref);
+          const data=snap.exists()?snap.data()?.data||{}:{};
+          const current=Array.isArray(data.notes)?data.notes.map(normalize):[];
+          const next=await mutator(JSON.parse(JSON.stringify(current)));
+          result=(Array.isArray(next)?next:current).map(normalize);
+          tx.set(ref,{data:{notes:result},version:3,updatedAt:fs.serverTimestamp(),updatedBy:u.uid},{merge:true});
+        });
+        return result;
+      };
+      const dueState=n=>!n.archived&&n.dueDate?(n.dueDate<today()?'overdue':n.dueDate===today()?'today':'upcoming'):'none';
+      const sortNotes=(a,b)=>{
+        const rank={overdue:0,today:1,upcoming:2,none:3};
+        const ra=rank[dueState(a)],rb=rank[dueState(b)];if(ra!==rb)return ra-rb;
+        if(a.priority!==b.priority)return a.priority==='high'?-1:1;
+        return (a.dueDate||'9999-12-31').localeCompare(b.dueDate||'9999-12-31')||String(b.updatedAt).localeCompare(String(a.updatedAt));
+      };
+      let cached=[];
+      let lastFingerprint='';
+      let renderTimer=null;
+      const fingerprint=list=>JSON.stringify(list.map(n=>[n.id,n.title,n.text,n.dueDate,n.priority,n.archived,n.updatedAt]));
+      const card=n=>{
+        const state=dueState(n),due=n.dueDate?fmt(n.dueDate):'';
+        const badge=state==='overdue'?`<span class="note-badge overdue">Просрочено</span>`:state==='today'?`<span class="note-badge today">Сегодня</span>`:state==='upcoming'?`<span class="note-badge upcoming">${esc(due)}</span>`:'';
+        return `<article class="note-card note-card--v1 ${n.archived?'archived':''}" data-note-id="${esc(n.id)}">
+          <div class="note-card-head">
+            <div class="note-main">
+              <div class="note-title-row"><strong>${esc(n.title||'Без названия')}</strong>${n.priority==='high'?'<span class="note-priority">Важно</span>':''}</div>
+              ${n.text?`<p>${esc(n.text)}</p>`:''}
+              ${badge}
+            </div>
+            <div class="note-menu">
+              <button type="button" class="note-icon-btn" data-note-edit="${esc(n.id)}" aria-label="Изменить">Изм.</button>
+              ${n.archived?`<button type="button" class="note-icon-btn" data-note-restore="${esc(n.id)}">Вернуть</button>`:`<button type="button" class="note-icon-btn" data-note-archive="${esc(n.id)}">Архив</button>`}
+              <button type="button" class="note-icon-btn note-icon-btn--delete" data-note-delete="${esc(n.id)}">Удалить</button>
+            </div>
+          </div>
+        </article>`;
+      };
+      const render=list=>{
+        const active=document.querySelector('#activeNotes'),archive=document.querySelector('#archivedNotes');if(!active||!archive)return;
+        const normalized=list.map(normalize),fp=fingerprint(normalized);if(fp===lastFingerprint&&active.dataset.notesV1==='1')return;
+        lastFingerprint=fp;active.dataset.notesV1='1';archive.dataset.notesV1='1';
+        const a=normalized.filter(n=>!n.archived).sort(sortNotes),ar=normalized.filter(n=>n.archived).sort(sortNotes);
+        active.innerHTML=a.length?a.map(card).join(''):'<div class="notes-empty"><span>✓</span><div><strong>Активных заметок нет</strong><small>Добавь то, что нельзя забыть</small></div></div>';
+        archive.innerHTML=ar.length?ar.map(card).join(''):'<div class="notes-archive-empty">Архив пуст</div>';
+      };
+      const scheduleRender=()=>{clearTimeout(renderTimer);renderTimer=setTimeout(()=>render(cached),30)};
+      const refresh=async()=>{try{cached=await readNotes();render(cached)}catch(e){console.error('Notes read failed',e);toast('Не удалось загрузить заметки','error')}};
+      const closeModal=m=>{m?.remove();document.body.classList.remove('modal-open')};
+      const openNote=(note=null)=>{
+        document.querySelector('[data-notes-modal]')?.remove();
+        const n=note?normalize(note):null;
+        const m=document.createElement('div');m.className='modal open notes-modal-v1';m.dataset.notesModal='1';m.dataset.noteId=n?.id||'';
+        m.innerHTML=`<div class="backdrop"></div><div class="sheet notes-sheet-v1"><div class="sheet-head"><div><div class="eyebrow">Общие заметки</div><h2>${n?'Изменить заметку':'Новая заметка'}</h2></div><button class="circle-btn" type="button" data-close>×</button></div>
+          <form id="noteFormV1" class="notes-form-v1">
+            <label>Что нужно сделать<input id="nTitleV1" required maxlength="120" placeholder="Например: позвонить по рекламации" value="${esc(n?.title||'')}"></label>
+            <label>Подробности<textarea id="nTextV1" rows="4" maxlength="1000" placeholder="Что именно нужно не забыть?">${esc(n?.text||'')}</textarea></label>
+            <div class="notes-date-block"><label>Когда проверить<input id="nDueV1" type="date" value="${esc(n?.dueDate||'')}"></label><div class="notes-quick"><button type="button" data-due="${addDays(1)}">Завтра</button><button type="button" data-due="${addDays(3)}">3 дня</button><button type="button" data-due="${addDays(7)}">Неделя</button><button type="button" data-due="">Без даты</button></div></div>
+            <label class="notes-important"><input id="nPriorityV1" type="checkbox" ${n?.priority==='high'?'checked':''}><span><strong>Важно</strong><small>Показывать выше остальных заметок</small></span></label>
+            <button class="primary wide" type="submit">${n?'Сохранить изменения':'Добавить заметку'}</button>
+          </form></div>`;
+        document.body.append(m);document.body.classList.add('modal-open');
+        m.querySelector('.backdrop').onclick=()=>closeModal(m);m.querySelector('[data-close]').onclick=()=>closeModal(m);
+        m.querySelectorAll('[data-due]').forEach(b=>b.onclick=()=>{m.querySelector('#nDueV1').value=b.dataset.due||''});
+        setTimeout(()=>m.querySelector('#nTitleV1')?.focus(),80);
+      };
+      const askDelete=async n=>{
+        const m=document.createElement('div');m.className='modal open notes-confirm-v1';m.innerHTML=`<div class="backdrop"></div><div class="sheet notes-confirm-sheet"><div class="sheet-head"><div><div class="eyebrow">Удаление</div><h2>Удалить заметку?</h2></div><button class="circle-btn" type="button" data-close>×</button></div><p>«${esc(n.title||'Без названия')}» будет удалена с обоих телефонов без возможности восстановления.</p><div class="form-actions"><button class="secondary" type="button" data-cancel>Отмена</button><button class="danger" type="button" data-confirm>Удалить</button></div></div>`;document.body.append(m);document.body.classList.add('modal-open');return new Promise(resolve=>{const finish=v=>{closeModal(m);resolve(v)};m.querySelector('.backdrop').onclick=()=>finish(false);m.querySelector('[data-close]').onclick=()=>finish(false);m.querySelector('[data-cancel]').onclick=()=>finish(false);m.querySelector('[data-confirm]').onclick=()=>finish(true)})};
+      document.addEventListener('submit',async e=>{
+        const form=e.target;if(!(form instanceof HTMLFormElement)||form.id!=='noteFormV1')return;
+        e.preventDefault();e.stopImmediatePropagation();const m=form.closest('[data-notes-modal]'),id=m?.dataset.noteId||'';const title=form.querySelector('#nTitleV1')?.value.trim()||'',text=form.querySelector('#nTextV1')?.value.trim()||'',dueDate=form.querySelector('#nDueV1')?.value||'',priority=form.querySelector('#nPriorityV1')?.checked?'high':'normal';if(!title)return;
+        const btn=form.querySelector('button[type=submit]');if(btn){btn.disabled=true;btn.textContent='Сохраняем…'}
+        try{const now=new Date().toISOString();await updateNotes(current=>{const old=current.find(x=>x.id===id);const item=normalize({id:id||uid(),title,text,dueDate,priority,archived:old?.archived===true,createdAt:old?.createdAt||now,updatedAt:now});return [...current.filter(x=>x.id!==item.id),item]});cached=await readNotes();render(cached);closeModal(m);toast('Заметка сохранена','success')}catch(err){console.error(err);toast('Не удалось сохранить заметку','error');if(btn){btn.disabled=false;btn.textContent='Сохранить'}}
+      },true);
+      document.addEventListener('click',async e=>{
+        const add=e.target.closest?.('#todayNoteBtn');if(add){e.preventDefault();e.stopImmediatePropagation();openNote();return;}
+        const edit=e.target.closest?.('[data-note-edit]');if(edit){e.preventDefault();e.stopImmediatePropagation();const n=cached.find(x=>x.id===edit.dataset.noteEdit);if(n)openNote(n);return;}
+        const archive=e.target.closest?.('[data-note-archive]');if(archive){e.preventDefault();e.stopImmediatePropagation();const id=archive.dataset.noteArchive;try{await updateNotes(cs=>cs.map(n=>n.id===id?{...n,archived:true,updatedAt:new Date().toISOString()}:n));await refresh();toast('Заметка отправлена в архив','success')}catch(err){console.error(err);toast('Не удалось архивировать','error')}return;}
+        const restore=e.target.closest?.('[data-note-restore]');if(restore){e.preventDefault();e.stopImmediatePropagation();const id=restore.dataset.noteRestore;try{await updateNotes(cs=>cs.map(n=>n.id===id?{...n,archived:false,updatedAt:new Date().toISOString()}:n));await refresh();toast('Заметка возвращена','success')}catch(err){console.error(err);toast('Не удалось вернуть заметку','error')}return;}
+        const del=e.target.closest?.('[data-note-delete]');if(del){e.preventDefault();e.stopImmediatePropagation();const n=cached.find(x=>x.id===del.dataset.noteDelete);if(!n)return;if(!(await askDelete(n)))return;try{await updateNotes(cs=>cs.filter(x=>x.id!==n.id));await refresh();toast('Заметка удалена','success')}catch(err){console.error(err);toast('Не удалось удалить заметку','error')}return;}
+      },true);
+      document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelector('[data-notes-modal]')?.remove()});
+      const observer=new MutationObserver(()=>{const active=document.querySelector('#activeNotes');if(active&&!document.querySelector('[data-notes-modal]'))scheduleRender()});
+      observer.observe(document.body,{subtree:true,childList:true});
+      let offSnap=()=>{};
+      try{
+        offSnap=fs.onSnapshot(ref,snap=>{const data=snap.exists()?snap.data()?.data||{}:{};cached=Array.isArray(data.notes)?data.notes.map(normalize):[];render(cached)},err=>console.warn('Notes realtime error',err));
+        await new Promise(resolve=>{let settled=false;const timer=setTimeout(()=>{if(!settled){settled=true;resolve(auth.currentUser||null)}},5000);const off=authMod.onAuthStateChanged(auth,u=>{if(u&&!settled){settled=true;clearTimeout(timer);off();resolve(u)}});});
+        if(!auth.currentUser){console.warn('Notes runtime: no authenticated user yet');return}
+        await refresh();
+        window.__montajiNotesV1={refresh,openNote};
+      }catch(e){console.error('Notes runtime setup failed',e);toast('Система заметок временно недоступна','error')}
+      window.addEventListener('beforeunload',()=>offSnap?.());
+    }).catch(err=>console.error('Notes runtime Firebase init failed',err));
+  });
+  waitForUser();
 })();
