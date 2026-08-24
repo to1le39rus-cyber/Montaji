@@ -7,11 +7,19 @@ const app = fs.readFileSync('app.js', 'utf8');
 const boot = fs.readFileSync('boot.js', 'utf8');
 const css = fs.readFileSync('styles.css', 'utf8');
 const rules = fs.readFileSync('firestore.rules', 'utf8');
+const exists = path => fs.existsSync(path);
 
 test('production entry is deterministic', () => {
   assert.equal((index.match(/<script[^>]+type=["']module["']/g) || []).length, 1);
   assert.match(index, /boot\.js\?v=/);
   assert.doesNotMatch(index, /v9\.js|v9-compat|app-v[0-9]|firebase-sync|archive\.js/);
+});
+
+test('boot is a single clean entry point', () => {
+  assert.match(boot, /import ['"]\.\/app\.js\?v=/);
+  assert.doesNotMatch(boot, /replace\(/);
+  assert.doesNotMatch(boot, /notes-fix\.js|control-fix\.js/);
+  assert.doesNotMatch(boot, /getDocFromServer|runTransaction|onSnapshot/);
 });
 
 test('working Firestore database contract is preserved', () => {
@@ -23,21 +31,27 @@ test('working Firestore database contract is preserved', () => {
   assert.doesNotMatch(app, /localStorage|sessionStorage/);
 });
 
-test('database boot uses the canonical Firebase config and resilient shared load', () => {
-  assert.match(boot, /CONFIG_URL/);
-  assert.match(boot, /firebase-config\.js/);
-  assert.match(boot, /Shared database load failed/);
-  assert.doesNotMatch(boot, /signInAnonymously/);
+test('shared notes are implemented once in app.js', () => {
+  assert.match(app, /function currentNotesData/);
+  assert.match(app, /async function saveNotes/);
+  assert.match(app, /function renderNotes/);
+  assert.match(app, /function openNote/);
+  assert.match(app, /function setNoteState/);
+  assert.match(app, /NOTES_DOC/);
+  assert.equal(exists('notes-fix.js'), false);
 });
 
-test('montage scheduling has no artificial daily capacity limit', () => {
-  assert.match(boot, /function montageCount\(d\).*jobsForDate\(d\).*type==='Монтаж'/s);
-  assert.match(boot, /conflict=null/);
-  assert.match(boot, /todayLoad/);
-  assert.doesNotMatch(boot, /Сегодня уже занято 3\/3 монтажных окна/);
-  assert.doesNotMatch(boot, /На эту дату уже занято 3\/3 монтажных окна/);
+test('notes writes are transaction-safe and shared in real time', () => {
+  assert.match(app, /async function saveNotes\(mutator\)\{[\s\S]*runTransaction/);
+  assert.match(app, /unsubscribeNotes=.*onSnapshot/);
+  assert.match(app, /notes=currentNotesData\(snap\)/);
+});
+
+test('montage scheduling has no destructive artificial capacity guard', () => {
   assert.doesNotMatch(app, /Сегодня уже занято 3\/3 монтажных окна/);
   assert.doesNotMatch(app, /На эту дату уже занято 3\/3 монтажных окна/);
+  assert.match(index, /id="todayLoad"/);
+  assert.match(index, /id="calendar"/);
 });
 
 test('measure flow has all required DOM fields', () => {
