@@ -14,13 +14,9 @@
 .dark .note-card{background:#182131!important;border-color:rgba(255,255,255,.09)!important}
 .dark .note-card .mini-btn{color:#e6eaff!important;background:#222c40!important;border-color:rgba(255,255,255,.10)!important}
 .dark .note-card .mini-btn.note-delete{color:#ff9aaa!important;background:#43252c!important}
-
-/* Force readability for every major dark-mode heading. */
 body.dark,.dark{color:#f8fafc!important}
 body.dark h1,body.dark h2,body.dark h3,body.dark h4,body.dark .screen-head h1,body.dark .section-head h2,body.dark .sheet h2,body.dark .sheet-section,body.dark .job-client,body.dark .amount,body.dark .control-title,body.dark .control-text,body.dark .note-card strong,body.dark .note-card p,body.dark .period-strip b,body.dark .upcoming span,body.dark .inline-card h2,body.dark .chart-card h2,body.dark .settings-card span,body.dark .settings-card b{color:#f8fafc!important}
 body.dark .eyebrow,body.dark .section-head small,body.dark .top-date,body.dark .job-meta,body.dark .detail-line,body.dark .control-meta,body.dark .note-card small,body.dark .upcoming em,body.dark .muted{color:#aab4c3!important}
-
-/* Operational control */
 .control-section{margin-top:18px}
 .control-list{display:grid;gap:8px}
 .control-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:13px 14px;box-shadow:0 8px 24px rgba(20,30,22,.035)}
@@ -40,3 +36,28 @@ body.dark .control-actions button{background:#222c40!important;color:#f8fafc!imp
 body.dark .control-actions button:last-child{background:#7f8cff!important;color:#fff!important;border-color:#7f8cff!important}
 body.dark .control-from-job{background:#332327!important;border-color:#63323b!important;color:#ffb6bf!important}
 body.dark .control-from-job button{background:#9b5962!important;color:#fff!important}
+
+/* Notes v1 — compact operational UI */
+.note-card--v1{background:var(--card,#fff);border:1px solid var(--line,#e3e6df);border-radius:18px;padding:14px 15px;margin-top:9px;box-shadow:0 5px 18px rgba(24,34,27,.035)}
+.note-card--v1.archived{opacity:.72}
+.note-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.note-main{min-width:0;flex:1}
+.note-title-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.note-title-row strong{font-size:14px;line-height:1.25;color:var(--ink,#182018);font-weight:800;letter-spacing:-.01em}
+.note-main p{margin:7px 0 8px;font-size:12px;line-height:1.45;color:var(--muted,#707870);white-space:pre-wrap}
+.note-badge,.note-priority{display:inline-flex;align-items:center;width:max-content;border-radius:999px;padding:5px 8px;font-size:10px;line-height:1;font-weight:800}
+.note-badge.overdue{background:#fff0f0;color:#b64242}.note-badge.today{background:#edf3e8;color:#53694d}.note-badge.upcoming{background:#f1f3f0;color:#70776e}.note-priority{background:#f5e9dc;color:#8c5d34}
+.note-menu{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0;max-width:48%}
+.note-icon-btn{border:1px solid var(--line,#dfe3dc);background:var(--bg,#f7f8f4);color:var(--ink,#20261f);border-radius:10px;padding:7px 9px;font:700 10px/1 inherit;white-space:nowrap}
+.note-icon-btn:active{transform:scale(.97)}
+.note-icon-btn--delete{color:#a94343;background:#fff5f5;border-color:#eed5d5}
+.notes-empty{display:flex;align-items:center;gap:10px;padding:12px 2px;color:var(--muted,#7b817a)}
+.notes-empty>span{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#edf2e9;color:#5b6e54;font-weight:900}
+.notes-empty strong{display:block;color:var(--ink,#252a25);font-size:12px}.notes-empty small{display:block;margin-top:2px;font-size:10px}
+.notes-archive-empty{padding:10px 0;color:var(--muted,#8b918a);font-size:11px}
+.notes-sheet-v1{max-height:88vh;overflow:auto}
+.notes-form-v1{display:grid;gap:13px}.notes-form-v1 label{display:grid;gap:7px;color:var(--muted,#727971);font-size:11px;font-weight:750}.notes-form-v1 input,.notes-form-v1 textarea{box-sizing:border-box;width:100%;border:1px solid var(--line,#dfe3dc);background:var(--bg,#f7f8f4);color:var(--ink,#20261f);border-radius:13px;padding:12px 13px;font:600 14px/1.35 inherit;outline:none}.notes-form-v1 input:focus,.notes-form-v1 textarea:focus{border-color:#9aa992;box-shadow:0 0 0 3px rgba(110,130,100,.10)}
+.notes-date-block{display:grid;gap:8px}.notes-quick{display:flex;gap:6px;flex-wrap:wrap}.notes-quick button{border:1px solid var(--line,#dfe3dc);background:var(--bg,#f7f8f4);color:var(--ink,#30362f);border-radius:10px;padding:8px 10px;font:700 10px/1 inherit}.notes-important{display:flex!important;grid-template-columns:none!important;grid-template-rows:none!important;align-items:center;gap:10px!important;border:1px solid var(--line,#dfe3dc);background:var(--bg,#f7f8f4);border-radius:13px;padding:11px 12px}.notes-important input{width:18px!important;height:18px;margin:0}.notes-important span{display:grid;gap:2px}.notes-important strong{font-size:11px;color:var(--ink,#242923)}.notes-important small{font-size:10px;color:var(--muted,#7a8079)}
+.notes-confirm-sheet p{font-size:13px;line-height:1.5;color:var(--muted,#707870);margin:4px 0 16px}.notes-confirm-sheet .danger{background:#a94b4b;color:#fff;border:0;border-radius:12px;padding:12px 16px;font-weight:800}
+body.dark .note-card--v1{background:#182131!important;border-color:rgba(255,255,255,.10)!important}.dark .note-title-row strong,.dark .note-main p,.dark .notes-empty strong{color:#f8fafc!important}.dark .note-icon-btn{background:#222c40!important;color:#f8fafc!important;border-color:rgba(255,255,255,.10)!important}.dark .note-icon-btn--delete{background:#43252c!important;color:#ff9aaa!important}.dark .note-badge.upcoming{background:#293250;color:#c3cbff}.dark .note-badge.today{background:#26382d;color:#b8d7bf}.dark .note-priority{background:#423526;color:#f2c493}.dark .notes-form-v1 input,.dark .notes-form-v1 textarea,.dark .notes-quick button,.dark .notes-important{background:#182131!important;color:#f8fafc!important;border-color:rgba(255,255,255,.12)!important}.dark .notes-important strong{color:#f8fafc}.dark .notes-important small{color:#aab4c3}
+@media(max-width:430px){.note-card-head{gap:8px}.note-menu{max-width:55%;gap:4px}.note-icon-btn{padding:7px 8px;font-size:9px}.note-title-row strong{font-size:13px}}
