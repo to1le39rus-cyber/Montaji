@@ -1,0 +1,1 @@
+Production rollback checkpoint. This file intentionally contains no application logic. Baseline: 7b8e5d3ba6a3662fb5ac6a38a352f8b7df6d1ef3. Restore point before the broken loader changes. Backup branch: backup/production-20260824-final-loader.
