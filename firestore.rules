@@ -14,5 +14,11 @@ service cloud.firestore {
     match /appData/notes {
       allow read, write: if signedIn();
     }
+
+    // Sandbox-only notes v2 storage. Kept separate from legacy notes so the
+    // new logic can be tested without touching the existing notes document.
+    match /appData/notesV2 {
+      allow read, write: if signedIn();
+    }
   }
 }
