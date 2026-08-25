@@ -18,22 +18,24 @@ function loadScript(src){
 async function boot(){
   try{
     const [appResponse,configResponse]=await Promise.all([
-      fetch(`${BASE}app.js`,{cache:'no-store'}),
-      fetch(`${BASE}firebase-config.js`,{cache:'no-store'})
+      fetch(`${BASE}app.js?boot=20260825-2`,{cache:'no-store'}),
+      fetch(`${BASE}firebase-config.js?boot=20260825-2`,{cache:'no-store'})
     ]);
     if(!appResponse.ok) throw new Error(`app.js HTTP ${appResponse.status}`);
     if(!configResponse.ok) throw new Error(`firebase-config.js HTTP ${configResponse.status}`);
 
-    // Use the official Firebase CDN. The compat bundles are intentionally loaded
-    // as classic scripts because this is more reliable on iOS/Safari than
-    // dynamic ESM imports from a Blob URL.
+    // Safari/iOS: use Firebase compat as classic scripts and run the app as a
+    // classic script. There is no Blob URL, no dynamic ESM import and no module
+    // graph for Safari to resolve.
     await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app-compat.js`);
     await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth-compat.js`);
     await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-firestore-compat.js`);
 
     let source=await appResponse.text();
-    const configSource=await configResponse.text();
+    let configSource=await configResponse.text();
+    configSource=configSource.replace(/^\s*export\s+const\s+firebaseConfig\s*=\s*/, 'const firebaseConfig = ');
     source=source.replace("import { firebaseConfig } from './firebase-config.js';",configSource);
+
     const oldInit="async function initFirebase(){const [appMod,authMod,fs]=await Promise.all([import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app.js`),import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth.js`),import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-firestore.js`)]);const app=appMod.initializeApp(firebaseConfig,'montaji-aa-production');auth=authMod.getAuth(app);db=fs.getFirestore(app);F={...fs,authMod};}";
     const newInit=`async function initFirebase(){
       if(!window.firebase) throw new Error('Firebase SDK не загрузился.');
@@ -60,11 +62,12 @@ async function boot(){
     if(!source.includes(oldInit)) throw new Error('Не найден блок инициализации Firebase в app.js.');
     source=source.replace(oldInit,newInit);
 
-    // Execute the transformed application as an inline module. This avoids the
-    // Safari/iOS failure mode of importing a Blob URL.
+    // The transformed source contains no imports/exports anymore, so execute it
+    // directly as a normal script. This is the simplest Safari-compatible path.
     const script=document.createElement('script');
-    script.type='module';
-    script.textContent=source;
+    script.type='text/javascript';
+    script.text=source.replace("authMessage('Не удалось запустить приложение. Проверьте Firebase.',true)","authMessage('Не удалось запустить приложение. '+(e?.message||String(e)),true)");
+    script.dataset.montajiApp='1';
     document.head.appendChild(script);
   }catch(error){
     console.error('Montaji boot failed',error);
