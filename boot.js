@@ -1,4 +1,4 @@
-const BASE = 'https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/dev-safe/';
+const BASE = './';
 const FIREBASE_VERSION = '10.14.1';
 
 function loadScript(src){
@@ -8,8 +8,9 @@ function loadScript(src){
     s.src=src;
     s.async=false;
     s.dataset.firebaseSdk=src;
-    s.onload=resolve;
-    s.onerror=()=>reject(new Error(`Не удалось загрузить Firebase SDK: ${src}`));
+    const timer=setTimeout(()=>reject(new Error(`Таймаут загрузки Firebase SDK: ${src}`)),15000);
+    s.onload=()=>{clearTimeout(timer);resolve();};
+    s.onerror=()=>{clearTimeout(timer);reject(new Error(`Не удалось загрузить Firebase SDK: ${src}`));};
     document.head.appendChild(s);
   });
 }
@@ -23,14 +24,18 @@ async function boot(){
     if(!appResponse.ok) throw new Error(`app.js HTTP ${appResponse.status}`);
     if(!configResponse.ok) throw new Error(`firebase-config.js HTTP ${configResponse.status}`);
 
-    await loadScript(`https://cdnjs.cloudflare.com/ajax/libs/firebase/${FIREBASE_VERSION}/firebase-app-compat.js`);
-    await loadScript(`https://cdnjs.cloudflare.com/ajax/libs/firebase/${FIREBASE_VERSION}/firebase-auth-compat.js`);
-    await loadScript(`https://cdnjs.cloudflare.com/ajax/libs/firebase/${FIREBASE_VERSION}/firebase-firestore-compat.js`);
+    // Use the official Firebase CDN. The compat bundles are intentionally loaded
+    // as classic scripts because this is more reliable on iOS/Safari than
+    // dynamic ESM imports from a Blob URL.
+    await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app-compat.js`);
+    await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth-compat.js`);
+    await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-firestore-compat.js`);
 
     let source=await appResponse.text();
     const configSource=await configResponse.text();
     source=source.replace("import { firebaseConfig } from './firebase-config.js';",configSource);
-    source=source.replace("async function initFirebase(){const [appMod,authMod,fs]=await Promise.all([import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app.js`),import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth.js`),import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-firestore.js`)]);const app=appMod.initializeApp(firebaseConfig,'montaji-aa-production');auth=authMod.getAuth(app);db=fs.getFirestore(app);F={...fs,authMod};}",`async function initFirebase(){
+    const oldInit="async function initFirebase(){const [appMod,authMod,fs]=await Promise.all([import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app.js`),import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth.js`),import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-firestore.js`)]);const app=appMod.initializeApp(firebaseConfig,'montaji-aa-production');auth=authMod.getAuth(app);db=fs.getFirestore(app);F={...fs,authMod};}";
+    const newInit=`async function initFirebase(){
       if(!window.firebase) throw new Error('Firebase SDK не загрузился.');
       const existing=firebase.apps.find(a=>a.name==='montaji-aa-production');
       const app=existing||firebase.initializeApp(firebaseConfig,'montaji-aa-production');
@@ -51,21 +56,26 @@ async function boot(){
         runTransaction:(d,cb)=>d.runTransaction(tx=>cb(tx)),
         serverTimestamp:()=>firebase.firestore.FieldValue.serverTimestamp()
       };
-    }`);
+    }`;
+    if(!source.includes(oldInit)) throw new Error('Не найден блок инициализации Firebase в app.js.');
+    source=source.replace(oldInit,newInit);
 
-    const blob=new Blob([source],{type:'text/javascript'});
-    const url=URL.createObjectURL(blob);
-    await import(url);
-    URL.revokeObjectURL(url);
+    // Execute the transformed application as an inline module. This avoids the
+    // Safari/iOS failure mode of importing a Blob URL.
+    const script=document.createElement('script');
+    script.type='module';
+    script.textContent=source;
+    document.head.appendChild(script);
   }catch(error){
-    console.error('Montaji sandbox boot failed',error);
-    const el=document.querySelector('#syncStatus');
-    if(el){el.textContent='Ошибка запуска';el.dataset.state='offline';}
+    console.error('Montaji boot failed',error);
     const message=error?.message||String(error);
     const authMessage=document.querySelector('#authMessage');
-    if(authMessage){authMessage.textContent=`Не удалось запустить приложение. ${message}`;authMessage.className='auth-message auth-message--error';}
+    if(authMessage){
+      authMessage.textContent=`Не удалось запустить приложение. ${message}`;
+      authMessage.className='auth-message auth-message--error';
+    }
     const toast=document.querySelector('#toast');
-    if(toast){toast.textContent='Не удалось запустить приложение.';toast.dataset.state='error';}
+    if(toast){toast.textContent=`Ошибка запуска: ${message}`;toast.dataset.state='error';}
   }
 }
 
