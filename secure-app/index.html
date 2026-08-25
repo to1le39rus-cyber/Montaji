@@ -21,8 +21,8 @@
   const get=async p=>{const r=await fetch(base+p,{cache:'no-store'});if(!r.ok)throw Error(p+' HTTP '+r.status);return r.text()};
   const fail=e=>{const msg=e?.message||String(e);console.error('Montaji boot failed:',e);const el=document.getElementById('boot');if(el)el.innerHTML='<div><b>Не удалось запустить приложение</b><br><small>'+msg.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))+'</small></div>';};
   try{
-    const [index,css,ux,premium,app,config]=await Promise.all([
-      get('index.html'),get('styles.css'),get('ux-upgrades.css'),get('premium-field-tech.css'),get('app.js'),get('firebase-config.js')
+    const [index,css,ux,premium,app,config,notesV2]=await Promise.all([
+      get('index.html'),get('styles.css'),get('ux-upgrades.css'),get('premium-field-tech.css'),get('app.js'),get('firebase-config.js'),get('notes-v2.js')
     ]);
     let h=index;
     h=h.replace(/<link rel="stylesheet" href="styles\.css\?v=[^"]+">/,'<style id="app-styles">'+css+'</style>');
@@ -57,6 +57,8 @@
     source=source.replace(oldInit,newInit);
     source=source.replace(/authMessage\(\s*['"]Не удалось запустить приложение\. Проверьте Firebase\.['"]\s*,\s*true\s*\)/g,"authMessage('Не удалось запустить приложение. '+(e?.message||String(e)),true)");
     const s=document.createElement('script');s.type='text/javascript';s.text=source;document.body.appendChild(s);
+
+    const notes=document.createElement('script');notes.type='module';notes.text=notesV2;document.body.appendChild(notes);
   }catch(e){fail(e)}
 })();
 </script>
