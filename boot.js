@@ -1,29 +1,27 @@
-const APP_URL = new URL('app.js?runtime=20260825-sandbox-stable', location.href);
+const APP_URL = new URL('app.js?runtime=20260825-direct-module', location.href);
 
 async function boot(){
-  const response = await fetch(APP_URL, { cache: 'no-store' });
-  if (!response.ok) throw new Error(`APP_LOAD_${response.status}`);
-  let source = await response.text();
-
-  const blob = new Blob([source], { type: 'text/javascript' });
-  const url = URL.createObjectURL(blob);
   try {
-    await import(url);
-  } finally {
-    URL.revokeObjectURL(url);
+    await import(APP_URL.href);
+  } catch (error) {
+    console.error('Montaji boot failed', error);
+    const el = document.querySelector('#syncStatus');
+    if (el) {
+      el.textContent = 'Ошибка запуска';
+      el.dataset.state = 'offline';
+    }
+    const message = error?.message || String(error);
+    const authMessage = document.querySelector('#authMessage');
+    if (authMessage) {
+      authMessage.textContent = `Не удалось запустить приложение. ${message}`;
+      authMessage.className = 'auth-message auth-message--error';
+    }
+    const toast = document.querySelector('#toast');
+    if (toast) {
+      toast.textContent = 'Не удалось запустить приложение.';
+      toast.dataset.state = 'error';
+    }
   }
 }
 
-boot().catch(error => {
-  console.error('Montaji sandbox boot failed', error);
-  const el = document.querySelector('#syncStatus');
-  if (el) {
-    el.textContent = 'Ошибка запуска';
-    el.dataset.state = 'offline';
-  }
-  const toast = document.querySelector('#toast');
-  if (toast) {
-    toast.textContent = 'Не удалось запустить приложение.';
-    toast.dataset.state = 'error';
-  }
-});
+boot();
