@@ -30,7 +30,7 @@ async function boot(){
     let source=await appResponse.text();
     const configSource=await configResponse.text();
     source=source.replace("import { firebaseConfig } from './firebase-config.js';",configSource);
-    source=source.replace(/async function initFirebase\(\)\{[\s\S]*?\n\}/,`async function initFirebase(){
+    source=source.replace("async function initFirebase(){const [appMod,authMod,fs]=await Promise.all([import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app.js`),import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth.js`),import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-firestore.js`)]);const app=appMod.initializeApp(firebaseConfig,'montaji-aa-production');auth=authMod.getAuth(app);db=fs.getFirestore(app);F={...fs,authMod};}",`async function initFirebase(){
       if(!window.firebase) throw new Error('Firebase SDK не загрузился.');
       const existing=firebase.apps.find(a=>a.name==='montaji-aa-production');
       const app=existing||firebase.initializeApp(firebaseConfig,'montaji-aa-production');
