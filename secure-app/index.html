@@ -8,12 +8,19 @@
 <style>html,body{margin:0;height:100%;background:#f5f7fb}#boot{height:100%;display:grid;place-items:center;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#101828}#boot div{padding:20px;text-align:center}</style>
 </head>
 <body>
-<div id="boot"><div>Загружаю песочницу МОНТАЖИ АА…</div></div>
-<script type="module">
+<div id="boot"><div>Загружаю приложение МОНТАЖИ АА…</div></div>
+<script>
 (async()=>{
   const base='https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/dev-safe/';
+  const FIREBASE_VERSION='10.14.1';
+  const loadScript=src=>new Promise((resolve,reject)=>{
+    const s=document.createElement('script');s.src=src;s.async=false;
+    s.onload=resolve;s.onerror=()=>reject(new Error('Не удалось загрузить '+src));
+    document.head.appendChild(s);
+  });
+  const get=async p=>{const r=await fetch(base+p,{cache:'no-store'});if(!r.ok)throw Error(p+' HTTP '+r.status);return r.text()};
+  const fail=e=>{const msg=e?.message||String(e);console.error('Montaji boot failed:',e);const el=document.getElementById('boot');if(el)el.innerHTML='<div><b>Не удалось запустить приложение</b><br><small>'+msg.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))+'</small></div>';};
   try{
-    const get=async p=>{const r=await fetch(base+p,{cache:'no-store'});if(!r.ok)throw Error(p+' HTTP '+r.status);return r.text()};
     const [index,css,ux,premium,app,config]=await Promise.all([
       get('index.html'),get('styles.css'),get('ux-upgrades.css'),get('premium-field-tech.css'),get('app.js'),get('firebase-config.js')
     ]);
@@ -24,14 +31,33 @@
     h=h.replace(/<script type="module" src="boot\.js\?v=[^"]+"><\/script>/,'');
     h=h.replace(/<link rel="manifest" href="manifest\.json">/,'').replace(/<link rel="icon" href="icon\.svg">/,'');
     document.open();document.write(h);document.close();
-    const firebaseImport="import { firebaseConfig } from './firebase-config.js';";
-    const appSource=app.replace(firebaseImport,`const firebaseConfig=${config.match(/export const firebaseConfig\s*=\s*(\{[\s\S]*?\});?/)?.[1]||'{}'};`);
-    const s=document.createElement('script');s.type='module';s.textContent=appSource;document.body.appendChild(s);
-  }catch(e){
-    const el=document.getElementById('boot');
-    if(el)el.innerHTML='<div><b>Не удалось загрузить песочницу</b><br><small>'+String(e?.message||e)+'</small></div>';
-    console.error(e)
-  }
+
+    await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app-compat.js`);
+    await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth-compat.js`);
+    await loadScript(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-firestore-compat.js`);
+    if(!window.firebase)throw new Error('Firebase SDK не доступен в браузере.');
+
+    let source=app;
+    let configSource=config.replace(/^\s*export\s+const\s+firebaseConfig\s*=\s*/,'const firebaseConfig = ');
+    source=source.replace("import { firebaseConfig } from './firebase-config.js';",configSource);
+    const oldInit="async function initFirebase(){const [appMod,authMod,fs]=await Promise.all([import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app.js`),import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth.js`),import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-firestore.js`)]);const app=appMod.initializeApp(firebaseConfig,'montaji-aa-production');auth=authMod.getAuth(app);db=fs.getFirestore(app);F={...fs,authMod};}";
+    const newInit=`async function initFirebase(){
+      if(!window.firebase) throw new Error('Firebase SDK не загрузился.');
+      const existing=firebase.apps.find(a=>a.name==='montaji-aa-production');
+      const app=existing||firebase.initializeApp(firebaseConfig,'montaji-aa-production');
+      auth=firebase.auth(app);db=firebase.firestore(app);
+      F={authMod:{
+        signInWithEmailAndPassword:(a,e,p)=>a.signInWithEmailAndPassword(e,p),
+        createUserWithEmailAndPassword:(a,e,p)=>a.createUserWithEmailAndPassword(e,p),
+        sendEmailVerification:u=>u.sendEmailVerification(),signOut:a=>a.signOut(),
+        sendPasswordResetEmail:(a,e)=>a.sendPasswordResetEmail(e),onAuthStateChanged:(a,cb)=>a.onAuthStateChanged(cb)
+      },doc:(d,...parts)=>d.doc(parts.join('/')),getDocFromServer:ref=>ref.get({source:'server'}),onSnapshot:(ref,...args)=>ref.onSnapshot(...args),runTransaction:(d,cb)=>d.runTransaction(tx=>cb(tx)),serverTimestamp:()=>firebase.firestore.FieldValue.serverTimestamp()};
+    }`;
+    if(!source.includes(oldInit))throw new Error('Не найден блок инициализации Firebase в app.js.');
+    source=source.replace(oldInit,newInit);
+    source=source.replace(/authMessage\(\s*['"]Не удалось запустить приложение\. Проверьте Firebase\.['"]\s*,\s*true\s*\)/g,"authMessage('Не удалось запустить приложение. '+(e?.message||String(e)),true)");
+    const s=document.createElement('script');s.type='text/javascript';s.text=source;document.body.appendChild(s);
+  }catch(e){fail(e)}
 })();
 </script>
 </body>
