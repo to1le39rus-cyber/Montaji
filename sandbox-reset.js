@@ -16,7 +16,7 @@ const APP='montaji-aa-production';
     const db=fs.getFirestore(app);
     authMod.onAuthStateChanged(auth,async user=>{
       if(!user?.emailVerified)return;
-      await fs.deleteDoc(fs.doc(db,'appData','notesSandbox')).catch(()=>{});
+      try{await fs.deleteDoc(fs.doc(db,'appData','notesSandbox'));}catch(e){}
       try{localStorage.removeItem('montaji-mega-notes');}catch(e){}
       console.info('[sandbox] legacy notesSandbox cleared');
     });
