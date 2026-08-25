@@ -26,8 +26,8 @@ async function boot(){
   };
   try{
     const [appResponse,configResponse]=await Promise.all([
-      fetch(`${BASE}app.js?boot=20260825-3`,{cache:'no-store'}),
-      fetch(`${BASE}firebase-config.js?boot=20260825-3`,{cache:'no-store'})
+      fetch(`${BASE}app.js?boot=20260825-4`,{cache:'no-store'}),
+      fetch(`${BASE}firebase-config.js?boot=20260825-4`,{cache:'no-store'})
     ]);
     if(!appResponse.ok) throw new Error(`app.js HTTP ${appResponse.status}`);
     if(!configResponse.ok) throw new Error(`firebase-config.js HTTP ${configResponse.status}`);
@@ -63,6 +63,11 @@ async function boot(){
     script.text=source;
     script.dataset.montajiApp='1';
     document.head.appendChild(script);
+
+    const notesScript=document.createElement('script');
+    notesScript.type='module';
+    notesScript.src=`${BASE}notes-v2.js?v=20260825-1`;
+    document.head.appendChild(notesScript);
   }catch(error){ showError(error?.message||String(error)); }
 }
 boot();
