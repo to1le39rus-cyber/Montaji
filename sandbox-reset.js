@@ -14,11 +14,11 @@ const APP='montaji-aa-production';
     const app=appMod.getApps().find(a=>a.name===APP)||appMod.initializeApp(firebaseConfig,APP);
     const auth=authMod.getAuth(app);
     const db=fs.getFirestore(app);
-    const user=auth.currentUser;
-    if(user?.emailVerified){
+    authMod.onAuthStateChanged(auth,async user=>{
+      if(!user?.emailVerified)return;
       await fs.deleteDoc(fs.doc(db,'appData','notesSandbox')).catch(()=>{});
       try{localStorage.removeItem('montaji-mega-notes');}catch(e){}
       console.info('[sandbox] legacy notesSandbox cleared');
-    }
+    });
   }catch(e){console.warn('[sandbox] legacy notes cleanup skipped',e)}
 })();
