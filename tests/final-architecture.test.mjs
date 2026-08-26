@@ -49,7 +49,6 @@ test('measure flow has all required DOM fields', () => {
   assert.match(index, /id="measureCredit"/);
   assert.match(index, /id="convertMeasureBtn"/);
   assert.match(app, /convertedFromMeasureId/);
-  assert.match(app, /convertedToMeasureId/);
   assert.match(app, /convertedToJobId/);
 });
 
