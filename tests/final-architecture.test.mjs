@@ -49,6 +49,7 @@ test('measure flow has all required DOM fields', () => {
   assert.match(index, /id="measureCredit"/);
   assert.match(index, /id="convertMeasureBtn"/);
   assert.match(app, /convertedFromMeasureId/);
+  assert.match(app, /convertedToMeasureId/);
   assert.match(app, /convertedToJobId/);
 });
 
@@ -74,7 +75,7 @@ test('expenses are independent and archivable', () => {
   assert.match(app, /expenses: Array\.isArray/);
   assert.match(app, /cancelled:e\.cancelled === true/);
   assert.match(app, /cancelled:true/);
-  assert.match(index, /id="cancelExpense"/);
+  assert.match(app, /id="cancelExpense"/);
 });
 
 test('mobile UX protects the viewport', () => {
