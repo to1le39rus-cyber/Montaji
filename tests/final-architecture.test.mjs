@@ -26,7 +26,7 @@ test('working Firestore database contract is preserved', () => {
 test('database boot uses the canonical Firebase config and resilient shared load', () => {
   assert.match(boot, /CONFIG_URL/);
   assert.match(boot, /firebase-config\.js/);
-  assert.match(boot, /Shared database load failed/);
+  assert.match(boot, /Shared data unavailable/);
   assert.doesNotMatch(boot, /signInAnonymously/);
 });
 
