@@ -1,0 +1,16 @@
+/* Montaji iPhone-first UX v2 — isolated sandbox layer */
+:root{--mt-safe-bottom:max(18px,env(safe-area-inset-bottom));--mt-touch:52px;--mt-radius:18px}
+html{background:#0f1114}
+body{padding-bottom:calc(92px + var(--mt-safe-bottom));-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none;overflow-x:hidden}
+button,a,[role=button],input,select,textarea{font-size:16px}
+button,a,[role=button]{min-height:var(--mt-touch);touch-action:manipulation}
+input,select,textarea{min-height:50px;border-radius:14px}
+.btn,.button,.action-btn,.primary-btn,.secondary-btn,.icon-btn{min-height:52px;border-radius:15px}
+@media(max-width:720px){
+.container,.app,.page,.main,.content{max-width:100%;padding-left:14px;padding-right:14px}
+.card,.job-card,.visit-card,.panel,.section{border-radius:var(--mt-radius)}
+.actions,.card-actions,.job-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.actions>*:only-child,.card-actions>*:only-child,.job-actions>*:only-child{grid-column:1/-1}
+th,td{padding:10px 8px}
+textarea{min-height:110px}
+}
