@@ -1,8 +1,5 @@
 {
   "rewrites": [
-    {
-      "source": "/",
-      "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@montaji-iphone-v2-sandbox/index.html"
-    }
+    { "source": "/", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/montaji-iphone-v2-sandbox/secure-app/index.html" }
   ]
 }
