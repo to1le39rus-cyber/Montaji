@@ -1,0 +1,107 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+
+    function myUser() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function myRole() { return signedIn() ? myUser().role : null; }
+    function myStoreId() { return signedIn() ? myUser().storeId : null; }
+
+    function isTeam() { return myRole() == 'installer' || myRole() == 'manager'; }
+    function isManager() { return myRole() == 'manager'; }
+    function isStore() { return myRole() == 'store'; }
+    function isActiveUser() { return signedIn() && myUser().active == true; }
+
+    // ---------- users ----------
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isTeam());
+      // Пользователь может только создать свой профиль при первом входе (роль всегда "pending").
+      allow create: if signedIn() && request.auth.uid == uid
+                    && request.resource.data.role == 'pending';
+      // Менять роль/active может только менеджер.
+      allow update: if isManager();
+    }
+
+    // ---------- stores ----------
+    match /stores/{storeId} {
+      allow read: if isTeam() || (isStore() && myStoreId() == storeId);
+      allow write: if isManager();
+    }
+
+    // ---------- jobs ----------
+    match /jobs/{jobId} {
+      allow read: if isActiveUser() && isTeam();
+      allow create, update: if isActiveUser() && isTeam();
+      // Удаление запрещено всем — инвариант "история не уничтожается физическим удалением".
+      allow delete: if false;
+    }
+
+    // ---------- expenses ----------
+    match /expenses/{expenseId} {
+      allow read, create, update: if isActiveUser() && isTeam();
+      allow delete: if false;
+    }
+
+    // ---------- notes ----------
+    match /notes/{noteId} {
+      allow read: if isActiveUser() && (
+        isManager() ||
+        resource.data.ownerUid == request.auth.uid ||
+        (resource.data.visibility == 'public' && isTeam()) ||
+        (resource.data.visibility == 'urgent' && isTeam()) ||
+        (resource.data.visibility == 'urgent' && isStore()
+          && resource.data.linkedStoreId == myStoreId())
+      );
+      allow create: if isActiveUser() && (isTeam() || isStore())
+        && request.resource.data.ownerUid == request.auth.uid;
+      allow update: if isActiveUser() && (
+        isManager() ||
+        resource.data.ownerUid == request.auth.uid ||
+        resource.data.reassignedTo == request.auth.uid
+      );
+      allow delete: if false;
+    }
+
+    // ---------- publicSlots (санитизированная витрина для магазинов) ----------
+    // РЕЖИМ "БЕЗ BLAZE" (текущий): пишет клиент с ролью team при создании/изменении jobs.
+    // Когда подключите Blaze — заменить на allow write: if false и перенести запись
+    // в Cloud Function onJobWrite (уже спроектирована в 02-TECH-ARCHITECTURE.md), это
+    // безопаснее и не даёт клиенту рассинхронизировать publicSlots с jobs.
+    match /publicSlots/{slotId} {
+      allow read: if isActiveUser() && (isTeam() || isStore());
+      allow write: if isActiveUser() && isTeam();
+    }
+
+    // ---------- bookingRequests ----------
+    match /bookingRequests/{id} {
+      allow read: if isActiveUser() && (
+        isTeam() || (isStore() && resource.data.storeId == myStoreId())
+      );
+      allow create: if isActiveUser() && isStore()
+        && request.resource.data.storeId == myStoreId()
+        && request.resource.data.status == 'pending';
+      // Подтверждение/отклонение заявки — только команда.
+      allow update: if isActiveUser() && isTeam();
+      allow delete: if false;
+    }
+
+    // ---------- controls (без изменений) ----------
+    match /controls/{id} {
+      allow read, write: if isActiveUser() && isTeam();
+    }
+
+    // ---------- legacy: старый монолитный документ (архив на переходный период) ----------
+    match /appData/shared {
+      allow read: if isActiveUser() && isTeam();
+      allow write: if false; // заморожен, только для чтения/сверки при миграции
+    }
+    match /appData/notes {
+      allow read: if isActiveUser() && isTeam();
+      allow write: if false;
+    }
+  }
+}
