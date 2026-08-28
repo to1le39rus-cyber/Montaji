@@ -1,0 +1,54 @@
+name: CRM v2 — миграция данных (jobs/expenses)
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: 'Реально записать в Firestore? (false = только показать план, ничего не пишет)'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+permissions:
+  contents: read
+
+jobs:
+  migrate:
+    name: Перенос jobs/expenses в новые коллекции
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout crm-v2-foundation
+        uses: actions/checkout@v4
+        with:
+          ref: crm-v2-foundation
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install firebase-admin
+        run: npm install firebase-admin --no-save
+
+      - name: Prepare Firebase service account
+        shell: bash
+        run: |
+          printf '%s' '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MONTAG_39 }}' > "$RUNNER_TEMP/firebase-service-account.json"
+
+      - name: Run migration (dry-run by default)
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
+        run: |
+          if [ "${{ inputs.apply }}" = "true" ]; then
+            node crm-v2/migrate-jobs.mjs --apply
+          else
+            node crm-v2/migrate-jobs.mjs --dry-run
+          fi
+
+      - name: Remove service account file
+        if: always()
+        run: rm -f "$RUNNER_TEMP/firebase-service-account.json"
+ 
