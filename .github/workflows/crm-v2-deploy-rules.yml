@@ -1,0 +1,45 @@
+name: CRM v2 — деплой Firestore rules
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-rules:
+    name: Применить firestore.rules.v2 к базе montaj-39
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout crm-v2-foundation
+        uses: actions/checkout@v4
+        with:
+          ref: crm-v2-foundation
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Prepare temp firebase.json pointing to new rules
+        run: |
+          cat > /tmp/firebase.json << 'EOF'
+          { "firestore": { "rules": "secure-app/crm-v2/firestore.rules.v2" } }
+          EOF
+
+      - name: Prepare service account
+        run: |
+          printf '%s' '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MONTAG_39 }}' > "$RUNNER_TEMP/sa.json"
+
+      - name: Deploy Firestore rules only
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa.json
+        run: |
+          npx --yes firebase-tools@13 deploy --only firestore:rules \
+            --project montaj-39 \
+            --config /tmp/firebase.json \
+            --non-interactive
+
+      - name: Cleanup
+        if: always()
+        run: rm -f "$RUNNER_TEMP/sa.json"
