@@ -1,4 +1,4 @@
-import { firebaseConfig } from '../firebase-config.js';
+import { firebaseConfig } from './firebase-config.js';
 import { makeDataAdapterV2 } from './data-adapter-v2.js';
 
 const FIREBASE_VERSION = '10.14.1';
