@@ -2,6 +2,11 @@ import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebase
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { firebaseConfig } from './firebase-config.js';
 
+const style = document.createElement('link');
+style.rel = 'stylesheet';
+style.href = './montaji-product-v7.css?v=20260829-1';
+document.head.appendChild(style);
+
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig, 'montaji-aa-production');
 const auth = getAuth(app);
 const allowed = new Set(['manager','store_manager','store-manager','admin','owner']);
