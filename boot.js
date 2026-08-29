@@ -11,6 +11,7 @@ async function boot(){
   else{const l=document.createElement('link');l.rel='stylesheet';l.href='premium-field-tech.css?v=20260821-7';document.head.appendChild(l)}
   const notesCss=document.createElement('link');notesCss.rel='stylesheet';notesCss.href='notes-ui-fix.css?v=20260821-1';document.head.appendChild(notesCss);
   const controlCss=document.createElement('link');controlCss.rel='stylesheet';controlCss.href='control-ui-fix.css?v=20260821-1';document.head.appendChild(controlCss);
+  const authCss=document.createElement('link');authCss.rel='stylesheet';authCss.href='auth-premium.css?v=20260830-1';document.head.appendChild(authCss);
 
   source = source.replace("import { firebaseConfig } from './firebase-config.js';",`const { firebaseConfig } = await import(${JSON.stringify(CONFIG_URL)});`);
   source = source.replace("function jobsForDate(d){return state.jobs.filter(j=>!isCancelled(j)&&j.date===d);} function activeJobs(d){return jobsForDate(d).filter(j=>!isDone(j));} function montageCount(d){return activeJobs(d).filter(j=>j.type==='Монтаж').length;} function freeSlot(d){const used=new Set(activeJobs(d).filter(j=>j.type==='Монтаж').map(j=>String(j.slot)));return ['1','2','3'].find(s=>!used.has(s))||'3';}","function jobsForDate(d){return state.jobs.filter(j=>!isCancelled(j)&&j.date===d);} function activeJobs(d){return jobsForDate(d).filter(j=>!isDone(j));} function montageCount(d){return jobsForDate(d).filter(j=>j.type==='Монтаж').length;} function freeSlot(d){return '1';}");
