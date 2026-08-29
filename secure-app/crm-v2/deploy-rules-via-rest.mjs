@@ -19,8 +19,20 @@ async function main() {
   console.log(`Читаю правила из: ${RULES_PATH} (${rulesContent.length} байт)`);
 
   const app = initializeApp({ credential: applicationDefault(), projectId: PROJECT_ID });
-  const token = (await app.options.credential.getAccessToken()).access_token;
-  if (!token) throw new Error('Не удалось получить токен доступа.');
+
+  let token = null;
+  let lastErr = null;
+  for (let attempt = 1; attempt <= 6; attempt++) {
+    try {
+      token = (await app.options.credential.getAccessToken()).access_token;
+      if (token) break;
+    } catch (err) {
+      lastErr = err;
+      console.log(`Попытка ${attempt}/6 получить токен не удалась (обычная нестабильность metadata-сервера), пробую снова через 2с…`);
+      await new Promise(r => setTimeout(r, 2000));
+    }
+  }
+  if (!token) throw lastErr || new Error('Не удалось получить токен доступа после нескольких попыток.');
 
   const headers = {
     Authorization: `Bearer ${token}`,
