@@ -1,0 +1,42 @@
+/* Notes + dark-mode readability patch */
+.note-card{position:relative;overflow:hidden}
+.note-card .note-top{align-items:flex-start;gap:12px}
+.note-card .note-top>div:last-child{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.note-card .note-due{display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:5px 9px;border-radius:999px;background:#eef1ff;color:#465bc9;font-size:11px;font-weight:750}
+.note-card .note-due.overdue{background:#fff0f2;color:#c03649}
+.note-card .note-delete{color:#c03649!important;background:#fff0f2!important;border-color:#f1d5da!important}
+.note-card.archived{opacity:.82}
+.dark h1,.dark h2,.dark h3,.dark .section-head h2,.dark .job-client,.dark .note-card strong,.dark .note-card p,.dark .upcoming b,.dark .client-card .job-client,.dark .settings-card h3,.dark .chart-card h3,.dark .system-note strong{color:#f8fafc!important}
+.dark .job-meta,.dark .detail-line,.dark .note-card .note-due,.dark .upcoming small,.dark .client-card small{color:#aab4c3!important}
+.dark .note-card .note-due{background:#293250!important;color:#b9c3ff!important}
+.dark .note-card .note-due.overdue{background:#43252c!important;color:#ff9aaa!important}
+.dark .note-card .note-delete{background:#43252c!important;color:#ff9aaa!important;border-color:#63323b!important}
+.dark .note-card{background:#182131!important;border-color:rgba(255,255,255,.09)!important}
+.dark .note-card .mini-btn{color:#e6eaff!important;background:#222c40!important;border-color:rgba(255,255,255,.10)!important}
+.dark .note-card .mini-btn.note-delete{color:#ff9aaa!important;background:#43252c!important}
+
+/* Force readability for every major dark-mode heading. */
+body.dark,.dark{color:#f8fafc!important}
+body.dark h1,body.dark h2,body.dark h3,body.dark h4,body.dark .screen-head h1,body.dark .section-head h2,body.dark .sheet h2,body.dark .sheet-section,body.dark .job-client,body.dark .amount,body.dark .control-title,body.dark .control-text,body.dark .note-card strong,body.dark .note-card p,body.dark .period-strip b,body.dark .upcoming span,body.dark .inline-card h2,body.dark .chart-card h2,body.dark .settings-card span,body.dark .settings-card b{color:#f8fafc!important}
+body.dark .eyebrow,body.dark .section-head small,body.dark .top-date,body.dark .job-meta,body.dark .detail-line,body.dark .control-meta,body.dark .note-card small,body.dark .upcoming em,body.dark .muted{color:#aab4c3!important}
+
+/* Operational control */
+.control-section{margin-top:18px}
+.control-list{display:grid;gap:8px}
+.control-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:13px 14px;box-shadow:0 8px 24px rgba(20,30,22,.035)}
+.control-card.is-due{border-color:#d6a0a0;box-shadow:0 8px 24px rgba(160,70,70,.08)}
+.control-title{font-size:14px;font-weight:750;letter-spacing:-.01em}
+.control-meta{font-size:10px;color:var(--muted);margin-top:5px;font-weight:650}
+.control-text{font-size:11px;line-height:1.45;color:#5d645e;margin-top:7px;white-space:pre-wrap}
+.control-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:9px;border-top:1px solid var(--line)}
+.control-actions button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:8px 10px;font-size:10px;font-weight:700}
+.control-actions button:last-child{background:var(--olive-dark);color:#fff;border-color:var(--olive-dark)}
+.control-from-job{margin:8px 0 0;padding:11px 12px;border:1px solid #e1c9c4;border-radius:14px;background:#fff6f3;color:#7e4c44;font-size:10px;line-height:1.4}
+.control-from-job[hidden]{display:none!important}
+.control-from-job button{margin-top:8px;border:0;border-radius:10px;background:#8f4d45;color:#fff;padding:9px 11px;font-size:10px;font-weight:750}
+body.dark .control-card{background:#182131!important;border-color:rgba(255,255,255,.10)!important}
+body.dark .control-card.is-due{border-color:#70444a!important}
+body.dark .control-actions button{background:#222c40!important;color:#f8fafc!important;border-color:rgba(255,255,255,.10)!important}
+body.dark .control-actions button:last-child{background:#7f8cff!important;color:#fff!important;border-color:#7f8cff!important}
+body.dark .control-from-job{background:#332327!important;border-color:#63323b!important;color:#ffb6bf!important}
+body.dark .control-from-job button{background:#9b5962!important;color:#fff!important}
