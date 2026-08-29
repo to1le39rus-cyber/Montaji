@@ -8,7 +8,6 @@
 // Запуск (из папки ~/Montaji в Cloud Shell):
 //   node secure-app/crm-v2/deploy-rules-via-rest.mjs
 
-import { GoogleAuth } from 'google-auth-library';
 import { readFileSync } from 'fs';
 
 const PROJECT_ID = 'montaj-39';
@@ -18,10 +17,8 @@ async function main() {
   const rulesContent = readFileSync(RULES_PATH, 'utf8');
   console.log(`Читаю правила из: ${RULES_PATH} (${rulesContent.length} байт)`);
 
-  const auth = new GoogleAuth({ scopes: ['https://www.googleapis.com/auth/cloud-platform'] });
-  const client = await auth.getClient();
-  const { token } = await client.getAccessToken();
-  if (!token) throw new Error('Не удалось получить токен доступа.');
+  const token = process.env.GCLOUD_TOKEN;
+  if (!token) throw new Error('Не задан GCLOUD_TOKEN. Запусти: export GCLOUD_TOKEN=$(gcloud auth print-access-token)');
 
   const headers = {
     Authorization: `Bearer ${token}`,
