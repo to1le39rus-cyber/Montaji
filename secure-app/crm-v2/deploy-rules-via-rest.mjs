@@ -14,25 +14,21 @@ import { readFileSync } from 'fs';
 const PROJECT_ID = 'montaj-39';
 const RULES_PATH = new URL('./firestore.rules.v2', import.meta.url).pathname;
 
+async function getToken() {
+  if (process.env.GCLOUD_TOKEN) {
+    console.log('Использую готовый токен из GCLOUD_TOKEN.');
+    return process.env.GCLOUD_TOKEN;
+  }
+  const app = initializeApp({ credential: applicationDefault(), projectId: PROJECT_ID });
+  return (await app.options.credential.getAccessToken()).access_token;
+}
+
 async function main() {
   const rulesContent = readFileSync(RULES_PATH, 'utf8');
   console.log(`Читаю правила из: ${RULES_PATH} (${rulesContent.length} байт)`);
 
-  const app = initializeApp({ credential: applicationDefault(), projectId: PROJECT_ID });
-
-  let token = null;
-  let lastErr = null;
-  for (let attempt = 1; attempt <= 6; attempt++) {
-    try {
-      token = (await app.options.credential.getAccessToken()).access_token;
-      if (token) break;
-    } catch (err) {
-      lastErr = err;
-      console.log(`Попытка ${attempt}/6 получить токен не удалась (обычная нестабильность metadata-сервера), пробую снова через 2с…`);
-      await new Promise(r => setTimeout(r, 2000));
-    }
-  }
-  if (!token) throw lastErr || new Error('Не удалось получить токен доступа после нескольких попыток.');
+  const token = await getToken();
+  if (!token) throw new Error('Не удалось получить токен доступа.');
 
   const headers = {
     Authorization: `Bearer ${token}`,
