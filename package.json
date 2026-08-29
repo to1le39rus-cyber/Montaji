@@ -1,8 +1,0 @@
-{
-  "name": "montaji-aa",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "test": "node --check app.js && node --check boot.js && node --test tests/final-architecture.test.mjs"
-  }
-}
