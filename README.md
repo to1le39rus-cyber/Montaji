@@ -101,3 +101,5 @@ Production branch: `Astera-smart`.
 Production deployment выполняется GitHub Actions через Firebase Hosting и публикает тот же репозиторий, который проходит regression suite.
 
 Перед ручным live smoke-test необходимо дождаться зелёного production deployment и открыть Firebase Hosting URL в Safari/Chrome.
+
+<!-- deployment trigger: 2026-08-30 baseline restore -->
