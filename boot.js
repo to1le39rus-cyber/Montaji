@@ -50,7 +50,7 @@ function bindDebtRows`
       status('Подключаем общую базу…');
       let sharedSnap=null,lastErr=null;
       try{sharedSnap=await F.getDocFromServer(F.doc(db,...SHARED_DOC));}
-      catch(err){lastErr=err;try{sharedSnap=await F.getDoc(db,...SHARED_DOC));}catch(cacheErr){lastErr=cacheErr;}}
+      catch(err){lastErr=err;try{sharedSnap=await F.getDoc(F.doc(db,...SHARED_DOC));}catch(cacheErr){lastErr=cacheErr;}}
       if(!sharedSnap){
         console.error('Shared database load failed',lastErr);
         serverReady=false;state=emptyState();notes=[];render();
