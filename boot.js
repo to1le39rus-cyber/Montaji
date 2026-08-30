@@ -33,6 +33,16 @@ async function boot(){
     "(async()=>{try{bindAuth();bindUI();await initFirebase();F.authMod.onAuthStateChanged(auth,onUser)}catch(e){console.error(e);showAuth(true);authMessage('Не удалось запустить приложение: '+(e?.message||'проверьте Firebase.'),true)}})();"
   );
 
+  // Finance history: show 10 rows initially, then expand/collapse without
+  // touching Firebase or the rest of the application lifecycle.
+  source = source.replace(
+    /function renderMoney\(\){[\s\S]*?\}\nfunction bindDebtRows/,
+    `let expenseArchiveExpanded=false;
+function renderMoney(){const t=totals('day'),w=totals('week'),m=totals('month'),a=totals('all'),current=totals(financePeriod);$('#moneyTotal').textContent=money(current.net);$('#moneyPeriod').textContent={day:'Сегодня',week:'Эта неделя',month:'Этот месяц',all:'Всё время'}[financePeriod];$('#moneyGrid').innerHTML=\`<div><small>Доход</small><b>\${money(current.income)}</b></div><div><small>Расходы</small><b>\${money(current.expenses)}</b></div><div><small>Чистыми</small><b>\${money(current.net)}</b></div><button class="money-debt" data-open-debts="1"><small>Не оплачено</small><b>\${money(current.unpaid)}</b><span>Открыть долги →</span></button>\`;$('#moneyHighlights').innerHTML=\`<button data-fin="day"><span>День</span><b>\${money(t.net)}</b></button><button data-fin="week"><span>Неделя</span><b>\${money(w.net)}</b></button><button data-fin="month"><span>Месяц</span><b>\${money(m.net)}</b></button><button data-fin="all"><span>Всё</span><b>\${money(a.net)}</b></button>\`;$$('#moneyHighlights button').forEach(b=>b.onclick=()=>{financePeriod=b.dataset.fin;expenseArchiveExpanded=false;renderMoney()});const by={};state.jobs.filter(j=>!isCancelled(j)&&isDone(j)).forEach(j=>{const k=j.store||'Без источника';by[k]=(by[k]||0)+effectiveIncome(j)});$('#storeBreakdown').innerHTML=Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([k,v])=>\`<div class="store-row"><span>\${esc(k)}</span><b>\${money(v)}</b></div>\`).join('')||'<div class="muted">Доходов пока нет</div>';const debts=state.jobs.filter(j=>!isCancelled(j)&&isDone(j)&&j.paid===false);$('#debtList').innerHTML=debts.sort((a,b)=>activityDate(b).localeCompare(activityDate(a))).map(j=>\`<button class="debt-row" data-debt-id="\${esc(j.id)}"><div><b>\${esc(j.client)}</b><small>\${fmtShort(activityDate(j))} · \${esc(j.type)}</small></div><strong>\${money(effectiveIncome(j))}</strong>›</button>\`).join('')||'<div class="muted">Долгов нет — красота.</div>';$('#expenseArchive').innerHTML=renderExpenseArchiveList();$$('.mini-edit').forEach(b=>{const e=state.expenses.find(x=>x.id===b.dataset.expense);b.onclick=()=>e&&openExpense(e.date,e)});$('#expenseArchiveToggle')?.addEventListener('click',()=>{expenseArchiveExpanded=!expenseArchiveExpanded;renderMoney()});bindDebtRows();}
+function renderExpenseArchiveList(){const all=state.expenses.filter(e=>!e.cancelled).slice().sort((a,b)=>b.date.localeCompare(a.date));const visible=expenseArchiveExpanded?all:all.slice(0,10);const rows=visible.map(e=>\`<div class="expense-row"><div><b>\${esc(e.category)}</b><small>\${fmtShort(e.date)}\${e.comment?' · '+esc(e.comment):''}</small></div><strong>− \${money(e.amount)}</strong><button class="mini-edit" data-expense="\${esc(e.id)}">Изм.</button></div>\`).join('')||'<div class="muted">Расходов пока нет</div>';const remaining=all.length-visible.length;const toggle=all.length>10?'<button type="button" id="expenseArchiveToggle" style="display:block;width:100%;padding:12px 0;border:0;background:transparent;font:inherit;font-weight:600;cursor:pointer">'+(expenseArchiveExpanded?'Свернуть':'Показать ещё · '+remaining)+'</button>':'';return rows+toggle;}
+function bindDebtRows`
+  );
+
   source = source.replace(
     /async function loadServer\(\){[\s\S]*?\}\nfunction startRealtime/,
     `async function loadServer(){
@@ -40,7 +50,7 @@ async function boot(){
       status('Подключаем общую базу…');
       let sharedSnap=null,lastErr=null;
       try{sharedSnap=await F.getDocFromServer(F.doc(db,...SHARED_DOC));}
-      catch(err){lastErr=err;try{sharedSnap=await F.getDoc(F.doc(db,...SHARED_DOC));}catch(cacheErr){lastErr=cacheErr;}}
+      catch(err){lastErr=err;try{sharedSnap=await F.getDoc(db,...SHARED_DOC));}catch(cacheErr){lastErr=cacheErr;}}
       if(!sharedSnap){
         console.error('Shared database load failed',lastErr);
         serverReady=false;state=emptyState();notes=[];render();
