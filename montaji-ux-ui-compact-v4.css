@@ -1,0 +1,101 @@
+/* MONTAЖИ AA — UX/UI compact field-service pass v4
+   Goal: one-handed mobile use, no horizontal drift, dense hierarchy,
+   finance history collapsed by default, recent 5 visible.
+*/
+html,body{width:100%;max-width:100%;overflow-x:clip!important}
+body{overscroll-behavior-x:none}
+*,*::before,*::after{min-width:0}
+.app,.main,.screen{width:100%!important;max-width:100%!important;min-width:0!important}
+.main{overflow-x:clip!important;padding:10px 14px 112px!important}
+.topbar{width:100%!important;max-width:100%!important;padding:10px 14px!important}
+.topbar>div:first-child{min-width:0;overflow:hidden}
+.sync-dot{max-width:108px!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.top-actions{min-width:0}
+
+/* HOME: less air, stronger hierarchy */
+.hero-card{border-radius:22px!important;padding:17px 18px 16px!important;box-shadow:0 12px 28px rgba(20,30,22,.12)!important}
+.hero-row{font-size:11px!important}
+.hero-income{font-size:43px!important;margin-top:16px!important}
+.hero-label{font-size:9px!important;margin-top:5px!important}
+.hero-mini{gap:24px!important;margin-top:17px!important;font-size:10px!important}
+.hero-mini b{font-size:14px!important;margin-top:3px!important}
+.progress{margin-top:15px!important;height:4px!important}
+.period-strip{margin:8px 0 18px!important;gap:7px!important}
+.period-strip>div{padding:11px 13px!important;border-radius:15px!important}
+.period-strip small{font-size:9px!important}
+.period-strip b{font-size:17px!important;margin-top:3px!important}
+.section-head{margin:18px 2px 8px!important;min-height:24px!important}
+.section-head h2{font-size:16px!important}
+.insight{padding:11px 13px!important;border-radius:14px!important;font-size:12px!important}
+.job-list{gap:7px!important}
+.job-card{padding:13px!important;border-radius:16px!important}
+.job-client{font-size:15px!important}
+.job-meta,.detail-line{font-size:11px!important}
+.amount{font-size:15px!important}
+.actions{margin-top:9px!important;gap:5px!important}
+.action-chip{padding:7px 8px!important;font-size:10px!important}
+.quick-actions{margin-top:7px!important}
+.quick-actions button{min-height:36px!important;padding:7px!important;font-size:10px!important}
+.inline-card{padding:12px!important;border-radius:17px!important}
+.upcoming{padding:9px 11px!important;border-radius:14px!important}
+
+/* CALENDAR: denser scan */
+.screen-head{margin:6px 2px 13px!important}
+.screen-head h1{font-size:27px!important}
+.weekdays{margin:11px 0 6px!important}
+.calendar{gap:4px!important}
+.day{min-height:62px!important;padding:6px 3px!important;border-radius:13px!important}
+.day b{font-size:13px!important}
+.day span,.day i{font-size:7px!important;margin-top:4px!important}
+.legend{margin:10px 2px!important;font-size:9px!important;gap:9px!important}
+
+/* MONEY: compact dashboard */
+.money-focus{border-radius:19px!important;padding:16px!important}
+.money-value{font-size:40px!important;margin-top:8px!important}
+.money-period{font-size:10px!important}
+.money-highlights{grid-template-columns:repeat(2,1fr)!important;gap:6px!important;margin:7px 0!important}
+.money-highlights button{padding:9px 10px!important;border-radius:13px!important}
+.money-highlights span{font-size:8px!important}
+.money-highlights b{font-size:12px!important;margin-top:3px!important}
+.money-grid{gap:6px!important;margin:7px 0!important}
+.money-grid>div,.money-debt{padding:10px!important;border-radius:13px!important}
+.money-grid small{font-size:8px!important}
+.money-grid b{font-size:13px!important;margin-top:3px!important}
+.finance-actions{gap:6px!important;margin:9px 0!important}
+.primary,.secondary,.danger{padding:10px 11px!important;border-radius:12px!important;font-size:10px!important}
+.chart-card{padding:12px!important;margin-top:9px!important;border-radius:17px!important}
+.chart-card .section-head{margin:1px 0 7px!important}
+.store-row{padding:8px 0!important;font-size:10px!important}
+.debt-row{padding:9px 0!important}
+.debt-row b{font-size:11px!important}
+.debt-row strong{font-size:11px!important}
+.debt-row small{font-size:8px!important}
+
+/* Expense history: show only 5 latest; tap to expand */
+.expense-history .expense-more{display:block;width:100%;margin-top:7px;border:0;background:#eef1ea;color:#596a50;border-radius:11px;padding:9px 10px;font-size:10px;font-weight:800}
+#expenseArchive:not(.expanded) .expense-row:nth-child(n+6){display:none!important}
+#expenseArchive.expanded .expense-row:nth-child(n+6){display:flex!important}
+#expenseArchive .expense-row{padding:8px 0!important;gap:8px!important}
+#expenseArchive .expense-row b{font-size:11px!important}
+#expenseArchive .expense-row small{font-size:8px!important;max-width:190px!important}
+#expenseArchive .expense-row strong{font-size:11px!important}
+#expenseArchive .mini-edit{padding:4px 6px!important;font-size:8px!important}
+
+/* BOTTOM NAV / FAB: stable inside viewport */
+.bottom-nav{left:10px!important;right:10px!important;width:auto!important;max-width:calc(100vw - 20px)!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;padding:4px!important;border-radius:19px!important}
+.nav{min-width:0!important;min-height:48px!important;border-radius:14px!important}
+.nav small{font-size:8px!important}
+.fab{right:16px!important;bottom:calc(82px + env(safe-area-inset-bottom))!important;width:50px!important;height:50px!important;border-radius:16px!important}
+
+/* Modals stay inside the viewport */
+.sheet,.modal .sheet{width:100%!important;max-width:100%!important;min-width:0!important}
+.modal{overflow-x:clip!important}
+
+@media(max-width:430px){
+  .main{padding-left:12px!important;padding-right:12px!important}
+  .hero-card{padding:16px!important}
+  .hero-income{font-size:41px!important}
+  .hero-mini{gap:20px!important}
+  .money-highlights button{padding:8px!important}
+  .screen-head h1{font-size:26px!important}
+}
