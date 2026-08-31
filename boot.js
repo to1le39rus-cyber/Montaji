@@ -1,4 +1,4 @@
-const APP_URL = new URL('app.js?runtime=20260821-6', location.href);
+const APP_URL = new URL('app.js?runtime=20260831-savefix-2', location.href);
 
 async function boot(){
   const response = await fetch(APP_URL,{cache:'no-store'});
@@ -40,7 +40,7 @@ function currentNotesData`);
 function startRealtime`);
 
   source = source.replace(/async function saveNotes\(mutator\)\{[\s\S]*?\}\nfunction jobsForDate/,`async function saveNotes(mutator){
-      if(!serverReady||!online||!user)throw new Error('Нет соединения с общей базой');
+      if(!online||!user)throw new Error('Нет соединения с общей базой');
       const ref=F.doc(db,...NOTES_DOC),sharedRef=F.doc(db,...SHARED_DOC),snap=await F.getDoc(ref).catch(()=>null),cur={notes:currentNotesData(snap)};
       const next=await mutator(JSON.parse(JSON.stringify(cur))),safeNotes=Array.isArray(next?.notes)?next.notes:[];
       try{await F.setDoc(ref,{data:{notes:safeNotes},version:1,updatedAt:F.serverTimestamp(),updatedBy:user.uid},{merge:true});}catch(primaryErr){console.warn('Primary notes document write failed; saving into shared document.',primaryErr);await F.runTransaction(db,async tx=>{const shared=await tx.get(sharedRef),data=shared.exists()?shared.data()?.data||{}:{};tx.set(sharedRef,{data:{...data,notes:safeNotes},version:5,updatedAt:F.serverTimestamp(),updatedBy:user.uid},{merge:true})});}
@@ -50,6 +50,37 @@ function jobsForDate`);
 
   source = source.replace(/function startRealtime\(\)\{[\s\S]*?\nasync function saveShared/,`function startRealtime(){unsubscribeShared?.();unsubscribeNotes?.();if(!user||!online)return;unsubscribeShared=F.onSnapshot(F.doc(db,...SHARED_DOC),snap=>{if(!online)return;state=snap.exists()?normalize(snap.data().data):emptyState();serverReady=true;render();status('● Общая база · обновлено','online')},()=>{serverReady=false;status('Нет связи с общей базой','offline');toast('Потеряна связь с общей базой','error')});unsubscribeNotes=F.onSnapshot(F.doc(db,...NOTES_DOC),snap=>{if(!online)return;const remote=currentNotesData(snap);if(remote.length||snap.exists())notes=remote;renderNotes()},()=>{});}
 async function saveShared`);
+
+  // Production save fix: do not make a stale realtime listener a prerequisite for writing.
+  // Read the current server document, then write directly; transaction remains a fallback.
+  source = source.replace(/async function saveShared\(mutator\)\{[\s\S]*?\}\nasync function saveNotes/,`async function saveShared(mutator){
+      if(!online||!user)throw new Error('Нет соединения с общей базой');
+      const ref=F.doc(db,...SHARED_DOC);
+      let currentSnap;
+      try{currentSnap=await F.getDocFromServer(ref);}catch(err){currentSnap=await F.getDoc(ref);}
+      const current=currentSnap.exists()?normalize(currentSnap.data().data):emptyState();
+      const next=normalize(await mutator(current));
+      const payload={data:next,version:5,updatedAt:F.serverTimestamp(),updatedBy:user.uid};
+      try{
+        await F.setDoc(ref,payload,{merge:true});
+      }catch(primaryErr){
+        console.error('Direct save failed, retrying transaction',primaryErr);
+        try{
+          await F.runTransaction(db,async tx=>{
+            const snap=await tx.get(ref),latest=snap.exists()?normalize(snap.data().data):emptyState(),latestNext=normalize(await mutator(latest));
+            tx.set(ref,{data:latestNext,version:5,updatedAt:F.serverTimestamp(),updatedBy:user.uid},{merge:true});
+          });
+        }catch(transactionErr){
+          console.error('Transaction save failed',transactionErr);
+          const code=transactionErr?.code||primaryErr?.code||'unknown';
+          throw new Error(`Не удалось сохранить [${code}]`);
+        }
+      }
+      state=next;render();
+    }
+async function saveNotes`);
+
+  source = source.replace("async function saveJob(e){e.preventDefault();if(!serverReady)return toast('Нет соединения с общей базой.','error');","async function saveJob(e){e.preventDefault();if(!online||!user)return toast('Нет соединения с общей базой.','error');");
 
   source = source.replace("function bindUI(){$('#themeBtn').onclick=()=>document.body.classList.toggle('dark');",`function applyTheme(theme){document.body.classList.toggle('dark',theme==='dark');document.documentElement.dataset.theme=theme;document.querySelector('meta[name="theme-color"]')?.setAttribute('content',theme==='dark'?'#111827':'#f5f7fb');const b=$('#themeBtn');if(b)b.textContent=theme==='dark'?'☀':'☾';try{localStorage.setItem('montaji-theme',theme)}catch(e){}}
 function bindUI(){applyTheme((()=>{try{return localStorage.getItem('montaji-theme')}catch(e){return null}})()||'light');$('#themeBtn').onclick=()=>applyTheme(document.body.classList.contains('dark')?'light':'dark');`);
