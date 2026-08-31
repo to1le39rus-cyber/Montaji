@@ -1,35 +1,23 @@
-// Hybrid data adapter: use migrated jobs/expenses collections when available,
-// but transparently fall back to the proven legacy appData/shared store while
-// Firebase rules / migration are being rolled out. This keeps production writable.
-let unsubJobs = null;
-let unsubExpenses = null;
+// Production-safe data adapter.
+// The live Firebase rules authorize appData/shared. Keep the existing
+// production storage contract until the v2 collections and their rules are
+// deployed together. Do not touch jobs/{id} or expenses/{id} here.
 let unsubLegacy = null;
-let jobsCache = [];
-let expensesCache = [];
 let legacyCache = { jobs: [], expenses: [] };
 
 function emptyState() { return { jobs: [], expenses: [], version: 5 }; }
-function mergeById(primary, legacy) {
-  const map = new Map();
-  for (const item of legacy || []) if (item?.id) map.set(item.id, item);
-  for (const item of primary || []) if (item?.id) map.set(item.id, item);
-  return [...map.values()];
-}
-function mergedState() {
-  return { jobs: mergeById(jobsCache, legacyCache.jobs), expenses: mergeById(expensesCache, legacyCache.expenses), version: 5 };
-}
 
 export function makeDataAdapterV2({ fs, db, user, online, status, toast, setState, render }) {
-  async function loadLegacy() {
-    try {
-      const snap = await fs.getDocFromServer(fs.doc(db, 'appData', 'shared'));
-      const data = snap.exists() ? (snap.data()?.data || snap.data() || {}) : {};
-      legacyCache = { jobs: Array.isArray(data.jobs) ? data.jobs : [], expenses: Array.isArray(data.expenses) ? data.expenses : [] };
-      return true;
-    } catch (err) {
-      console.warn('legacy shared load failed', err);
-      return false;
-    }
+  const sharedRef = () => fs.doc(db, 'appData', 'shared');
+
+  function readData(snap) {
+    if (!snap?.exists()) return emptyState();
+    const raw = snap.data()?.data || {};
+    return {
+      jobs: Array.isArray(raw.jobs) ? raw.jobs : [],
+      expenses: Array.isArray(raw.expenses) ? raw.expenses : [],
+      version: 5,
+    };
   }
 
   async function loadServerV2() {
@@ -39,122 +27,64 @@ export function makeDataAdapterV2({ fs, db, user, online, status, toast, setStat
       return false;
     }
     status('Подключаем общую базу…');
-    let collectionOk = false;
     try {
-      const [jobsSnap, expSnap] = await Promise.all([
-        fs.getDocsFromServer(fs.collection(db, 'jobs')),
-        fs.getDocsFromServer(fs.collection(db, 'expenses')),
-      ]);
-      jobsCache = jobsSnap.docs.map(d => d.data());
-      expensesCache = expSnap.docs.map(d => d.data());
-      collectionOk = true;
-    } catch (err) {
-      console.warn('collections unavailable; trying legacy shared', err);
-    }
-    await loadLegacy();
-    const next = mergedState();
-    setState(next);
-    if (collectionOk || legacyCache.jobs.length || legacyCache.expenses.length) {
+      const snap = await fs.getDocFromServer(sharedRef());
+      const next = readData(snap);
+      legacyCache = { jobs: next.jobs, expenses: next.expenses };
+      setState(next);
       status('● Общая база · синхронизировано', 'online');
       return true;
+    } catch (err) {
+      console.error('loadServerV2', err);
+      setState(emptyState());
+      status('База недоступна', 'offline');
+      toast('Не удалось получить общую базу.', 'error');
+      return false;
     }
-    status('База недоступна', 'offline');
-    toast('Не удалось получить общую базу.', 'error');
-    return false;
-  }
-
-  function pushState() {
-    setState(mergedState());
-    render();
   }
 
   function startRealtimeV2() {
-    unsubJobs?.(); unsubExpenses?.(); unsubLegacy?.();
+    unsubLegacy?.();
     if (!user || !online) return;
-
-    unsubJobs = fs.onSnapshot(fs.collection(db, 'jobs'), snap => {
+    unsubLegacy = fs.onSnapshot(sharedRef(), snap => {
       if (!online) return;
-      jobsCache = snap.docs.map(d => d.data());
+      const next = readData(snap);
+      legacyCache = { jobs: next.jobs, expenses: next.expenses };
+      setState(next);
+      render();
       status('● Общая база · обновлено', 'online');
-      pushState();
-    }, err => console.warn('jobs onSnapshot unavailable', err));
-
-    unsubExpenses = fs.onSnapshot(fs.collection(db, 'expenses'), snap => {
-      if (!online) return;
-      expensesCache = snap.docs.map(d => d.data());
-      pushState();
-    }, err => console.warn('expenses onSnapshot unavailable', err));
-
-    unsubLegacy = fs.onSnapshot(fs.doc(db, 'appData', 'shared'), snap => {
-      if (!online || !snap.exists()) return;
-      const data = snap.data()?.data || snap.data() || {};
-      legacyCache = { jobs: Array.isArray(data.jobs) ? data.jobs : [], expenses: Array.isArray(data.expenses) ? data.expenses : [] };
-      pushState();
-    }, err => console.warn('legacy onSnapshot unavailable', err));
-  }
-
-  async function saveLegacy(next) {
-    const ref = fs.doc(db, 'appData', 'shared');
-    await fs.runTransaction(db, async tx => {
-      const snap = await tx.get(ref);
-      const data = snap.exists() ? (snap.data()?.data || snap.data() || {}) : {};
-      tx.set(ref, {
-        data: { ...data, jobs: next.jobs || [], expenses: next.expenses || [] },
-        version: 5,
-        updatedAt: fs.serverTimestamp(),
-        updatedBy: user.uid,
-      }, { merge: true });
+    }, err => {
+      console.error('shared onSnapshot', err);
+      status('Нет связи с общей базой', 'offline');
+      toast('Потеряна связь с общей базой', 'error');
     });
-    legacyCache = { jobs: next.jobs || [], expenses: next.expenses || [] };
   }
 
   async function saveSharedV2(mutator) {
     if (!user || !online) throw new Error('Нет соединения с общей базой');
-    const current = mergedState();
-    const next = await mutator(current);
-    const normalized = { jobs: Array.isArray(next?.jobs) ? next.jobs : [], expenses: Array.isArray(next?.expenses) ? next.expenses : [], version: 5 };
-
+    const ref = sharedRef();
     try {
-      const batch = fs.writeBatch(db);
-      let ops = 0;
-      const beforeJobs = new Map(current.jobs.map(j => [j.id, j]));
-      for (const job of normalized.jobs) {
-        const before = beforeJobs.get(job.id);
-        if (!before || JSON.stringify(before) !== JSON.stringify(job)) {
-          batch.set(fs.doc(db, 'jobs', job.id), { ...job, updatedAt: fs.serverTimestamp(), updatedBy: user.uid }, { merge: true });
-          ops++;
-        }
-      }
-      const beforeExpenses = new Map(current.expenses.map(e => [e.id, e]));
-      for (const exp of normalized.expenses) {
-        const before = beforeExpenses.get(exp.id);
-        if (!before || JSON.stringify(before) !== JSON.stringify(exp)) {
-          batch.set(fs.doc(db, 'expenses', exp.id), exp, { merge: true });
-          ops++;
-        }
-      }
-      if (ops > 400) throw new Error('Слишком много изменений за одну операцию');
-      if (ops) await batch.commit();
-      jobsCache = normalized.jobs;
-      expensesCache = normalized.expenses;
-      setState(normalized);
+      await fs.runTransaction(db, async tx => {
+        const snap = await tx.get(ref);
+        const current = readData(snap);
+        const next = await mutator(current);
+        const data = {
+          jobs: Array.isArray(next?.jobs) ? next.jobs : [],
+          expenses: Array.isArray(next?.expenses) ? next.expenses : [],
+        };
+        tx.set(ref, {
+          data,
+          version: 5,
+          updatedAt: fs.serverTimestamp(),
+          updatedBy: user.uid,
+        }, { merge: true });
+        legacyCache = data;
+        setState({ ...data, version: 5 });
+      });
       render();
-      return;
-    } catch (collectionErr) {
-      console.warn('Collection write failed; falling back to legacy appData/shared.', collectionErr);
-      try {
-        await saveLegacy(normalized);
-        jobsCache = normalized.jobs;
-        expensesCache = normalized.expenses;
-        setState(normalized);
-        render();
-        status('● Сохранено в общую базу', 'online');
-        return;
-      } catch (legacyErr) {
-        console.error('Both collection and legacy writes failed', collectionErr, legacyErr);
-        const code = collectionErr?.code || legacyErr?.code || '';
-        throw new Error(code ? `Ошибка сохранения [${code}]` : 'Не удалось сохранить данные');
-      }
+    } catch (err) {
+      console.error('saveSharedV2', err);
+      throw err;
     }
   }
 
