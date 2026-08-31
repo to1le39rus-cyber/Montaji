@@ -1,18 +1,97 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Original production contract: transparent Firebase anonymous auth.
-    // Shared data is never migrated or deleted by these rules.
-    function signedIn() {
-      return request.auth != null;
-    }
+    function signedIn() { return request.auth != null; }
 
+    // Transitional compatibility layer.
+    // The current production client still stores the existing real dataset in
+    // appData/shared and appData/notes. Keep these writable so existing data
+    // remains usable while the role-based collections are introduced.
     match /appData/shared {
       allow read, write: if signedIn();
     }
 
     match /appData/notes {
       allow read, write: if signedIn();
+    }
+
+    // Role-based user profiles. A user can create only their own pending
+    // profile; managers can maintain team profiles.
+    function myUser() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function hasUser() {
+      return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    function myRole() { return hasUser() ? myUser().role : null; }
+    function myStoreId() { return hasUser() ? myUser().storeId : null; }
+    function isManager() { return myRole() == 'manager'; }
+    function isTeam() { return myRole() == 'installer' || myRole() == 'manager'; }
+    function isStore() { return myRole() == 'store'; }
+    function isActiveUser() { return hasUser() && myUser().active == true; }
+
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isTeam());
+      allow create: if signedIn() && request.auth.uid == uid
+                    && request.resource.data.role == 'pending';
+      allow update: if isManager();
+      allow delete: if false;
+    }
+
+    match /stores/{storeId} {
+      allow read: if isTeam() || (isStore() && myStoreId() == storeId);
+      allow write: if isManager();
+    }
+
+    // New role-based job/expense collections are available without touching
+    // the existing appData dataset.
+    match /jobs/{jobId} {
+      allow read, create, update: if isActiveUser() && isTeam();
+      allow delete: if false;
+    }
+
+    match /expenses/{expenseId} {
+      allow read, create, update: if isActiveUser() && isTeam();
+      allow delete: if false;
+    }
+
+    match /notes/{noteId} {
+      allow read: if isActiveUser() && (
+        isManager() ||
+        resource.data.ownerUid == request.auth.uid ||
+        (resource.data.visibility == 'public' && isTeam()) ||
+        (resource.data.visibility == 'urgent' && isTeam()) ||
+        (resource.data.visibility == 'urgent' && isStore()
+          && resource.data.linkedStoreId == myStoreId())
+      );
+      allow create: if isActiveUser() && (isTeam() || isStore())
+        && request.resource.data.ownerUid == request.auth.uid;
+      allow update: if isActiveUser() && (
+        isManager() ||
+        resource.data.ownerUid == request.auth.uid ||
+        resource.data.reassignedTo == request.auth.uid
+      );
+      allow delete: if false;
+    }
+
+    match /publicSlots/{slotId} {
+      allow read: if isActiveUser() && (isTeam() || isStore());
+      allow write: if isActiveUser() && isTeam();
+    }
+
+    match /bookingRequests/{id} {
+      allow read: if isActiveUser() && (
+        isTeam() || (isStore() && resource.data.storeId == myStoreId())
+      );
+      allow create: if isActiveUser() && isStore()
+        && request.resource.data.storeId == myStoreId()
+        && request.resource.data.status == 'pending';
+      allow update: if isActiveUser() && isTeam();
+      allow delete: if false;
+    }
+
+    match /controls/{id} {
+      allow read, write: if isActiveUser() && isTeam();
     }
   }
 }
