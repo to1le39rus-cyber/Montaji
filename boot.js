@@ -1,4 +1,4 @@
-const APP_URL = new URL('app.js?runtime=20260821-6', location.href);
+const APP_URL = new URL('app.js?runtime=20260831-savefix-1', location.href);
 
 async function boot(){
   const response = await fetch(APP_URL,{cache:'no-store'});
@@ -23,7 +23,7 @@ async function boot(){
   source = source.replace(/function bindAuth\(\)\{[\s\S]*?\nfunction currentNotesData/,`function bindAuth(){
       const form=$('#authForm');
       if(form&&!form.dataset.bound){form.dataset.bound='1';form.addEventListener('submit',async e=>{e.preventDefault();e.stopPropagation();const email=$('#authEmail').value.trim(),pass=$('#authPassword').value;if(!online)return authMessage('Нет интернета.',true);if(!email||!pass)return authMessage('Введите email и пароль.',true);authMessage('Входим…');const button=form.querySelector('button[type="submit"]');if(button){button.disabled=true;button.textContent='Входим…';}try{await F.authMod.signInWithEmailAndPassword(auth,email,pass)}catch(err){authMessage(authError(err),true)}finally{if(button){button.disabled=false;button.textContent='Войти';}}},{passive:false});}
-      $('#signUpBtn')?.addEventListener('click',async()=>{const email=$('#authEmail').value.trim(),pass=$('#authPassword').value;if(!email||!pass)return authMessage('Введите email и пароль.',true);if(pass.length<6)return authMessage('Пароль должен быть не короче 6 символов.');try{const c=await F.authMod.createUserWithEmailAndPassword(auth,email,pass);await F.authMod.sendEmailVerification(c.user);await F.authMod.signOut(auth);authMessage('Письмо отправлено. Подтвердите email и войдите.')}catch(err){authMessage(authError(err),true)}});
+      $('#signUpBtn')?.addEventListener('click',async()=>{const email=$('#authEmail').value.trim(),pass=$('#authPassword').value;if(!email||!pass)return authMessage('Введите email или пароль.',true);if(pass.length<6)return authMessage('Пароль должен быть не короче 6 символов.');try{const c=await F.authMod.createUserWithEmailAndPassword(auth,email,pass);await F.authMod.sendEmailVerification(c.user);await F.authMod.signOut(auth);authMessage('Письмо отправлено. Подтвердите email и войдите.')}catch(err){authMessage(authError(err),true)}});
       $('#resetBtn')?.addEventListener('click',async()=>{const email=$('#authEmail').value.trim();if(!email)return authMessage('Введите email.',true);try{await F.authMod.sendPasswordResetEmail(auth,email);authMessage('Ссылка для сброса отправлена.')}catch(err){authMessage(authError(err),true)}});
     }
 function currentNotesData`);
@@ -47,6 +47,35 @@ function startRealtime`);
       notes=safeNotes;renderNotes();
     }
 function jobsForDate`);
+
+  // CRITICAL PRODUCTION SAVE FIX: keep the proven appData/shared contract,
+  // but add a direct-write fallback and expose the real Firebase error code.
+  source = source.replace(/async function saveShared\(mutator\)\{[\s\S]*?\}\nasync function saveNotes/,`async function saveShared(mutator){
+      if(!serverReady||!online||!user)throw new Error('Нет соединения с общей базой');
+      const ref=F.doc(db,...SHARED_DOC);
+      let currentSnap;
+      try{currentSnap=await F.getDocFromServer(ref);}catch(err){currentSnap=await F.getDoc(ref);}
+      const current=currentSnap.exists()?normalize(currentSnap.data().data):emptyState();
+      const next=normalize(await mutator(current));
+      const payload={data:next,version:5,updatedAt:F.serverTimestamp(),updatedBy:user.uid};
+      try{
+        await F.setDoc(ref,payload,{merge:true});
+      }catch(primaryErr){
+        console.error('Direct save failed, retrying transaction',primaryErr);
+        try{
+          await F.runTransaction(db,async tx=>{
+            const snap=await tx.get(ref),latest=snap.exists()?normalize(snap.data().data):emptyState(),latestNext=normalize(await mutator(latest));
+            tx.set(ref,{data:latestNext,version:5,updatedAt:F.serverTimestamp(),updatedBy:user.uid},{merge:true});
+          });
+        }catch(transactionErr){
+          console.error('Transaction save failed',transactionErr);
+          const code=transactionErr?.code||primaryErr?.code||'unknown';
+          throw new Error(`Не удалось сохранить [${code}]`);
+        }
+      }
+      state=next;render();
+    }
+async function saveNotes`);
 
   source = source.replace(/function startRealtime\(\)\{[\s\S]*?\nasync function saveShared/,`function startRealtime(){unsubscribeShared?.();unsubscribeNotes?.();if(!user||!online)return;unsubscribeShared=F.onSnapshot(F.doc(db,...SHARED_DOC),snap=>{if(!online)return;state=snap.exists()?normalize(snap.data().data):emptyState();serverReady=true;render();status('● Общая база · обновлено','online')},()=>{serverReady=false;status('Нет связи с общей базой','offline');toast('Потеряна связь с общей базой','error')});unsubscribeNotes=F.onSnapshot(F.doc(db,...NOTES_DOC),snap=>{if(!online)return;const remote=currentNotesData(snap);if(remote.length||snap.exists())notes=remote;renderNotes()},()=>{});}
 async function saveShared`);
