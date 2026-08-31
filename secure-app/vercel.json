@@ -1,12 +1,5 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@production-repair-20260820/index.html" },
-    { "source": "/styles.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@production-repair-20260820/styles.css" },
-    { "source": "/ux-upgrades.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@production-repair-20260820/ux-upgrades.css" },
-    { "source": "/app.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@production-repair-20260820/app.js" },
-    { "source": "/boot.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@production-repair-20260820/boot.js" },
-    { "source": "/firebase-config.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@production-repair-20260820/firebase-config.js" },
-    { "source": "/manifest.json", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@production-repair-20260820/manifest.json" },
-    { "source": "/icon.svg", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@production-repair-20260820/icon.svg" }
+    { "source": "/", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/montaji-iphone-v2-sandbox/secure-app/index.html" }
   ]
 }

@@ -1,3 +1,6 @@
+/* Remove the empty toast pill that appears above the bottom navigation. Real toasts still remain visible. */
+const emptyToastStyle=document.createElement('style');emptyToastStyle.textContent='#toast:empty{display:none!important}#toast[data-state="normal"]:empty{display:none!important}';document.head.appendChild(emptyToastStyle);
+
 /* MONТАЖИ — operational shared notes */
 (async()=>{
   const FIREBASE_VERSION='10.14.1';
