@@ -1,0 +1,1 @@
+Production rollback marker. Restore to known working 2026-08-23 baseline.
