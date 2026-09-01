@@ -1,4 +1,4 @@
-const APP_URL = new URL('app.js?runtime=20260831-fix-2', location.href);
+const APP_URL = new URL('app.js?runtime=20260901-overdue-fix', location.href);
 
 async function boot(){
   const response = await fetch(APP_URL, {cache:'no-store'});
