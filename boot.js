@@ -31,6 +31,11 @@ async function boot(){
   } finally {
     URL.revokeObjectURL(url);
   }
+
+  // Historical calendar overlay. It runs independently from app.js and never
+  // changes the main Firebase bootstrap or its server loading path.
+  import(new URL('calendar-history.js?v=20260902-1', location.href).href)
+    .catch(error=>console.warn('Calendar history module failed',error));
 }
 
 boot().catch(error=>{
