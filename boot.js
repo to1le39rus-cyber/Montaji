@@ -32,9 +32,8 @@ async function boot(){
     URL.revokeObjectURL(url);
   }
 
-  // Historical calendar overlay. It runs independently from app.js and never
-  // changes the main Firebase bootstrap or its server loading path.
-  import(new URL('calendar-history.js?v=20260902-1', location.href).href)
+  // Historical calendar overlay is isolated from app.js/Firebase bootstrap.
+  import('https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/calendar-history.js?v=20260902-2')
     .catch(error=>console.warn('Calendar history module failed',error));
 }
 
