@@ -14,7 +14,7 @@
     if(!app)return;
     const auth=authMod.getAuth(app),db=fs.getFirestore(app),ref=fs.doc(db,'appData','shared');
     let jobs=[];
-    const countWord=n=>n===1?'выезд':(n>=2&&n<=4?'выезда':'выездов');
+    const countWord=n=>n===1?'монтаж':(n>=2&&n<=4?'монтажа':'монтажей');
     const render=()=>{
       const map=new Map();
       for(const j of jobs){
@@ -29,7 +29,7 @@
       document.querySelectorAll('.day[data-date]').forEach(day=>{
         const d=map.get(day.dataset.date)||{all:0,montages:0,measure:0};
         const span=day.querySelector('span'),i=day.querySelector('i');
-        if(span)span.textContent=`${d.all} ${countWord(d.all)}`;
+        if(span)span.textContent=`${d.montages} ${countWord(d.montages)}`;
         if(i)i.textContent=`${d.montages}/3${d.measure?' · замер':''}`;
         day.classList.toggle('partial',d.montages===1);
         day.classList.toggle('busy',d.montages===2);
@@ -38,14 +38,19 @@
       });
     };
     const css=document.createElement('style');
-    css.textContent='.calendar .day.partial{background:#eef2ea!important;box-shadow:none!important;border-color:rgba(104,119,91,.18)!important}.calendar .day.busy{background:#dfe8d9!important;box-shadow:none!important;border-color:rgba(104,119,91,.28)!important}.calendar .day.full{background:#263126!important;box-shadow:none!important;color:#fff!important}.calendar .day.full span,.calendar .day.full i{color:rgba(255,255,255,.68)!important}';
+    css.textContent=`
+      .day.partial,.day.busy,.day.full{color:#172019!important;-webkit-text-fill-color:#172019!important;}
+      .day.partial span,.day.partial i,.day.busy span,.day.busy i,.day.full span,.day.full i{color:#68715f!important;-webkit-text-fill-color:#68715f!important;opacity:1!important;}
+      .day.partial{background:#eef2ea!important;box-shadow:inset 0 -5px 0 #d5ddcc!important;border-color:#d4dacd!important;}
+      .day.busy{background:#e3e9dd!important;box-shadow:inset 0 -5px 0 #c4cfb9!important;border-color:#cfd8c7!important;}
+      .day.full{background:#d7dfcf!important;box-shadow:inset 0 -5px 0 #aebca3!important;border-color:#c4cfbc!important;}
+      .day.full b{color:#172019!important;-webkit-text-fill-color:#172019!important;}
+    `;
     document.head.appendChild(css);
     const start=()=>{
       render();
       const cal=document.querySelector('#calendar');
       if(cal)new MutationObserver(render).observe(cal,{childList:true,subtree:true});
-      document.querySelector('#prevMonth')?.addEventListener('click',()=>setTimeout(render,0));
-      document.querySelector('#nextMonth')?.addEventListener('click',()=>setTimeout(render,0));
     };
     authMod.onAuthStateChanged(auth,u=>{
       if(!u){jobs=[];render();return;}
