@@ -29,6 +29,18 @@ async function boot(){
     source = source.slice(0, calendarStart) + calendarFix + source.slice(calendarEnd);
   }
 
+  // Keep calendar typography identical on empty and filled days.
+  // Some older theme rules set filled-day labels to white; override those rules
+  // at runtime so contrast cannot regress when the calendar is rebuilt.
+  const calendarContrast=document.createElement('style');
+  calendarContrast.textContent=`
+    .calendar .day.partial,.calendar .day.busy,.calendar .day.full{color:#172019!important;-webkit-text-fill-color:#172019!important;}
+    .calendar .day.partial b,.calendar .day.partial span,.calendar .day.partial i,
+    .calendar .day.busy b,.calendar .day.busy span,.calendar .day.busy i,
+    .calendar .day.full b,.calendar .day.full span,.calendar .day.full i{color:#172019!important;-webkit-text-fill-color:#172019!important;opacity:1!important;}
+  `;
+  document.head.appendChild(calendarContrast);
+
   const blob = new Blob([source], {type:'text/javascript'});
   const url = URL.createObjectURL(blob);
   try {
