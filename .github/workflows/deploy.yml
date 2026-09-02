@@ -20,41 +20,8 @@ jobs:
       - name: Checkout canonical production branch
         uses: actions/checkout@v4
 
-      - name: Patch important block inside app.js
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('app.js')
-          s=p.read_text()
-          marker='/* MONTAJ-AA-IN-APP-IMPORTANT-v1 */'
-          old="late=state.jobs.filter(j=>!isCancelled(j)&&!isDone(j)&&j.date<d).length"
-          new="late=state.jobs.filter(j=>j?.type==='Монтаж'&&j?.status==='Перенос').length"
-          if marker not in s:
-              if old not in s:
-                  raise SystemExit('Expected overdue expression not found')
-              s=s.replace(old,new,1)
-              s += r'''
-
-/* MONTAJ-AA-IN-APP-IMPORTANT-v1 */
-(()=>{
-  const overdueJobs=()=>state.jobs.filter(j=>j?.type==='Монтаж'&&j?.status==='Перенос');
-  const closeOverdue=()=>{const m=document.querySelector('#importantTransfersModal');if(m){m.classList.remove('open');m.setAttribute('aria-hidden','true');document.body.classList.remove('modal-open')}};
-  const openOverdue=()=>{
-    const jobs=overdueJobs();
-    let m=document.querySelector('#importantTransfersModal');
-    if(!m){m=document.createElement('div');m.id='importantTransfersModal';m.className='modal';m.setAttribute('aria-hidden','true');document.body.appendChild(m)}
-    const rows=jobs.map(j=>`<article class="job-card"><div class="job-top"><div><div class="job-client">${esc(j.client||'Без клиента')}</div><div class="job-meta">${esc(j.date||'')} · ${esc(j.type||'Монтаж')}${j.store?' · '+esc(j.store):''}</div></div><div class="amount">${money(j.price)}</div></div><div class="job-details">${j.address?`<div class="detail-line">📍 ${esc(j.address)}</div>`:''}<div class="card-status"><span class="status-pill">Перенос</span></div>${j.comment?`<div class="detail-line note-line">${esc(j.comment)}</div>`:''}</div><div class="actions"><button type="button" class="action-chip primary-chip" data-important-transfer-id="${esc(j.id)}">Открыть монтаж</button></div></article>`).join('')||'<div style="padding:24px;text-align:center">Нет монтажей со статусом «Перенос».</div>';
-    m.innerHTML=`<div class="backdrop" data-important-close="1"></div><div class="sheet"><div class="handle"></div><div class="sheet-head"><div><div class="eyebrow">Что важно</div><h2>Просроченные выезды</h2><small>${jobs.length} ${jobs.length===1?'выезд':jobs.length>=2&&jobs.length<=4?'выезда':'выездов'}</small></div><button type="button" class="circle-btn" data-important-close="1">×</button></div><div class="important-transfer-list">${rows}</div></div>`;
-    m.classList.add('open');m.setAttribute('aria-hidden','false');document.body.classList.add('modal-open');
-  };
-  const openSpecific=id=>{const j=state.jobs.find(x=>String(x.id)===String(id));if(!j)return;closeOverdue();document.querySelector('[data-screen="scheduleScreen"]')?.click();setTimeout(()=>{document.querySelector(`.day[data-date="${j.date||''}"]`)?.click();setTimeout(()=>{const card=[...document.querySelectorAll('[data-job-card]')].find(x=>String(x.dataset.jobCard)===String(id));card?.querySelector('.edit')?.click()},220)},140)};
-  document.addEventListener('click',e=>{const c=e.target.closest?.('[data-important-close="1"]');if(c){e.preventDefault();e.stopPropagation();closeOverdue();return}const o=e.target.closest?.('[data-open-overdue="1"]');if(o){e.preventDefault();e.stopPropagation();openOverdue();return}const x=e.target.closest?.('[data-important-transfer-id]');if(x){e.preventDefault();e.stopPropagation();openSpecific(x.dataset.importantTransferId)}},true);
-  const css=document.createElement('style');css.textContent='#insights .insight[data-open-overdue="1"]{cursor:pointer!important;pointer-events:auto!important;touch-action:manipulation!important}#importantTransfersModal .important-transfer-list{display:grid;gap:12px;max-height:65vh;overflow:auto;padding-bottom:8px}#importantTransfersModal .job-card{margin:0}#importantTransfersModal .sheet{max-height:88vh}';document.head.appendChild(css);
-})();
-'''
-              p.write_text(s)
-          PY
+      - name: Apply safe in-app important patch
+        run: python3 tools/patch-important-block.py
 
       - name: Commit in-app patch
         shell: bash
@@ -63,7 +30,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add app.js
           if git diff --cached --quiet; then
-            echo "No patch commit needed"
+            echo "No app patch needed"
           else
             git commit -m "implement important block inside app"
             git push origin HEAD:Astera-smart
