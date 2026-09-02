@@ -53,7 +53,7 @@ function startRealtime(){
   __adapter().startRealtimeV2();
   unsubscribeNotes?.();
   if(!user||!online)return;
-  unsubscribeNotes=F.onSnapshot(F.collection(db,'notes'),snap=>{if(!online)return;notes=snap.docs.map(d=>d.data()).filter(visibleNote);renderNotes()},err=>{console.error('notes onSnapshot error',err);toast('Заметки: нет связи с сервером','error')});
+  unsubscribeNotes=F.onSnapshot(F.collection(db,'notes'),snap=>{if(!online)return;notes=snap.docs.map(d=>d.data()).filter(visibleNote);renderNotes()},err=>{console.error('notes onSnapshot error',err);toast('Заметки: '+(err.code||err.message||'ошибка'),'error')});
 }
 async function saveShared(mutator){
   return __adapter().saveSharedV2(mutator);

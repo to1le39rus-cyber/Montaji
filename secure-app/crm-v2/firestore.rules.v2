@@ -16,6 +16,17 @@ service cloud.firestore {
     function isStore() { return myRole() == 'store'; }
     function isActiveUser() { return signedIn() && myUser().active == true; }
 
+    function noteVisible(n) {
+      let u = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return u.active == true && (
+        u.role == 'manager' ||
+        n.ownerUid == request.auth.uid ||
+        (n.visibility == 'public' && (u.role == 'installer' || u.role == 'manager')) ||
+        (n.visibility == 'urgent' && (u.role == 'installer' || u.role == 'manager')) ||
+        (n.visibility == 'urgent' && u.role == 'store' && n.linkedStoreId == u.storeId)
+      );
+    }
+
     // ---------- users ----------
     match /users/{uid} {
       allow read: if signedIn() && (request.auth.uid == uid || isTeam());
@@ -48,14 +59,7 @@ service cloud.firestore {
 
     // ---------- notes ----------
     match /notes/{noteId} {
-      allow read: if isActiveUser() && (
-        isManager() ||
-        resource.data.ownerUid == request.auth.uid ||
-        (resource.data.visibility == 'public' && isTeam()) ||
-        (resource.data.visibility == 'urgent' && isTeam()) ||
-        (resource.data.visibility == 'urgent' && isStore()
-          && resource.data.linkedStoreId == myStoreId())
-      );
+      allow read: if signedIn() && noteVisible(resource.data);
       allow create: if isActiveUser() && (isTeam() || isStore())
         && request.resource.data.ownerUid == request.auth.uid;
       allow update: if isActiveUser() && (
