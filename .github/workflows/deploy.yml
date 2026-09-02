@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: montaji-aa-production
@@ -19,22 +19,6 @@ jobs:
     steps:
       - name: Checkout canonical production branch
         uses: actions/checkout@v4
-
-      - name: Apply safe in-app important patch
-        run: python3 tools/patch-important-block.py
-
-      - name: Commit in-app patch
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app.js
-          if git diff --cached --quiet; then
-            echo "No app patch needed"
-          else
-            git commit -m "implement important block inside app"
-            git push origin HEAD:Astera-smart
-          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
