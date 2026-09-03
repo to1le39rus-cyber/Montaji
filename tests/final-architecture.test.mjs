@@ -84,10 +84,13 @@ test('mobile UX protects the viewport', () => {
   assert.match(css, /max-width:100%/);
 });
 
-test('Firestore security requires authenticated Firebase clients', () => {
-  assert.match(rules, /request\.auth != null/);
-  assert.match(rules, /match \/appData\/shared/);
-  assert.match(rules, /match \/appData\/notes/);
+test('Firestore shared data is restricted to the two operators', () => {
+  assert.match(rules, /function isOperator\(\)/);
+  assert.match(rules, /tkrp@bk\.ru/);
+  assert.match(rules, /titoworld@bk\.ru/);
+  assert.match(rules, /match \/appData\/shared[\s\S]*allow read, write: if isOperator\(\);/);
+  assert.match(rules, /match \/appData\/notes[\s\S]*allow read, write: if isOperator\(\);/);
+  assert.doesNotMatch(rules, /match \/appData\/shared[\s\S]*allow read, write: if signedIn\(\);/);
 });
 
 test('quick actions and daily workflow remain wired', () => {
