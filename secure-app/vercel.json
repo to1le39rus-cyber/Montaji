@@ -7,6 +7,7 @@
     { "source": "/montaji-design-v2.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/montaji-design-v2.css" },
     { "source": "/app.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/app.js" },
     { "source": "/boot.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/boot.js" },
+    { "source": "/notes-ui.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/notes-ui.js" },
     { "source": "/firebase-config.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/firebase-config.js" },
     { "source": "/manifest.json", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/manifest.json" },
     { "source": "/icon.svg", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/icon.svg" }
