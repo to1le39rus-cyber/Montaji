@@ -37,8 +37,8 @@ test('notes are integrated in app.js without runtime patch hacks', () => {
 });
 
 test('notes realtime failures do not replace shared state', () => {
-  has(/onSnapshot\(notesRef,\s*\([^)]*\)\s*=>/);
-  assert.ok(/notesRef/.test(app));
+  assert.match(app, /unsubscribeNotes=F\.onSnapshot\(F\.doc\(db,\.\.\.NOTES_DOC\)/);
+  assert.match(app, /unsubscribeNotes=.*?\(\)=>\{\}/);
 });
 
 test('two operator accounts are enforced for legacy production data', () => {
@@ -47,7 +47,7 @@ test('two operator accounts are enforced for legacy production data', () => {
   assert.match(rules, /'titoworld@bk\.ru'/);
   assert.match(rules, /match \/appData\/shared/);
   assert.match(rules, /match \/appData\/notes/);
-  assert.match(rules, /allow read, write: if isOperator\(\)/);
+  assert.match(rules, /allow read, write: if signedIn\(\) && isOperator\(\)/);
 });
 
 test('no legacy production patch files are required', () => {
@@ -63,7 +63,7 @@ test('maps use Russian providers', () => {
 });
 
 test('daily capacity stays at three montage windows', () => {
-  assert.match(app, /3/);
+  assert.match(app, /\['1','2','3'\]/);
   has(/montageCount/);
   has(/freeSlot/);
 });
@@ -75,6 +75,7 @@ test('financial semantics preserve future jobs and history', () => {
 });
 
 test('main data load is independent from notes', () => {
-  has(/getDocFromServer\([^\n]*shared/);
-  has(/getDocFromServer\([^\n]*notes/);
+  assert.match(app, /getDocFromServer\(F\.doc\(db,\.\.\.SHARED_DOC\)\)/);
+  assert.match(app, /getDocFromServer\(F\.doc\(db,\.\.\.NOTES_DOC\)\)/);
+  assert.match(app, /Promise\.all\(\[/);
 });
