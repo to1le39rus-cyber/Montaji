@@ -3,8 +3,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() { return request.auth != null; }
 
-    // The existing production dataset is intentionally restricted to the two
-    // current operators. Do not broaden this without an explicit migration.
+    // Production shared data is restricted to the two current operators.
     function isOperator() {
       return signedIn() && request.auth.token.email in [
         'tkrp@bk.ru',
@@ -12,20 +11,14 @@ service cloud.firestore {
       ];
     }
 
-    // Transitional compatibility layer.
-    // The current production client still stores the existing real dataset in
-    // appData/shared and appData/notes. Keep these writable for the two
-    // authenticated operators so existing data remains usable.
     match /appData/shared {
-      allow read, write: if isOperator();
+      allow read, write: if signedIn() && isOperator();
     }
 
     match /appData/notes {
-      allow read, write: if isOperator();
+      allow read, write: if signedIn() && isOperator();
     }
 
-    // Role-based user profiles. A user can create only their own pending
-    // profile; managers can maintain team profiles.
     function myUser() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
@@ -52,8 +45,6 @@ service cloud.firestore {
       allow write: if isManager();
     }
 
-    // New role-based job/expense collections are available without touching
-    // the existing appData dataset.
     match /jobs/{jobId} {
       allow read, create, update: if isActiveUser() && isTeam();
       allow delete: if false;
