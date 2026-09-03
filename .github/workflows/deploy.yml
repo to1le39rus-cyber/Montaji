@@ -19,18 +19,15 @@ jobs:
     steps:
       - name: Checkout canonical production branch
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
-      - name: Apply final notes architecture
+      - name: Apply final notes architecture once
         shell: bash
         run: |
           if grep -q 'data-note-done' app.js; then
-            echo 'Notes architecture already applied.'
+            echo 'Migration already applied.'
             exit 0
           fi
-          echo 'aW1wb3J0IHJlIGZyb20gcGF0aGxpYiBpbXBvcnQgUGF0aAoKaXQ9UGF0aCgnYXBwLmpzJykKcD1pdAoK' | base64 -d > /tmp/patch.py
-          python3 /tmp/patch.py
+          python3 scripts/final_notes_migration.py
           python3 - <<'PY'
 from pathlib import Path
 p=Path('tests/final-architecture.test.mjs')
