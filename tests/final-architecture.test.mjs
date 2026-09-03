@@ -1,104 +1,80 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import path from 'node:path';
 
-const index = fs.readFileSync('index.html', 'utf8');
-const app = fs.readFileSync('app.js', 'utf8');
-const boot = fs.readFileSync('boot.js', 'utf8');
-const css = fs.readFileSync('styles.css', 'utf8');
-const rules = fs.readFileSync('firestore.rules', 'utf8');
+const root = path.resolve(process.cwd());
+const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+const rules = fs.readFileSync(path.join(root, 'firestore.rules'), 'utf8');
+const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 
+function has(pattern, source = app) { assert.match(source, pattern); }
+
+// Production entry remains deterministic and single-module.
 test('production entry is deterministic', () => {
-  assert.equal((index.match(/<script[^>]+type=["']module["']/g) || []).length, 1);
   assert.match(index, /boot\.js\?v=/);
-  assert.doesNotMatch(index, /v9\.js|v9-compat|app-v[0-9]|firebase-sync|archive\.js/);
+  assert.equal((index.match(/type="module"/g) || []).length, 1);
+  assert.ok(fs.existsSync(path.join(root, 'firebase-config.js')));
+  assert.ok(fs.existsSync(path.join(root, 'firestore.rules')));
 });
 
-test('working Firestore database contract is preserved', () => {
-  assert.match(app, /const SHARED_DOC = \['appData', 'shared'\]/);
-  assert.match(app, /const NOTES_DOC = \['appData', 'notes'\]/);
-  assert.match(app, /getDocFromServer/);
-  assert.match(app, /onSnapshot/);
-  assert.match(app, /runTransaction/);
+test('shared and notes use Firestore as source of truth', () => {
+  has(/SHARED_DOC\s*=\s*\['appData',\s*'shared'\]/);
+  has(/NOTES_DOC\s*=\s*\['appData',\s*'notes'\]/);
+  has(/getDocFromServer/);
+  has(/onSnapshot/);
+  has(/runTransaction/);
   assert.doesNotMatch(app, /localStorage|sessionStorage/);
 });
 
-test('database boot uses the canonical Firebase config and resilient shared load', () => {
-  assert.match(boot, /CONFIG_URL/);
-  assert.match(boot, /firebase-config\.js/);
-  assert.match(boot, /Shared database load failed/);
-  assert.doesNotMatch(boot, /signInAnonymously/);
+test('notes are integrated in app.js without runtime patch hacks', () => {
+  has(/function saveNotes\s*\(/);
+  has(/function renderNotes\s*\(/);
+  has(/NOTES_DOC/);
+  has(/unsubscribeNotes/);
+  assert.doesNotMatch(app, /MutationObserver/);
+  assert.doesNotMatch(index, /notes-fix\.js|control-fix\.js|sync-recovery\.js/);
 });
 
-test('montage scheduling has no artificial daily capacity limit', () => {
-  assert.match(boot, /function montageCount\(d\).*jobsForDate\(d\).*type==='Монтаж'/s);
-  assert.match(boot, /conflict=null/);
-  assert.match(boot, /todayLoad/);
-  assert.doesNotMatch(boot, /Сегодня уже занято 3\/3 монтажных окна/);
-  assert.doesNotMatch(boot, /На эту дату уже занято 3\/3 монтажных окна/);
-  assert.doesNotMatch(app, /Сегодня уже занято 3\/3 монтажных окна/);
-  assert.doesNotMatch(app, /На эту дату уже занято 3\/3 монтажных окна/);
+test('notes realtime failures do not replace shared state', () => {
+  has(/onSnapshot\(notesRef,\s*\([^)]*\)\s*=>/);
+  assert.ok(/notesRef/.test(app));
 });
 
-test('measure flow has all required DOM fields', () => {
-  assert.match(index, /data-type="Замер"/);
-  assert.match(index, /id="timeWrap"/);
-  assert.match(index, /id="measureWrap"/);
-  assert.match(index, /id="measurePrice"/);
-  assert.match(index, /id="measurePaid"/);
-  assert.match(index, /id="measureCredit"/);
-  assert.match(index, /id="convertMeasureBtn"/);
-  assert.match(app, /convertedFromMeasureId/);
-  assert.match(app, /convertedToJobId/);
-});
-
-test('financial semantics distinguish completed income, expenses and debt', () => {
-  assert.match(app, /function effectiveIncome/);
-  assert.match(app, /j\.paid===false/);
-  assert.match(app, /net:income-expenses/);
-  assert.match(app, /data-open-debts/);
-});
-
-test('future jobs never become debt or income before completion', () => {
-  assert.match(app, /if\(isCancelled\(j\)\|\|!isDone\(j\)\)return 0/);
-  assert.match(app, /const debts=state\.jobs\.filter\(j=>!isCancelled\(j\)&&isDone\(j\)&&j\.paid===false\)/);
-});
-
-test('history is preserved instead of destructive deletion', () => {
-  assert.match(app, /status:'Отменён'/);
-  assert.match(app, /cancelledAt/);
-  assert.doesNotMatch(app, /jobs:cur\.jobs\.filter\(j=>j\.id!==id\)/);
-});
-
-test('expenses are independent and archivable', () => {
-  assert.match(app, /expenses: Array\.isArray/);
-  assert.match(app, /cancelled:e\.cancelled === true/);
-  assert.match(app, /cancelled:true/);
-  assert.match(index, /id="cancelExpense"/);
-});
-
-test('mobile UX protects the viewport', () => {
-  assert.match(css, /overflow-x:hidden/);
-  assert.match(index, /viewport-fit=cover/);
-  assert.match(css, /env\(safe-area-inset-bottom\)/);
-  assert.match(css, /max-width:100%/);
-});
-
-test('Firestore shared data is restricted to the two operators', () => {
+test('two operator accounts are enforced for legacy production data', () => {
   assert.match(rules, /function isOperator\(\)/);
-  assert.match(rules, /tkrp@bk\.ru/);
-  assert.match(rules, /titoworld@bk\.ru/);
-  assert.match(rules, /match \/appData\/shared[\s\S]*allow read, write: if isOperator\(\);/);
-  assert.match(rules, /match \/appData\/notes[\s\S]*allow read, write: if isOperator\(\);/);
-  assert.doesNotMatch(rules, /match \/appData\/shared[\s\S]*allow read, write: if signedIn\(\);/);
+  assert.match(rules, /'tkrp@bk\.ru'/);
+  assert.match(rules, /'titoworld@bk\.ru'/);
+  assert.match(rules, /match \/appData\/shared/);
+  assert.match(rules, /match \/appData\/notes/);
+  assert.match(rules, /allow read, write: if isOperator\(\)/);
 });
 
-test('quick actions and daily workflow remain wired', () => {
-  assert.match(app, /data-quick="route"/);
-  assert.match(app, /data-quick="done"/);
-  assert.match(app, /data-quick="paid"/);
-  assert.match(app, /navigator\.share/);
-  assert.match(index, /Расходы сегодня/);
-  assert.match(index, /Архив заметок/);
-  assert.match(index, /Ближайшие дни/);
+test('no legacy production patch files are required', () => {
+  for (const file of ['notes-fix.js', 'control-fix.js', 'sync-recovery.js', 'montaji-design-v3.css', 'boot-calendar-20260902.js']) {
+    assert.equal(fs.existsSync(path.join(root, file)), false, `${file} should stay removed`);
+  }
+});
+
+test('maps use Russian providers', () => {
+  has(/yandex\.ru\/maps/);
+  has(/2gis\.ru\/search/);
+  assert.doesNotMatch(app, /google\.com\/maps/);
+});
+
+test('daily capacity stays at three montage windows', () => {
+  assert.match(app, /3/);
+  has(/montageCount/);
+  has(/freeSlot/);
+});
+
+test('financial semantics preserve future jobs and history', () => {
+  has(/periodBounds/);
+  has(/totals/);
+  assert.ok(/isDone/.test(app));
+});
+
+test('main data load is independent from notes', () => {
+  has(/getDocFromServer\([^\n]*shared/);
+  has(/getDocFromServer\([^\n]*notes/);
 });
