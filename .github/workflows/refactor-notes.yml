@@ -1,0 +1,67 @@
+name: One-time notes isolation refactor
+
+on:
+  push:
+    branches: [Astera-smart]
+
+permissions:
+  contents: write
+
+jobs:
+  refactor:
+    if: startsWith(github.event.head_commit.message, 'chore: run one-time notes isolation refactor')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: Astera-smart
+          fetch-depth: 1
+      - name: Refactor notes isolation
+        shell: python
+        run: |
+          from pathlib import Path
+
+          app = Path('app.js')
+          s = app.read_text()
+
+          s = s.replace(
+              "let F, auth, db, user, unsubscribeShared=null, unsubscribeNotes=null; let state=emptyState(), notes=[], serverReady=false, online=navigator.onLine;",
+              "let F, auth, db, user, unsubscribeShared=null, unsubscribeNotes=null; let state=emptyState(), notes=[], serverReady=false, notesServerReady=false, online=navigator.onLine;"
+          )
+
+          old = """async function loadServer(){if(!user||!online){serverReady=false;state=emptyState();notes=[];render();status('Нет интернета · данные не загружены','offline');return false;}status('Подключаем общую базу…');try{const [sharedSnap,notesSnap]=await Promise.all([F.getDocFromServer(F.doc(db,...SHARED_DOC)),F.getDocFromServer(F.doc(db,...NOTES_DOC))]);state=sharedSnap.exists()?normalize(sharedSnap.data().data):emptyState();notes=currentNotesData(notesSnap);serverReady=true;render();status('● Общая база · синхронизировано','online');return true;}catch(err){console.error(err);serverReady=false;state=emptyState();notes=[];render();status('База недоступна','offline');toast('Не удалось получить данные с сервера.','error');return false;}}"""
+          new = """async function loadServer(){if(!user||!online){serverReady=false;notesServerReady=false;state=emptyState();notes=[];render();status('Нет интернета · данные не загружены','offline');return false;}status('Подключаем общую базу…');try{const sharedSnap=await F.getDocFromServer(F.doc(db,...SHARED_DOC));state=sharedSnap.exists()?normalize(sharedSnap.data().data):emptyState();serverReady=true;render();status('● Общая база · синхронизировано','online');}catch(err){console.error(err);serverReady=false;state=emptyState();render();status('База недоступна','offline');toast('Не удалось получить данные с сервера.','error');return false;}try{const notesSnap=await F.getDocFromServer(F.doc(db,...NOTES_DOC));notes=currentNotesData(notesSnap);notesServerReady=true;renderNotes();}catch(err){console.warn('Notes load skipped',err);notesServerReady=false;notes=[];renderNotes();}return true;}"""
+          if old not in s:
+              raise SystemExit('loadServer block not found')
+          s = s.replace(old, new, 1)
+
+          old = """unsubscribeNotes=F.onSnapshot(F.doc(db,...NOTES_DOC),snap=>{if(!online)return;notes=currentNotesData(snap);renderNotes()},()=>{});"""
+          new = """unsubscribeNotes=F.onSnapshot(F.doc(db,...NOTES_DOC),snap=>{if(!online)return;notes=currentNotesData(snap);notesServerReady=true;renderNotes()},()=>{notesServerReady=false});"""
+          if old not in s:
+              raise SystemExit('notes realtime block not found')
+          s = s.replace(old, new, 1)
+
+          old = """async function saveNotes(mutator){if(!serverReady||!online||!user)throw new Error('Нет соединения с общей базой');"""
+          new = """async function saveNotes(mutator){if(!online||!user)throw new Error('Нет соединения с заметками');"""
+          if old not in s:
+              raise SystemExit('saveNotes guard not found')
+          s = s.replace(old, new, 1)
+
+          app.write_text(s)
+
+          tests = Path('tests/final-architecture.test.mjs')
+          t = tests.read_text()
+          old_test = """test('main data load is independent from notes', () => {\n  assert.match(app, /getDocFromServer\\(F\\.doc\\(db,...SHARED_DOC\\)\\)/);\n  assert.match(app, /getDocFromServer\\(F\\.doc\\(db,...NOTES_DOC\\)\\)/);\n  assert.match(app, /Promise\\.all\\(\\[/);\n});"""
+          new_test = """test('main data load is independent from notes', () => {\n  assert.match(app, /const sharedSnap=await F\\.getDocFromServer\\(F\\.doc\\(db,...SHARED_DOC\\)\\)/);\n  assert.match(app, /const notesSnap=await F\\.getDocFromServer\\(F\\.doc\\(db,...NOTES_DOC\\)\\)/);\n  assert.doesNotMatch(app, /Promise\\.all\\(\\[F\\.getDocFromServer\\(F\\.doc\\(db,...SHARED_DOC\\)/);\n  assert.match(app, /catch\\(err\\)\\{console\\.warn\\('Notes load skipped'/);\n});\n\ntest('notes writes do not depend on shared-data readiness', () => {\n  assert.match(app, /async function saveNotes\\(mutator\\)\\{if\\(!online\\|\\|!user\\)/);\n  assert.match(app, /notesServerReady=false/);\n});"""
+          if old_test not in t:
+              raise SystemExit('test block not found')
+          tests.write_text(t.replace(old_test, new_test, 1))
+
+          Path('.github/workflows/refactor-notes.yml').unlink()
+      - name: Commit refactor
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js tests/final-architecture.test.mjs .github/workflows/refactor-notes.yml
+          git commit -m "refactor: isolate notes from shared data load"
+          git push origin Astera-smart
