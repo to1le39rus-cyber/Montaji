@@ -1,15 +1,24 @@
-const APP_URL = new URL('app.js?runtime=20260831-stable-1', location.href);
+const APP_URL = new URL('app.js?runtime=20260903-stable-2', location.href);
 
 async function boot(){
   const response = await fetch(APP_URL, {cache:'no-store'});
   if(!response.ok) throw new Error(`APP_LOAD_${response.status}`);
   let source = await response.text();
+
   const calendarStart = source.indexOf('function renderCalendar(){');
   const calendarEnd = source.indexOf('function openDay', calendarStart);
   if(calendarStart !== -1 && calendarEnd !== -1){
     const calendarFix = `function renderCalendar(){const y=month.getFullYear(),m=month.getMonth(),start=(new Date(y,m,1).getDay()+6)%7,last=new Date(y,m+1,0).getDate();let h='';for(let i=0;i<start;i++)h+='<div class="day blank"></div>';const montageWord=n=>n===1?'монтаж':(n>=2&&n<=4?'монтажа':'монтажей');for(let n=1;n<=last;n++){const k=dateKey(new Date(y,m,n)),js=jobsForDate(k),montages=js.filter(j=>j.type==='Монтаж'),c=montages.length,hasMeasure=js.some(isMeasure);h+=\`<button class="day \${c>=3?'full':c===2?'busy':c?'partial':''} \${hasMeasure?'has-measure':''} \${k===today()?'today':''}" data-date="\${k}"><b>\${n}</b><span>\${c} \${montageWord(c)}</span><i>\${c}/3\${hasMeasure?' · замер':''}</i></button>\`; }$('#scheduleMonth').textContent=new Intl.DateTimeFormat('ru-RU',{month:'long',year:'numeric'}).format(month);$('#calendar').innerHTML=h;$$('.day[data-date]').forEach(b=>b.onclick=()=>openDay(b.dataset.date));}`;
     source = source.slice(0, calendarStart) + calendarFix + source.slice(calendarEnd);
   }
+
+  const loadStart = source.indexOf('async function loadServer(){');
+  const realtimeStart = source.indexOf('function startRealtime(){', loadStart);
+  if(loadStart !== -1 && realtimeStart !== -1){
+    const loadFix = `async function loadServer(){if(!user||!online){serverReady=false;state=emptyState();notes=[];render();status('Нет интернета · данные не загружены','offline');return false;}status('Подключаем общую базу…');try{const sharedSnap=await F.getDocFromServer(F.doc(db,...SHARED_DOC));state=sharedSnap.exists()?normalize(sharedSnap.data().data):emptyState();serverReady=true;notes=[];render();status('● Общая база · синхронизировано','online');}catch(err){console.error(err);serverReady=false;state=emptyState();notes=[];render();status('База недоступна','offline');toast('Не удалось получить данные с сервера.','error');return false;}try{const notesSnap=await F.getDocFromServer(F.doc(db,...NOTES_DOC));notes=currentNotesData(notesSnap);}catch(err){console.warn('Notes load skipped',err);notes=[];}renderNotes();return true;}`;
+    source = source.slice(0, loadStart) + loadFix + source.slice(realtimeStart);
+  }
+
   const calendarContrast=document.createElement('style');
   calendarContrast.textContent=`
     .calendar .day.partial,.calendar .day.busy,.calendar .day.full{color:#172019!important;-webkit-text-fill-color:#172019!important;}
