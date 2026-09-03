@@ -1,4 +1,4 @@
-const APP_URL = new URL('app.js?runtime=20260903-stable-2', location.href);
+const APP_URL = new URL('app.js?runtime=20260903-stable-3', location.href);
 
 async function boot(){
   const response = await fetch(APP_URL, {cache:'no-store'});
@@ -29,6 +29,10 @@ async function boot(){
   document.head.appendChild(calendarContrast);
   const blob = new Blob([source], {type:'text/javascript'});
   const url = URL.createObjectURL(blob);
-  try { await import(url); } finally { URL.revokeObjectURL(url); }
+  try {
+    await import(url);
+    const notesUrl = new URL('notes-ui.js?v=20260903-1', location.href);
+    await import(notesUrl.href);
+  } finally { URL.revokeObjectURL(url); }
 }
 boot().catch(error=>{console.error('Montaji boot failed',error);const el=document.querySelector('#syncStatus');if(el){el.textContent='Ошибка запуска';el.dataset.state='offline'}const toast=document.querySelector('#toast');if(toast){toast.textContent=`Не удалось запустить приложение: ${error?.message||'ошибка'}`;toast.dataset.state='error'}});
