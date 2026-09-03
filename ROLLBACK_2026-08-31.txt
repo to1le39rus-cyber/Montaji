@@ -1,2 +1,1 @@
 Stable rollback checkpoint: 1a21e3b4f4de57a4816fa840ef6fe43829aad5f4
-Controlled notes refactor trigger.
