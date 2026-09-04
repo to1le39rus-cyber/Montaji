@@ -8,10 +8,7 @@ async function boot(){
   if(!response.ok) throw new Error(`APP_LOAD_${response.status}`);
   let source = await response.text();
   source = source.replace('.slice(0,40).map(e=>', '.slice(0,1000).map(e=>');
-  source = source.replace(
-    "if(t.unpaid)advice.push(`💰 ${money(t.unpaid)} ещё не оплачено`);",
-    "const allUnpaid=state.jobs.filter(j=>!isCancelled(j)&&isDone(j)&&j.paid===false).reduce((s,j)=>s+effectiveIncome(j),0);if(allUnpaid)advice.push(`💰 ${money(allUnpaid)} ещё не оплачено`);"
-  );
+  source = source.replace("if(t.unpaid)advice.push(`💰 ${money(t.unpaid)} ещё не оплачено`);", "const allUnpaid=state.jobs.filter(j=>!isCancelled(j)&&isDone(j)&&j.paid===false).reduce((s,j)=>s+effectiveIncome(j),0);if(allUnpaid)advice.push(`💰 ${money(allUnpaid)} ещё не оплачено`);");
 
   const calendarStart = source.indexOf('function renderCalendar(){');
   const calendarEnd = source.indexOf('function openDay', calendarStart);
@@ -28,12 +25,7 @@ async function boot(){
   }
 
   const calendarContrast=document.createElement('style');
-  calendarContrast.textContent=`
-    .calendar .day.partial,.calendar .day.busy,.calendar .day.full{color:#172019!important;-webkit-text-fill-color:#172019!important;}
-    .calendar .day.partial b,.calendar .day.partial span,.calendar .day.partial i,
-    .calendar .day.busy b,.calendar .day.busy span,.calendar .day.busy i,
-    .calendar .day.full b,.calendar .day.full span,.calendar .day.full i{color:#172019!important;-webkit-text-fill-color:#172019!important;opacity:1!important;}
-  `;
+  calendarContrast.textContent=`.calendar .day.partial,.calendar .day.busy,.calendar .day.full{color:#172019!important;-webkit-text-fill-color:#172019!important}.calendar .day.partial b,.calendar .day.partial span,.calendar .day.partial i,.calendar .day.busy b,.calendar .day.busy span,.calendar .day.busy i,.calendar .day.full b,.calendar .day.full span,.calendar .day.full i{color:#172019!important;-webkit-text-fill-color:#172019!important;opacity:1!important}`;
   document.head.appendChild(calendarContrast);
   const blob = new Blob([source], {type:'text/javascript'});
   const url = URL.createObjectURL(blob);
@@ -43,7 +35,7 @@ async function boot(){
     const notesResponse = await fetch(NOTES_URL, {cache:'no-store'});
     if(!notesResponse.ok) throw new Error(`NOTES_LOAD_${notesResponse.status}`);
     const notesSource = await notesResponse.text();
-    const notesBlob = new Blob([notesSource], {type:'text/javascript'};
+    const notesBlob = new Blob([notesSource], {type:'text/javascript'});
     const notesModuleUrl = URL.createObjectURL(notesBlob);
     try { await import(notesModuleUrl); } finally { URL.revokeObjectURL(notesModuleUrl); }
     const moneyResponse = await fetch(MONEY_UI_URL, {cache:'no-store'});
