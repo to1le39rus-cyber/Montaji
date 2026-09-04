@@ -21,7 +21,9 @@
     document.open();document.write(h);document.close();
     let b=boot;
     b=b.replace(/const APP_URL = new URL\('app\.js\?[^']*', location\.href\);/,`const APP_URL = new URL('${base}app.js');`);
-    b=b.replace('let source = await response.text();',`let source = await response.text();\n  source = source.replace("import { firebaseConfig } from './firebase-config.js';", ${JSON.stringify(config)});`);
+    b=b.replace('let source = await response.text();',`let source = await response.text();
+  source = source.replace("import { firebaseConfig } from './firebase-config.js';", ${JSON.stringify(config)});
+  source = source.replace("$('#insights').innerHTML=", "const urgentNotes=notes.filter(n=>n.archived!==true&&/срочно|‼️|‼/.test(String(n.title||'')+' '+String(n.text||'')));urgentNotes.slice(0,2).reverse().forEach(n=>advice.unshift('‼️ '+esc(n.title||'Срочно')+(n.text?' · '+esc(String(n.text).slice(0,140)):'')));$('#insights').innerHTML=");`);
     const s=document.createElement('script');s.type='module';s.textContent=b;document.body.appendChild(s);
   }catch(e){document.getElementById('boot').innerHTML='<div>Не удалось загрузить приложение<br><small>'+String(e?.message||e)+'</small></div>';console.error(e)}})();
   </script>
