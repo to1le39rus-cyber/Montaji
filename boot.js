@@ -1,6 +1,6 @@
 const APP_URL = new URL('app.js?runtime=20260904-notes-4', location.href);
 const NOTES_URL = new URL('https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/notes-ui.js?runtime=20260904-notes-4');
-const MONEY_UI_URL = new URL('money-ui.js?runtime=20260904-money-1', location.href);
+const MONEY_UI_URL = new URL('https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/money-ui.js?runtime=20260904-money-2');
 
 async function boot(){
   const response = await fetch(APP_URL, {cache:'no-store'});
