@@ -1,5 +1,6 @@
 const APP_URL = new URL('app.js?runtime=20260904-notes-4', location.href);
 const NOTES_URL = new URL('https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/notes-ui.js?runtime=20260904-notes-4');
+const MONEY_UI_URL = new URL('money-ui.js?runtime=20260904-money-1', location.href);
 
 async function boot(){
   const response = await fetch(APP_URL, {cache:'no-store'});
@@ -40,6 +41,13 @@ async function boot(){
     const notesModuleUrl = URL.createObjectURL(notesBlob);
     try { await import(notesModuleUrl); }
     finally { URL.revokeObjectURL(notesModuleUrl); }
+    const moneyResponse = await fetch(MONEY_UI_URL, {cache:'no-store'});
+    if(!moneyResponse.ok) throw new Error(`MONEY_UI_LOAD_${moneyResponse.status}`);
+    const moneySource = await moneyResponse.text();
+    const moneyBlob = new Blob([moneySource], {type:'text/javascript'});
+    const moneyModuleUrl = URL.createObjectURL(moneyBlob);
+    try { await import(moneyModuleUrl); }
+    finally { URL.revokeObjectURL(moneyModuleUrl); }
   } finally { URL.revokeObjectURL(url); }
 }
 boot().catch(error=>{console.error('Montaji boot failed',error);const el=document.querySelector('#syncStatus');if(el){el.textContent='Ошибка запуска';el.dataset.state='offline'}const toast=document.querySelector('#toast');if(toast){toast.textContent=`Не удалось запустить приложение: ${error?.message||'ошибка'}`;toast.dataset.state='error'}});
