@@ -6,6 +6,7 @@ async function boot(){
   const response = await fetch(APP_URL, {cache:'no-store'});
   if(!response.ok) throw new Error(`APP_LOAD_${response.status}`);
   let source = await response.text();
+  source = source.replace('.slice(0,40).map(e=>', '.slice(0,1000).map(e=>');
 
   const calendarStart = source.indexOf('function renderCalendar(){');
   const calendarEnd = source.indexOf('function openDay', calendarStart);
