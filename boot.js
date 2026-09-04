@@ -1,12 +1,19 @@
 const APP_URL = new URL('app.js?runtime=20260904-notes-4', location.href);
 const NOTES_URL = new URL('https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/notes-ui.js?runtime=20260904-notes-4');
 const MONEY_UI_URL = new URL('https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/money-ui-v2.js?runtime=20260904-money-3');
+const DEBT_UI_URL = new URL('https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/debt-ui.js?runtime=20260904-debt-1');
 
 async function boot(){
   const response = await fetch(APP_URL, {cache:'no-store'});
   if(!response.ok) throw new Error(`APP_LOAD_${response.status}`);
   let source = await response.text();
   source = source.replace('.slice(0,40).map(e=>', '.slice(0,1000).map(e=>');
+
+  // Surface all unpaid completed jobs in Today → Important, not only debts created today.
+  source = source.replace(
+    "if(t.unpaid)advice.push(`💰 ${money(t.unpaid)} ещё не оплачено`);",
+    "const allUnpaid=state.jobs.filter(j=>!isCancelled(j)&&isDone(j)&&j.paid===false).reduce((s,j)=>s+effectiveIncome(j),0);if(allUnpaid)advice.push(`💰 ${money(allUnpaid)} ещё не оплачено`);"
+  );
 
   const calendarStart = source.indexOf('function renderCalendar(){');
   const calendarEnd = source.indexOf('function openDay', calendarStart);
@@ -49,6 +56,13 @@ async function boot(){
     const moneyModuleUrl = URL.createObjectURL(moneyBlob);
     try { await import(moneyModuleUrl); }
     finally { URL.revokeObjectURL(moneyModuleUrl); }
+    const debtResponse = await fetch(DEBT_UI_URL, {cache:'no-store'});
+    if(!debtResponse.ok) throw new Error(`DEBT_UI_LOAD_${debtResponse.status}`);
+    const debtSource = await debtResponse.text();
+    const debtBlob = new Blob([debtSource], {type:'text/javascript'});
+    const debtModuleUrl = URL.createObjectURL(debtBlob);
+    try { await import(debtModuleUrl); }
+    finally { URL.revokeObjectURL(debtModuleUrl); }
   } finally { URL.revokeObjectURL(url); }
 }
 boot().catch(error=>{console.error('Montaji boot failed',error);const el=document.querySelector('#syncStatus');if(el){el.textContent='Ошибка запуска';el.dataset.state='offline'}const toast=document.querySelector('#toast');if(toast){toast.textContent=`Не удалось запустить приложение: ${error?.message||'ошибка'}`;toast.dataset.state='error'}});
