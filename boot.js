@@ -1,4 +1,4 @@
-const APP_URL = new URL('app.js?runtime=20260904-notes-2', location.href);
+const APP_URL = new URL('app.js?runtime=20260904-notes-3', location.href);
 
 async function boot(){
   const response = await fetch(APP_URL, {cache:'no-store'});
@@ -32,7 +32,7 @@ async function boot(){
   try {
     await import(url);
     await new Promise(resolve=>setTimeout(resolve,1500));
-    await import(new URL('notes-ui.js?v=20260904-2', location.href).href);
+    await import('https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/notes-ui.js?v=20260904-3');
   } finally { URL.revokeObjectURL(url); }
 }
 boot().catch(error=>{console.error('Montaji boot failed',error);const el=document.querySelector('#syncStatus');if(el){el.textContent='Ошибка запуска';el.dataset.state='offline'}const toast=document.querySelector('#toast');if(toast){toast.textContent=`Не удалось запустить приложение: ${error?.message||'ошибка'}`;toast.dataset.state='error'}});
