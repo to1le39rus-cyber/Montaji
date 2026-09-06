@@ -7,11 +7,12 @@ const root = path.resolve(process.cwd());
 const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
 const rules = fs.readFileSync(path.join(root, 'firestore.rules'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const secureIndex = fs.readFileSync(path.join(root, 'secure-app', 'index.html'), 'utf8');
+const secureBoot = fs.readFileSync(path.join(root, 'secure-app', 'boot.js'), 'utf8');
 
 function has(pattern, source = app) { assert.match(source, pattern); }
 
-// Production entry remains deterministic and single-module.
-test('production entry is deterministic', () => {
+test('production entry is deterministic and single-module', () => {
   assert.match(index, /boot\.js\?v=/);
   assert.equal((index.match(/type="module"/g) || []).length, 1);
   assert.ok(fs.existsSync(path.join(root, 'firebase-config.js')));
@@ -30,10 +31,20 @@ test('shared and notes use Firestore as source of truth', () => {
 test('notes are integrated in app.js without runtime patch hacks', () => {
   has(/function saveNotes\s*\(/);
   has(/function renderNotes\s*\(/);
+  has(/function renderInsight\s*\(/);
   has(/NOTES_DOC/);
   has(/unsubscribeNotes/);
   assert.doesNotMatch(app, /MutationObserver/);
-  assert.doesNotMatch(index, /notes-fix\.js|control-fix\.js|sync-recovery\.js/);
+  assert.doesNotMatch(app, /source\.replace\(/);
+  assert.doesNotMatch(secureBoot, /source\.replace\(|Blob|MutationObserver/);
+  assert.doesNotMatch(secureIndex, /notes-bridge|notes-ui|dark-theme|notes-theme|main-screen-final/);
+});
+
+test('Today uses one insight renderer for normal and urgent notes', () => {
+  assert.match(app, /function renderInsight\s*\(/);
+  assert.match(app, /insight--urgent/);
+  assert.match(app, /data-note-open-urgent/);
+  assert.match(app, /renderTodayInsights\(\)/);
 });
 
 test('notes realtime failures do not replace shared state', () => {
@@ -54,6 +65,8 @@ test('no legacy production patch files are required', () => {
   for (const file of ['notes-fix.js', 'control-fix.js', 'sync-recovery.js', 'montaji-design-v3.css', 'boot-calendar-20260902.js']) {
     assert.equal(fs.existsSync(path.join(root, file)), false, `${file} should stay removed`);
   }
+  assert.equal(fs.existsSync(path.join(root, 'notes-ui.js')), false);
+  assert.equal(fs.existsSync(path.join(root, 'secure-app', 'notes-bridge.js')), false);
 });
 
 test('maps use Russian providers', () => {
