@@ -1,12 +1,7 @@
 /* Montaji notes — final visual layer. Data/markup stays untouched. */
-#todayScreen .inline-card:has(#activeNotes){
-  background:var(--card)!important;color:var(--ink)!important;border:1px solid var(--line)!important;border-radius:var(--radius-md)!important;box-shadow:none!important;
-}
+#todayScreen .inline-card:has(#activeNotes){background:var(--card)!important;color:var(--ink)!important;border:1px solid var(--line)!important;border-radius:var(--radius-md)!important;box-shadow:none!important}
 #todayScreen #activeNotes{display:block!important;background:transparent!important;color:var(--ink)!important}
-#todayScreen #activeNotes .note-card,
-#todayScreen #activeNotes .note-card.notes-v2{
-  background:var(--card)!important;color:var(--ink)!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;box-shadow:none!important;padding:16px 0!important;margin:0!important;opacity:1!important;
-}
+#todayScreen #activeNotes .note-card,#todayScreen #activeNotes .note-card.notes-v2{background:var(--card)!important;color:var(--ink)!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;box-shadow:none!important;padding:16px 0!important;margin:0!important;opacity:1!important}
 #todayScreen #activeNotes .note-card:first-child{border-top:0!important}
 #todayScreen #activeNotes .note-v2-top{display:grid!important;grid-template-columns:34px minmax(0,1fr) auto!important;gap:10px!important;align-items:center!important}
 #todayScreen #activeNotes .note-v2-open{background:transparent!important;border:0!important;color:var(--ink)!important;padding:0!important;text-align:left!important;min-width:0!important}
@@ -27,19 +22,22 @@
 #todayScreen #activeNotes .notes-empty{padding:14px 0!important;color:var(--muted)!important;background:transparent!important}
 #todayScreen #activeNotes .notes-empty strong{display:block!important;color:var(--ink)!important;margin-bottom:3px!important}
 #todayScreen #activeNotes .notes-empty span{color:var(--muted)!important}
-#todayScreen #insights .note-insight-urgent,
-#todayScreen #insights .insight.note-insight-urgent{
-  display:grid!important;grid-template-columns:28px minmax(0,1fr) 18px!important;align-items:center!important;column-gap:10px!important;min-height:56px!important;padding:12px 14px!important;border:1px solid var(--line)!important;border-left:3px solid var(--danger-ink)!important;border-radius:var(--radius-sm)!important;background:var(--danger-bg)!important;color:var(--ink)!important;box-shadow:none!important;text-align:left!important;
-}
-#todayScreen #insights .note-insight-flag{display:flex!important;align-items:center!important;justify-content:center!important;color:var(--danger-ink)!important;font-size:20px!important;line-height:1!important;margin:0!important;letter-spacing:-3px!important}
-#todayScreen #insights .note-insight-copy{display:grid!important;gap:2px!important;min-width:0!important}
-#todayScreen #insights .note-insight-copy strong{display:block!important;color:var(--ink)!important;font-size:14px!important;line-height:1.25!important;font-weight:600!important;white-space:normal!important}
-#todayScreen #insights .note-insight-copy small{display:block!important;color:var(--muted)!important;font-size:11px!important;line-height:1.2!important}
-#todayScreen #insights .note-insight-arrow{color:var(--muted)!important;font-size:24px!important;line-height:1!important}
+
+/* Important: urgent notes in «Что важно» deliberately use the exact same card geometry as the normal insight above. */
+#todayScreen #insights .note-insight-urgent,#todayScreen #insights .insight.note-insight-urgent{display:flex!important;align-items:center!important;justify-content:space-between!important;width:100%!important;min-height:38px!important;height:38px!important;padding:9px 12px!important;border:1px solid var(--line)!important;border-left:3px solid transparent!important;border-radius:var(--radius-sm)!important;background:var(--card)!important;color:var(--ink)!important;box-shadow:none!important;text-align:left!important;font-size:13px!important;line-height:1.25!important;gap:8px!important}
+#todayScreen #insights .note-insight-flag{display:block!important;flex:0 0 auto!important;color:var(--danger-ink)!important;font-size:16px!important;line-height:1!important;margin:0!important;letter-spacing:-2px!important}
+#todayScreen #insights .note-insight-copy{display:flex!important;align-items:center!important;gap:2px!important;min-width:0!important;flex:1!important}
+#todayScreen #insights .note-insight-copy strong{display:block!important;color:var(--ink)!important;font-size:13px!important;line-height:1.25!important;font-weight:500!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#todayScreen #insights .note-insight-copy small{display:block!important;color:var(--muted)!important;font-size:12px!important;line-height:1.2!important;margin-left:2px!important;white-space:nowrap!important}
+#todayScreen #insights .note-insight-arrow{color:var(--muted)!important;font-size:18px!important;line-height:1!important;flex:0 0 auto!important}
 #todayScreen .archive-details{border-top:1px solid var(--line)!important;color:var(--muted)!important;background:transparent!important}
 #todayScreen .archive-details summary{padding:14px 0!important;color:var(--muted)!important;background:transparent!important}
 #todayScreen #archivedNotes .note-card{opacity:.55!important}
-@media(max-width:430px){
-  #todayScreen #activeNotes .note-v2-top{grid-template-columns:32px minmax(0,1fr) auto!important;gap:8px!important}
-  #todayScreen #activeNotes .mini-btn{padding:7px 8px!important}
+
+/* The notes-ui runtime stylesheet uses important declarations. This first layer intentionally wins over later unlayered important rules. */
+@layer montajiNotesImportant{
+  #todayScreen #insights .note-insight-urgent,#todayScreen #insights .insight.note-insight-urgent{background:var(--card)!important;border:1px solid var(--line)!important;border-left:3px solid transparent!important;border-radius:var(--radius-sm)!important;min-height:38px!important;height:38px!important;padding:9px 12px!important;display:flex!important;grid-template-columns:none!important}
+  #todayScreen #insights .note-insight-copy strong{font-size:13px!important;font-weight:500!important;color:var(--ink)!important}
+  #todayScreen #insights .note-insight-copy small{font-size:12px!important;color:var(--muted)!important}
 }
+@media(max-width:430px){#todayScreen #activeNotes .note-v2-top{grid-template-columns:32px minmax(0,1fr) auto!important;gap:8px!important}#todayScreen #activeNotes .mini-btn{padding:7px 8px!important}}
