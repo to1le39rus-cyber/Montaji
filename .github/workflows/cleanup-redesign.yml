@@ -1,0 +1,123 @@
+name: clean frontend architecture
+on:
+  push:
+    branches:
+      - design/master-redesign
+permissions:
+  contents: write
+jobs:
+  cleanup:
+    if: github.event.head_commit.message != 'chore: clean frontend architecture [skip ci]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Refactor frontend
+        shell: bash
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import json, re
+
+          root = Path('.')
+          p = root / 'app.js'
+          app = p.read_text()
+
+          render_today = r'''function noteMeta(n){return [n.authorName||n.authorEmail,n.dueDate?`до ${fmtShort(n.dueDate)}`:'',n.done?'✓ выполнено':''].filter(Boolean).join(' · ');}
+          function renderInsight({type='calm',icon='✨',title='',meta='',action='',noteId=''}){const tag=action||noteId?'button':'div',attrs=noteId?` type="button" data-note-open-urgent="${esc(noteId)}"`:action?` data-open-${action}="1"`:'';return`<${tag} class="insight ${type==='urgent'?'insight--urgent':''}"${attrs}><span class="insight-icon">${icon}</span><span class="insight-copy"><strong>${esc(title)}</strong>${meta?`<small>${esc(meta)}</small>`:''}</span><span class="insight-arrow">›</span></${tag}>`;}
+          function renderTodayInsights(){const box=$('#insights');if(!box)return;const items=[],d=today(),tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);const tc=montageCount(dateKey(tomorrow)),late=state.jobs.filter(j=>!isCancelled(j)&&!isDone(j)&&j.date<d).length;if(late)items.push(renderInsight({type:'urgent',icon:'⚠️',title:`${late} просроченных выездов`,action:'overdue'}));if(tc===3)items.push(renderInsight({type:'urgent',icon:'🔥',title:'Завтра 3/3 монтажей — день полностью загружен'}));else if(tc===2)items.push(renderInsight({type:'calm',icon:'✨',title:'Завтра осталось одно монтажное окно'}));const t=totals('day');if(t.unpaid)items.push(renderInsight({type:'urgent',icon:'💰',title:`${money(t.unpaid)} ещё не оплачено`,action:'debts'}));notes.filter(n=>n.archived!==true&&n.urgent===true&&n.done!==true).slice().sort((a,b)=>String(a.dueDate||'9999-12-31').localeCompare(String(b.dueDate||'9999-12-31'))).slice(0,4).forEach(n=>items.push(renderInsight({type:'urgent',icon:'‼️',title:n.title||'Срочная заметка',meta:n.dueDate?`до ${fmtShort(n.dueDate)}`:'',noteId:n.id})));box.innerHTML=items.slice(0,4).join('')||renderInsight({type:'calm',icon:'✨',title:'На сегодня всё спокойно'});$$('[data-note-open-urgent]',box).forEach(b=>b.onclick=()=>{const n=notes.find(x=>x.id===b.dataset.noteOpenUrgent);if(n)openNote(n)});$$('[data-open-overdue]',box).forEach(b=>b.onclick=openOverdueJobs);$$('[data-open-debts]',box).forEach(b=>b.onclick=openDebts);}
+          function renderToday(){const d=today(),jobs=jobsForDate(d),t=totals('day'),w=totals('week'),m=totals('month');$('#topDate').textContent=new Intl.DateTimeFormat('ru-RU',{weekday:'long',day:'numeric',month:'long'}).format(new Date());$('#todayIncome').textContent=money(t.net);$('#todayGross').textContent=money(t.income);$('#todayExpense').textContent=money(t.expenses);$('#todayLoad').textContent=`${montageCount(d)}/3`;$('#todayProgress').style.width=Math.min(100,montageCount(d)/3*100)+'%';$('#todayWeek').textContent=money(w.net);$('#todayMonth').textContent=money(m.net);renderTodayInsights();$('#todayList').innerHTML=jobs.length?jobs.sort((a,b)=>String(a.slot).localeCompare(String(b.slot))).map(jobCard).join(''):'<div class="empty-card"><strong>Сегодня свободно</strong><span>Добавь монтаж, замер или расход через +</span></div>';const upcoming=[];for(let i=1;i<=7;i++){const x=new Date();x.setDate(x.getDate()+i);const k=dateKey(x),js=activeJobs(k);if(js.length)upcoming.push({k,x,js});}$('#upcoming').innerHTML=upcoming.slice(0,5).map(o=>`<button class="upcoming" data-date="${o.k}"><b>${o.x.getDate()}</b><span>${esc(o.js[0].client||o.js[0].type)}</span><em>${o.js.length} выезд · ${money(o.js.reduce((s,j)=>s+(j.price||j.measurePrice||0),0))}</em>›</button>`).join('')||'<div class="muted">Ближайшие дни свободны.</div>';renderExpensesToday();renderNotes();bindCards();}
+          '''
+          app, n = re.subn(r'function renderToday\(\)\{.*?\nfunction renderExpensesToday', render_today + 'function renderExpensesToday', app, flags=re.S)
+          assert n == 1, f'renderToday replacement count={n}'
+
+          notes_block = r'''function renderNotes(){const active=$('#activeNotes'),archive=$('#archivedNotes');if(!active||!archive)return;const a=notes.filter(n=>n.archived!==true),ar=notes.filter(n=>n.archived===true);active.innerHTML=a.length?a.map(noteCard).join(''):'<div class="muted">Активных заметок нет</div>';archive.innerHTML=ar.length?ar.map(noteCard).join(''):'<div class="muted">Архив пуст</div>';bindNotes();renderTodayInsights();}
+          function noteCard(n){const meta=noteMeta(n);return`<article class="note-card ${n.archived?'archived':''} ${n.done?'note-done':''} ${n.urgent?'note-urgent':''}"><div class="note-top"><label class="note-check"><input type="checkbox" data-note-done="${esc(n.id)}" ${n.done?'checked':''}><span></span></label><div class="note-copy"><button type="button" class="note-open" data-note-edit="${esc(n.id)}"><b>${esc(n.title||'Заметка')}</b>${meta?`<small>${esc(meta)}</small>`:''}</button>${n.urgent?'<span class="note-badge urgent">‼️ Срочная</span>':''}</div><div><button class="mini-btn" data-note-edit="${esc(n.id)}">Изм.</button>${n.archived?`<button class="mini-btn" data-note-restore="${esc(n.id)}">Вернуть</button>`:`<button class="mini-btn" data-note-archive="${esc(n.id)}">Архив</button>`}</div></div>${n.text?`<p>${esc(n.text)}</p>`:''}</article>`;}
+          function bindNotes(){const roots=[$('#activeNotes'),$('#archivedNotes')].filter(Boolean);roots.forEach(root=>{$$('[data-note-edit]',root).forEach(b=>b.onclick=e=>{e.preventDefault();const n=notes.find(x=>x.id===b.dataset.noteEdit);if(n)openNote(n)});$$('[data-note-archive]',root).forEach(b=>b.onclick=()=>setNoteState(b.dataset.noteArchive,{archived:true}));$$('[data-note-restore]',root).forEach(b=>b.onclick=()=>setNoteState(b.dataset.noteRestore,{archived:false}));$$('[data-note-done]',root).forEach(b=>b.onchange=()=>setNoteState(b.dataset.noteDone,{done:b.checked}));});}
+          function openNote(n=null){const m=document.createElement('div');m.className='modal open';m.innerHTML=`<div class="backdrop"></div><div class="sheet"><div class="handle"></div><div class="sheet-head"><div><div class="eyebrow">Общие заметки</div><h2>${n?'Изменить заметку':'Новая заметка'}</h2></div><button class="circle-btn" data-close>×</button></div><form id="noteForm"><label>Заголовок<input id="nTitle" required maxlength="120" value="${esc(n?.title||'')}" placeholder="Например: купить расходники"></label><label>Текст<textarea id="nText" rows="5" maxlength="2000" placeholder="Что важно не забыть…">${esc(n?.text||'')}</textarea></label><label>Сделать до<input id="nDue" type="date" value="${esc(n?.dueDate||'')}"></label><label class="check-label"><input id="nDone" type="checkbox" ${n?.done?'checked':''}> Выполнено</label><label class="check-label"><input id="nUrgent" type="checkbox" ${n?.urgent?'checked':''}> Срочная · показывать в «Что важно»</label><button class="primary wide" type="submit">${n?'Сохранить изменения':'Добавить заметку'}</button></form></div>`;document.body.append(m);m.querySelector('.backdrop').onclick=()=>m.remove();m.querySelector('[data-close]').onclick=()=>m.remove();$('#noteForm',m).onsubmit=async e=>{e.preventDefault();const title=$('#nTitle',m).value.trim();if(!title)return;const item={id:n?.id||uid(),title,text:$('#nText',m).value.trim(),dueDate:$('#nDue',m).value||'',done:$('#nDone',m).checked,urgent:$('#nUrgent',m).checked,archived:n?.archived===true,authorUid:n?.authorUid||user?.uid||'',authorName:n?.authorName||user?.displayName||user?.email||'Пользователь',authorEmail:n?.authorEmail||user?.email||'',createdAt:n?.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()};try{await saveNotes(cur=>({...cur,notes:[...(cur.notes||[]).filter(x=>x.id!==item.id),item]}));m.remove();toast('Заметка сохранена','success')}catch(err){console.error(err);toast('Не удалось сохранить заметку','error')}};setTimeout(()=>$('#nTitle',m)?.focus(),0);}
+          async function setNoteState(id,patch){try{await saveNotes(cur=>({...cur,notes:(cur.notes||[]).map(n=>n.id===id?{...n,...patch,updatedAt:new Date().toISOString()}:n)}));toast(patch.archived?'В архив':patch.done?'Отмечено как сделанное':'Заметка обновлена','success')}catch(e){toast('Не удалось изменить заметку','error')}}
+          '''
+          app, n = re.subn(r'function renderNotes\(\)\{.*?(?=function bindCards)', notes_block, app, flags=re.S)
+          assert n == 1, f'notes replacement count={n}'
+          p.write_text(app)
+
+          boot = """const APP_URL = new URL('../app.js', location.href);\nconst MONEY_UI_URL = new URL('../money-ui-v2.js', location.href);\nconst DEBT_UI_URL = new URL('../debt-ui.js', location.href);\n\nasync function boot(){\n  await import(APP_URL.href);\n  await import(MONEY_UI_URL.href);\n  await import(DEBT_UI_URL.href);\n}\n\nboot().catch(error=>{\n  console.error('Montaji boot failed',error);\n  const el=document.querySelector('#syncStatus');\n  if(el){el.textContent='Ошибка запуска';el.dataset.state='offline'}\n  const toast=document.querySelector('#toast');\n  if(toast){toast.textContent=`Не удалось запустить приложение: ${error?.message||'ошибка'}`;toast.dataset.state='error'}\n});\n"""
+          (root/'secure-app/boot.js').write_text(boot)
+
+          bridge = root/'secure-app/notes-bridge.js'
+          if bridge.exists(): bridge.unlink()
+          for name in ['notes-final.css','notes-theme.css','main-screen-final.css','today-v3.css']:
+              f=root/'secure-app'/name
+              if f.exists(): f.unlink()
+
+          old_css=root/'master-redesign.css'
+          clean_css=root/'secure-app'/'montaji-clean.css'
+          css=old_css.read_text().replace('!important','')
+          clean_css.write_text(css)
+          old_css.unlink()
+
+          idx=root/'secure-app'/'index.html'
+          html=idx.read_text()
+          html=re.sub(r'<link rel="stylesheet" href="dark-theme\.css[^"]*">','',html)
+          html=re.sub(r'<link rel="stylesheet" href="notes-theme\.css[^"]*">','',html)
+          html=re.sub(r'<link rel="stylesheet" href="main-screen-final\.css[^"]*">','',html)
+          html=re.sub(r'<style>\.auth-screen\.hidden\{display:none!important\}.*?</style>','',html,flags=re.S)
+          html=html.replace('montaji-design-v2.css?v=master-redesign-20260906','montaji-clean.css?v=20260907-architecture')
+          html=re.sub(r'<script src="notes-bridge\.js[^"]*"></script>','',html)
+          html=html.replace('boot.js?v=20260906','boot.js?v=20260907-architecture')
+          idx.write_text(html)
+
+          vercel={"rewrites":[
+            {"source":"/","destination":"https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/secure-app/index.html"},
+            {"source":"/styles.css","destination":"https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/styles.css"},
+            {"source":"/ux-upgrades.css","destination":"https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/ux-upgrades.css"},
+            {"source":"/premium-field-tech.css","destination":"https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/premium-field-tech.css"},
+            {"source":"/montaji-clean.css","destination":"https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/secure-app/montaji-clean.css"},
+            {"source":"/app.js","destination":"https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/app.js"},
+            {"source":"/boot.js","destination":"https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/secure-app/boot.js"},
+            {"source":"/firebase-config.js","destination":"https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/firebase-config.js"},
+            {"source":"/money-ui-v2.js","destination":"https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/money-ui-v2.js"},
+            {"source":"/debt-ui.js","destination":"https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/debt-ui.js"},
+            {"source":"/manifest.json","destination":"https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/manifest.json"},
+            {"source":"/icon.svg","destination":"https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/icon.svg"}
+          ]}
+          (root/'secure-app'/'vercel.json').write_text(json.dumps(vercel,ensure_ascii=False,indent=2)+'\n')
+
+          t=root/'tests'/'final-architecture.test.mjs'
+          ts=t.read_text()
+          extra="""
+
+test('Today uses one insight renderer for normal and urgent notes', () => {
+  assert.match(app, /function renderInsight\\s*\\(/);
+  assert.match(app, /insight--urgent/);
+  assert.match(app, /data-note-open-urgent/);
+  assert.doesNotMatch(app, /MutationObserver|source\\.replace\\(/);
+});
+
+test('secure shell has no runtime DOM bridge or source rewriting', () => {
+  const boot = fs.readFileSync(path.join(root, 'secure-app', 'boot.js'), 'utf8');
+  const secureIndex = fs.readFileSync(path.join(root, 'secure-app', 'index.html'), 'utf8');
+  assert.doesNotMatch(boot, /source\\.replace|Blob|notes-ui|MutationObserver/);
+  assert.doesNotMatch(secureIndex, /notes-bridge|dark-theme|notes-theme|main-screen-final/);
+});
+"""
+          if 'Today uses one insight renderer' not in ts:
+              t.write_text(ts+extra)
+
+          wf=root/'.github'/'workflows'/'cleanup-redesign.yml'
+          if wf.exists(): wf.unlink()
+          PY
+      - name: Validate
+        run: |
+          node --test tests/final-architecture.test.mjs
+          node --check app.js
+          node --check secure-app/boot.js
+      - name: Commit cleaned architecture
+        shell: bash
+        run: |
+          git config user.name 'montaji-bot'
+          git config user.email 'montaji-bot@users.noreply.github.com'
+          git add -A
+          git commit -m 'chore: clean frontend architecture [skip ci]'
+          git push origin HEAD:design/master-redesign
