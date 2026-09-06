@@ -1,26 +1,24 @@
-/* Notes — unified dark mobile system */
-#todayScreen .inline-card:has(#activeNotes){background:#141715!important;border:1px solid rgba(244,246,241,.09)!important;border-radius:18px!important;box-shadow:0 8px 28px rgba(0,0,0,.18)!important;padding:16px!important}
-#todayScreen #activeNotes{margin:12px 0 0!important;background:#101311!important;border:1px solid rgba(244,246,241,.07)!important;border-radius:14px!important;overflow:hidden!important}
-#todayScreen #activeNotes .note-card{background:transparent!important;color:#f4f6f1!important;border:0!important;border-bottom:1px solid rgba(244,246,241,.08)!important;border-radius:0!important;box-shadow:none!important;padding:13px 12px!important}
-#todayScreen #activeNotes .note-card:last-child{border-bottom:0!important}
-#todayScreen .note-v2-top{grid-template-columns:30px minmax(0,1fr) auto!important;gap:10px!important;align-items:center!important}
-#todayScreen .note-v2-title b{color:#f4f6f1!important;font-size:14px!important;font-weight:720!important}
-#todayScreen .note-v2-title small{color:#8f9890!important;font-size:10px!important}
-#todayScreen .note-v2-open{color:#f4f6f1!important}
-#todayScreen .note-v2-actions{gap:5px!important}
-#todayScreen .note-v2-actions .mini-btn{height:30px!important;min-height:30px!important;padding:0 9px!important;border-radius:9px!important;background:#202622!important;border:1px solid rgba(244,246,241,.08)!important;color:#a9bb9f!important;font-size:10px!important;font-weight:700!important}
-#todayScreen .note-check{width:26px!important;height:26px!important;display:grid!important;place-items:center!important}
-#todayScreen .note-check span{width:22px!important;height:22px!important;border:1.5px solid #657068!important;border-radius:7px!important;background:#0d100e!important}
-#todayScreen .note-check input:checked+span{background:#53694d!important;border-color:#53694d!important}
-#todayScreen .notes-v2 p{margin:8px 0 0 36px!important;color:#9da49d!important;font-size:12px!important;line-height:1.4!important}
-#todayScreen .note-urgent-badge{margin:8px 0 0 36px!important;background:#321d1c!important;color:#ff8c83!important;border:1px solid #54302d!important}
-#todayScreen .notes-empty{padding:16px!important;color:#8f9890!important}
-#todayScreen .notes-empty strong{display:block!important;color:#f4f6f1!important;margin-bottom:4px!important}
-#todayScreen .archive-details{margin-top:10px!important;border-top:1px solid rgba(244,246,241,.07)!important;padding-top:10px!important}
-#todayScreen .archive-details summary{color:#8f9890!important;font-size:11px!important}
-/* Important notes: same surface language, red only as semantic signal */
-#todayScreen .note-insight-urgent{background:#241817!important;border:1px solid #4b2c29!important;border-radius:15px!important;color:#f4f6f1!important;box-shadow:none!important}
-#todayScreen .note-insight-flag{color:#ff6b62!important}
-#todayScreen .note-insight-copy strong{color:#f4f6f1!important;font-size:13px!important}
-#todayScreen .note-insight-copy small{color:#c98f88!important}
-#todayScreen .note-insight-arrow{color:#9da49d!important}
+/* Final notes layer — same Montaji visual system */
+#todayScreen .inline-card:has(#activeNotes){background:var(--card)!important;border:1px solid var(--line)!important;border-radius:22px!important;overflow:hidden!important;padding:16px!important}
+#todayScreen #activeNotes{background:transparent!important;border:0!important;border-radius:0!important;margin:0!important;overflow:visible!important}
+#todayScreen #activeNotes .note-card{background:transparent!important;color:var(--ink)!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;padding:16px 0!important;margin:0!important;box-shadow:none!important}
+#todayScreen #activeNotes .note-card:first-child{border-top:0!important}
+#todayScreen #activeNotes .note-v2-top{display:grid!important;grid-template-columns:34px minmax(0,1fr) auto!important;gap:10px!important;align-items:center!important}
+#todayScreen #activeNotes .note-v2-title b{color:var(--ink)!important;font-size:15px!important;font-weight:600!important}
+#todayScreen #activeNotes .note-v2-title small{color:var(--muted)!important;opacity:1!important}
+#todayScreen #activeNotes .notes-v2 p{margin:9px 0 0 44px!important;color:var(--muted)!important}
+#todayScreen #activeNotes .mini-btn{min-height:36px!important;padding:7px 10px!important;border:0!important;border-radius:11px!important;background:var(--soft)!important;color:var(--muted)!important}
+#todayScreen #activeNotes .note-check{width:34px!important;height:34px!important;min-width:34px!important;display:flex!important;align-items:center!important;justify-content:center!important;position:relative!important;z-index:20!important;overflow:visible!important}
+#todayScreen #activeNotes .note-check span{display:block!important;visibility:visible!important;opacity:1!important;width:22px!important;height:22px!important;border:1.5px solid rgba(255,255,255,.45)!important;border-radius:7px!important;background:#171b18!important;pointer-events:none!important}
+#todayScreen #activeNotes .note-check input{position:absolute!important;inset:0!important;width:34px!important;height:34px!important;display:block!important;opacity:0!important;z-index:30!important}
+#todayScreen #activeNotes .note-check input:checked+span{background:var(--olive-dark)!important;border-color:var(--olive-dark)!important}
+#todayScreen #activeNotes .note-check input:checked+span:after{content:'✓'!important;display:block!important;color:#0d100e!important;text-align:center!important;font-size:14px!important;line-height:19px!important;font-weight:800!important}
+#todayScreen #insights .note-insight-urgent{display:grid!important;grid-template-columns:28px minmax(0,1fr) 18px!important;align-items:center!important;gap:10px!important;min-height:56px!important;padding:12px 14px!important;border:1px solid rgba(239,109,99,.16)!important;border-left:3px solid var(--danger-ink)!important;border-radius:18px!important;background:var(--danger-bg)!important;color:var(--ink)!important;margin:0!important}
+#todayScreen #insights .note-insight-copy strong{color:var(--ink)!important;font-size:14px!important}#todayScreen #insights .note-insight-copy small{color:var(--muted)!important;font-size:11px!important}#todayScreen #insights .note-insight-flag{color:var(--danger-ink)!important;font-size:20px!important}#todayScreen #insights .note-insight-arrow{color:var(--muted)!important}
+#todayScreen .archive-details{margin-top:8px!important;border-top:1px solid var(--line)!important;background:transparent!important;border-radius:0!important;overflow:hidden!important}
+#todayScreen .archive-details summary{padding:14px 0!important;color:var(--muted)!important;background:transparent!important;border:0!important}
+#todayScreen #archivedNotes{background:transparent!important;color:var(--muted)!important;padding:0!important}
+#todayScreen #archivedNotes .note-card{background:var(--card-raised)!important;color:var(--ink)!important;border:1px solid var(--line)!important;border-radius:14px!important;padding:14px!important;margin:8px 0!important;opacity:.72!important}
+#todayScreen #archivedNotes .note-card .note-v2-title b{color:var(--ink)!important}#todayScreen #archivedNotes .note-card p{color:var(--muted)!important}#todayScreen #archivedNotes .mini-btn{background:var(--soft)!important;color:var(--muted)!important;border:0!important;border-radius:10px!important}
+#todayScreen #archivedNotes .note-check{width:34px!important;height:34px!important;display:flex!important;align-items:center!important;justify-content:center!important}#todayScreen #archivedNotes .note-check span{display:block!important;width:22px!important;height:22px!important;border:1.5px solid rgba(255,255,255,.28)!important;border-radius:7px!important;background:transparent!important;opacity:1!important}
+@media(max-width:430px){#todayScreen #activeNotes .note-v2-top,#todayScreen #archivedNotes .note-v2-top{grid-template-columns:32px minmax(0,1fr) auto!important;gap:8px!important}}
