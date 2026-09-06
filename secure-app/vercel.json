@@ -8,7 +8,7 @@
     { "source": "/dark-theme.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/dark-theme.css" },
     { "source": "/notes-theme.css", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/ef02ce53fd9db825fae0eeb256a5d397872d50f0/secure-app/notes-theme.css" },
     { "source": "/app.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/app.js" },
-    { "source": "/boot.js", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/3aed1a0bfadc3afbe2933324807b817d3d8720d9/secure-app/boot.js" },
+    { "source": "/boot.js", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/ea6a919e2595ad50715956d1b428b9e267eb3199/secure-app/boot.js" },
     { "source": "/notes-ui.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/notes-ui.js" },
     { "source": "/firebase-config.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/firebase-config.js" },
     { "source": "/manifest.json", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/manifest.json" },
