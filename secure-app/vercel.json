@@ -6,7 +6,7 @@
     { "source": "/premium-field-tech.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/premium-field-tech.css" },
     { "source": "/montaji-design-v2.css", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/master-redesign.css" },
     { "source": "/dark-theme.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/dark-theme.css" },
-    { "source": "/notes-theme.css", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/notes-final.css" },
+    { "source": "/notes-theme.css", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/6a57f08cadd53f659c9636e3cfe5b893120c92f2/notes-theme.css" },
     { "source": "/notes-bridge.js", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/notes-bridge.js" },
     { "source": "/app.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/app.js" },
     { "source": "/boot.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/boot.js" },
