@@ -1,12 +1,11 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/secure-app/index.html" },
-    { "source": "/base-index.html", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/7276a4a41ece02ce32d28bc0ee0778735775186b/index.html" },
+    { "source": "/", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/7276a4a41ece02ce32d28bc0ee0778735775186b/index.html" },
     { "source": "/styles.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/styles.css" },
     { "source": "/ux-upgrades.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/ux-upgrades.css" },
     { "source": "/premium-field-tech.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/premium-field-tech.css" },
-    { "source": "/montaji-design-v2.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/montaji-design-v2.css" },
-    { "source": "/master-redesign.css", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/master-redesign.css" },
+    { "source": "/montaji-design-v2.css", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/master-redesign.css" },
+    { "source": "/dark-theme.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/dark-theme.css" },
     { "source": "/app.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/app.js" },
     { "source": "/boot.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/boot.js" },
     { "source": "/notes-ui.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/notes-ui.js" },
