@@ -1,0 +1,41 @@
+/* Final Today-screen visual pass. Loaded after the base dark theme. */
+#todayScreen #insights{display:flex!important;flex-direction:column!important;gap:8px!important;margin:0 0 24px!important}
+#todayScreen #insights > .insight,
+#todayScreen #insights > .note-insight,
+#todayScreen #insights > .note-insight-urgent,
+#todayScreen #insights > .note-insight-flag,
+#todayScreen #insights > button{
+  width:100%!important;
+  min-height:64px!important;
+  margin:0!important;
+  padding:15px 16px!important;
+  box-sizing:border-box!important;
+  border:1px solid rgba(244,246,241,.09)!important;
+  border-radius:18px!important;
+  background:#141715!important;
+  color:#f4f6f1!important;
+  box-shadow:none!important;
+  font-size:16px!important;
+  line-height:1.3!important;
+}
+#todayScreen #insights > .note-insight-urgent,
+#todayScreen #insights > .note-insight-urgent *{color:#f4f6f1!important}
+#todayScreen #insights > .note-insight-urgent{border-left:1px solid rgba(244,246,241,.09)!important;background:#141715!important}
+#todayScreen #insights > .note-insight-urgent .note-insight-flag{color:#ff6258!important}
+#todayScreen #insights > .note-insight-urgent .note-insight-copy strong{font-size:16px!important;font-weight:600!important}
+#todayScreen #insights > .note-insight-urgent .note-insight-copy small{font-size:13px!important;color:#8f9890!important}
+#todayScreen #insights > .insight span{font-size:18px!important;color:#8f9890!important}
+
+/* First job card uses exactly the same quiet geometry as the Important cards. */
+#todayScreen #todayList .job-card{
+  border:1px solid rgba(244,246,241,.09)!important;
+  border-radius:18px!important;
+  background:#141715!important;
+  box-shadow:none!important;
+}
+
+/* There is already + Доход / − Расход above Today; the duplicate expense panel below jobs is removed visually. */
+#todayScreen .inline-card:has(#todayExpenses){display:none!important}
+
+/* Keep the gap after Today jobs intentional once the duplicate panel is gone. */
+#todayScreen #todayList{margin-bottom:24px!important}
