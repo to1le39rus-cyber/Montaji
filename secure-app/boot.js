@@ -43,7 +43,7 @@ async function boot(){
     if(!notesResponse.ok) throw new Error(`NOTES_LOAD_${notesResponse.status}`);
     let notesSource = await notesResponse.text();
     /* notes-ui owns data only; Today owns the actual insight DOM. */
-    notesSource = notesSource.replace(/function renderUrgentInsights\(\)\{.*?\}\nfunction card/s, 'function card');
+    notesSource = notesSource.replace(/function renderUrgentInsights\(\)\{.*?\}function card/s, 'function card');
     notesSource = notesSource.replaceAll('renderUrgentInsights()', 'window.__montajiSetUrgentNotes?.(urgentNotes())');
     notesSource = notesSource.replace(/\.note-insight-urgent\{.*?\.note-detail-meta\{/s, '.note-detail-meta{');
     const notesBlob = new Blob([notesSource], {type:'text/javascript'});
