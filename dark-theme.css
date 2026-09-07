@@ -10,14 +10,48 @@
   --radius-lg:22px; --radius-md:16px; --radius-sm:11px;
 }
 
-body{background:var(--bg)!important;color:var(--ink)!important}
-.card,.job-card,.client-card,.note-card,.expense-row,.inline-card,
-.hero-card,.money-focus,.chart-card,.settings-card,.system-note{
-  background:var(--card)!important;border-color:var(--line)!important;color:var(--ink)!important;
+/* ============================================================
+   GLOBAL SHELL — тёмной должна быть вся поверхность приложения,
+   а не только карточки. Это перебивает старые светлые !important.
+   ============================================================ */
+html,body,#app,.app,.main,.screen,.topbar{
+  background:var(--bg)!important;
+  color:var(--ink)!important;
 }
-.hero-card{background:var(--card-raised)!important}
-small,.meta,.muted,.job-meta{color:var(--muted)!important}
-.bottom-nav{background:var(--card-raised)!important;border-color:var(--line)!important}
+html{background:var(--bg)!important;color-scheme:dark!important}
+body{background:var(--bg)!important;color:var(--ink)!important}
+.app{min-height:100svh!important}
+.main{background:var(--bg)!important}
+.topbar{background:rgba(13,16,14,.88)!important;border-color:var(--line)!important}
+
+.card,.job-card,.client-card,.note-card,.expense-row,.inline-card,
+.hero-card,.money-focus,.chart-card,.settings-card,.system-note,
+.period-strip>div,.money-highlights button,.money-grid>div,.money-debt,
+.upcoming,.search,.circle-btn,.month-nav button,.day,.empty-card,
+.insight,.free-slot,.archive-day,.debt-banner{
+  background:var(--card)!important;
+  border-color:var(--line)!important;
+  color:var(--ink)!important;
+}
+.hero-card,.money-focus{background:var(--card-raised)!important}
+
+/* Текстовые элементы, которые старые файлы красили в белый/тёмный цвет */
+.brand,.brand span,.section-head h2,.screen-head h1,.job-client,.amount,
+.period-strip b,.money-value,.money-period,.money-grid b,.setting-row,
+.setting-row span,.upcoming,.upcoming span,.upcoming b,.note-top b,
+.note-card p,.system-note strong,.detail-line,.debt-row,.debt-row b,
+.debt-row strong,.store-row,.finance-actions,.weekdays,.day,.day b,
+.sheet-section,.sheet-head h2,.type-tabs button,.form-row label,
+.job-details,.job-card strong,.job-card b{color:var(--ink)!important}
+
+small,.meta,.muted,.job-meta,.top-date,.eyebrow,.section-head small,
+.period-strip small,.money-grid small,.day-stats small,.money-period,
+.client-tip,.client-card small,.setting-row b,.system-note,.archive-details,
+.archive-details summary,.job-card .job-meta,.detail-line,.note-card p,
+.note-card small,.note-card .muted,.upcoming em,.day span,.day i,.legend,
+.sync-dot{color:var(--muted)!important}
+
+.bottom-nav{background:var(--card-raised)!important;border-color:var(--line)!important;color:var(--ink)!important}
 input,textarea,select{background:var(--soft)!important;color:var(--ink)!important;border-color:var(--line)!important}
 input::placeholder,textarea::placeholder{color:var(--faint)!important}
 
@@ -31,18 +65,25 @@ input::placeholder,textarea::placeholder{color:var(--faint)!important}
 }
 .note-insight-urgent strong,.note-insight-copy strong{color:var(--ink)!important}
 .note-insight-copy small,.note-insight-urgent small{color:var(--danger-ink)!important;opacity:.85}
-.note-insight-flag{color:var(--danger-ink)!important;font-size:16px!important} /* было 25px — компактнее */
+.note-insight-flag{color:var(--danger-ink)!important;font-size:16px!important}
 .note-insight-arrow{color:var(--muted)!important;font-size:18px!important}
 .insight.calm{color:var(--muted)!important;background:transparent!important;border-color:transparent!important}
 .insight.warn{background:var(--warning-bg)!important;border-left:3px solid var(--warning-ink)!important;color:var(--warning-ink)!important}
+
+/* На случай старых классов срочных плашек */
+.insight.warn,.insight[data-tone="warn"],.insight[data-urgent="1"]{
+  background:var(--warning-bg)!important;color:var(--warning-ink)!important;border-color:rgba(240,180,41,.24)!important;
+}
 
 /* ---------- статус-бейджи ---------- */
 .status-pill{background:var(--info-bg)!important;color:var(--info-ink)!important}
 .status-pill.done{background:var(--success-bg)!important;color:var(--success-ink)!important}
 .status-pill.onsite{background:var(--warning-bg)!important;color:var(--warning-ink)!important}
 .status-pill.cancelled{background:var(--danger-bg)!important;color:var(--danger-ink)!important}
+.status-pill.route{background:var(--info-bg)!important;color:var(--info-ink)!important}
+.status-pill.measure{background:var(--warning-bg)!important;color:var(--warning-ink)!important}
 
-/* ---------- срочный бейдж заметки (notes-ui.js .note-urgent-badge) ---------- */
+/* ---------- срочный бейдж заметки ---------- */
 .note-urgent-badge{background:var(--warning-bg)!important;color:var(--warning-ink)!important}
 
 /* ---------- чекбоксы заметок ---------- */
@@ -50,9 +91,15 @@ input::placeholder,textarea::placeholder{color:var(--faint)!important}
 .note-check input:checked+span{background:var(--olive-dark)!important;border-color:var(--olive-dark)!important}
 
 /* ---------- кнопки ---------- */
-.action-chip,.mini-btn,.secondary{background:var(--soft)!important;color:var(--ink)!important;border-color:var(--line)!important}
-.primary,.action-chip.primary,.fab{background:var(--olive-dark)!important;color:#0d100e!important;border:none!important}
+.action-chip,.map-chip,.mini-btn,.mini-edit,.secondary{
+  background:var(--soft)!important;color:var(--ink)!important;border-color:var(--line)!important
+}
+.primary,.action-chip.primary,.primary-chip,.fab{
+  background:var(--olive-dark)!important;color:#0d100e!important;border:none!important
+}
 .danger{background:var(--danger-bg)!important;color:var(--danger-ink)!important}
+.quick-actions button{background:var(--soft)!important;color:var(--ink)!important}
+.quick-actions button:last-child{background:var(--olive-dark)!important;color:#0d100e!important}
 
 /* ---------- календарь ---------- */
 .day{color:var(--ink)!important}
@@ -61,59 +108,28 @@ input::placeholder,textarea::placeholder{color:var(--faint)!important}
 .day.full{background:#4a8a3d!important;border-color:#4a8a3d!important;color:#fff!important}
 .day.full *,.day.busy *,.day.partial *{color:inherit!important;-webkit-text-fill-color:inherit!important}
 
+/* ---------- поля / модальные окна ---------- */
+.sheet,.modal .sheet,.backdrop{color:var(--ink)!important}
+.sheet{background:var(--card-raised)!important;border-color:var(--line)!important}
+.warning{background:var(--warning-bg)!important;color:var(--warning-ink)!important;border-color:rgba(240,180,41,.22)!important}
+.measure-panel{background:var(--soft)!important;border-color:var(--line)!important;color:var(--ink)!important}
+
 /* ============================================================
    ИКОНКИ — через CSS ::before, без правки JS/HTML.
-   Используются простые line-иконки в виде SVG-масок,
-   цвет наследуется через currentColor.
    ============================================================ */
-
 .icon-before::before{
-  content:"";
-  display:inline-block; width:15px; height:15px;
-  background-color:currentColor;
-  -webkit-mask-size:contain; mask-size:contain;
-  -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
-  vertical-align:-3px; margin-right:6px; flex:0 0 auto;
+  content:"";display:inline-block;width:15px;height:15px;background-color:currentColor;
+  -webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+  vertical-align:-3px;margin-right:6px;flex:0 0 auto;
 }
+.bottom-nav .nav[data-screen="todayScreen"] span:first-child{--ic:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>')}
+.bottom-nav .nav[data-screen="scheduleScreen"] span:first-child{--ic:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>')}
+.bottom-nav .nav[data-screen="moneyScreen"] span:first-child{--ic:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 15h4"/></svg>')}
+.bottom-nav .nav[data-screen="clientsScreen"] span:first-child{--ic:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-4 3-6 7-6s7 2 7 6M16 8a3 3 0 110 6M17 14c3 .3 5 2 5 6"/></svg>')}
+.bottom-nav .nav[data-screen="moreScreen"] span:first-child{--ic:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>')}
+.bottom-nav .nav span:first-child{font-size:0;display:block;width:22px;height:22px;margin:0 auto 2px;background-color:currentColor;-webkit-mask-image:var(--ic);mask-image:var(--ic);-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.note-insight-flag{font-size:0!important;width:16px;height:16px;background-color:currentColor;-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><path d="M12 3v11"/><circle cx="12" cy="19" r="1.2" fill="black" stroke="none"/></svg>');mask-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><path d="M12 3v11"/><circle cx="12" cy="19" r="1.2" fill="black" stroke="none"/></svg>');-webkit-mask-size:contain;-webkit-mask-repeat:no-repeat;mask-size:contain;mask-repeat:no-repeat}
+.fab{position:relative;font-size:0!important}.fab::before{content:"";position:absolute;inset:0;margin:auto;width:22px;height:22px;background-color:#0d100e;-webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>');mask-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>');-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
 
-/* Нижняя навигация — иконки вместо/рядом с "01/02..." */
-.bottom-nav .nav[data-screen="todayScreen"] span:first-child{
-  --ic:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>');
-}
-.bottom-nav .nav[data-screen="scheduleScreen"] span:first-child{
-  --ic:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>');
-}
-.bottom-nav .nav[data-screen="moneyScreen"] span:first-child{
-  --ic:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 15h4"/></svg>');
-}
-.bottom-nav .nav[data-screen="clientsScreen"] span:first-child{
-  --ic:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-4 3-6 7-6s7 2 7 6M16 8a3 3 0 110 6M17 14c3 .3 5 2 5 6"/></svg>');
-}
-.bottom-nav .nav[data-screen="moreScreen"] span:first-child{
-  --ic:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>');
-}
-.bottom-nav .nav span:first-child{
-  font-size:0; display:block; width:22px; height:22px; margin:0 auto 2px;
-  background-color:currentColor;
-  -webkit-mask-image:var(--ic); mask-image:var(--ic);
-  -webkit-mask-size:contain; mask-size:contain; -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
-}
-
-/* Срочная плашка — иконка-восклицание вместо эмодзи ‼️ */
-.note-insight-flag{
-  font-size:0!important; width:16px; height:16px;
-  background-color:currentColor;
-  -webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><path d="M12 3v11"/><circle cx="12" cy="19" r="1.2" fill="black" stroke="none"/></svg>');
-  mask-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><path d="M12 3v11"/><circle cx="12" cy="19" r="1.2" fill="black" stroke="none"/></svg>');
-  -webkit-mask-size:contain; -webkit-mask-repeat:no-repeat; mask-size:contain; mask-repeat:no-repeat;
-}
-
-/* Кнопка "+" (fab) — плюс-иконка вместо текстового символа, если он есть как псевдоэлемент */
-.fab{position:relative;font-size:0!important}
-.fab::before{
-  content:""; position:absolute; inset:0; margin:auto; width:22px; height:22px;
-  background-color:#0d100e;
-  -webkit-mask-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>');
-  mask-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>');
-  -webkit-mask-size:contain; mask-size:contain; -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
-}
+/* Safari: iOS не должен увеличивать форму при фокусе */
+input,textarea,select{font-size:16px!important;-webkit-text-size-adjust:100%}
