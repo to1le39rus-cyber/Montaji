@@ -18,7 +18,8 @@
     close:'<path d="m6 6 12 12M18 6 6 18"/>', back:'<path d="m15 18-6-6 6-6"/>', forward:'<path d="m9 18 6-6-6-6"/>',
     bell:'<path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/>',
     sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
-    moon:'<path d="M20 15.5A8.5 8.5 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z"/>', download:'<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/>',
+    moon:'<path d="M20 15.5A8.5 8.5 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z"/>',
+    download:'<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/>',
     map:'<path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/>',
     location:'<circle cx="12" cy="10" r="3"/><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/>',
     clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'
@@ -31,8 +32,7 @@
       const s=b.dataset.screen||'';
       const n=s.includes('today')?'home':s.includes('schedule')?'calendar':s.includes('money')?'money':s.includes('clients')?'users':'more';
       sp.classList.add('nav-icon');
-      sp.textContent='';
-      if(!sp.querySelector('.mi'))sp.insertAdjacentHTML('afterbegin',svg(n));
+      if(!sp.querySelector('.mi')){sp.textContent='';sp.insertAdjacentHTML('afterbegin',svg(n));}
     });
     document.querySelectorAll('.map-chip').forEach(a=>wrap(a,/2ГИС/i.test(a.textContent)?'map':'location'));
     document.querySelectorAll('.action-chip').forEach(el=>{const t=el.textContent.trim();const n=t==='Позвонить'?'phone':t==='Отправить адрес'?'share':t==='Открыть'?'open':t==='Изм.'?'edit':t==='Архив'?'archive':t==='Вернуть'?'restore':null;if(n)wrap(el,n);});
@@ -42,7 +42,7 @@
     document.querySelectorAll('.circle-btn').forEach(el=>{if(el.id==='themeBtn')wrap(el,'sun');else if(el.textContent.trim()==='×')wrap(el,'close');});
     const fab=document.querySelector('#addBtn');if(fab)wrap(fab,'plus');
     document.querySelectorAll('.setting-row b').forEach(el=>{if(el.querySelector('.mi'))return;el.classList.add('iconized');el.insertAdjacentHTML('afterbegin',svg(/JSON|Excel/.test(el.textContent)?'download':'forward'));});
-    document.querySelectorAll('.status-pill').forEach(el=>{if(el.querySelector('.mi'))return;const t=el.textContent.trim();const n=t.includes('Выполнен')?'check':t.includes('В пути')?'route':t.includes('На объекте')?'location':t.includes('Замер')?'clock':'clock';el.insertAdjacentHTML('afterbegin',svg(n));});
+    document.querySelectorAll('.status-pill').forEach(el=>{if(el.querySelector('.mi'))return;const t=el.textContent.trim();const n=t.includes('Выполнен')?'check':t.includes('В пути')?'route':t.includes('На объекте')?'location':'clock';el.insertAdjacentHTML('afterbegin',svg(n));});
     document.querySelectorAll('.detail-line').forEach(el=>{if(el.textContent.trim().startsWith('📍')){el.textContent=el.textContent.trim().replace(/^📍\s*/,'');el.insertAdjacentHTML('afterbegin',svg('location'));}});
   }
   const style=document.createElement('style');style.textContent=`
@@ -61,5 +61,5 @@
     @media(max-width:380px){.bottom-nav{left:9px!important;right:9px!important;border-radius:23px!important}.bottom-nav .nav small{font-size:9px!important}.bottom-nav .nav .nav-icon .mi{width:21px!important;height:21px!important}}
   `;document.head.appendChild(style);
   run();
-  new MutationObserver(()=>run()).observe(document.body,{childList:true,subtree:true});
+  setTimeout(run,300);setTimeout(run,1000);setTimeout(run,2000);
 })();
