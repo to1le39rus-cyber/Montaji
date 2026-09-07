@@ -13,7 +13,7 @@
     paid:'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M7 13h10"/><circle cx="12" cy="12.5" r="2.5"/>',
     plus:'<path d="M12 5v14M5 12h14"/>', minus:'<path d="M5 12h14"/>',
     edit:'<path d="m4 20 4.2-1 9.6-9.6a2.2 2.2 0 0 0-3.2-3.2L5 15.8z"/><path d="m13.5 7.5 3 3"/>',
-    archive:'<path d="M4 7h16v13H4z"/><path d="M3 4h18v3H3zM8 11h8"/>', restore:'<path d="M5 7v5h5"/><path d="M5.5 12A7 7 0 1 0 7 6"/>',
+    archive:'<path d="M4 7h16v13H4z"/><path d="M3 4h18v3H3zM8 11h8"/>', restore:'<path d="M5 7v5h5"/><path d="M5.5 12A7 7 0 1 0 7 6"/>",
     close:'<path d="m6 6 12 12M18 6 6 18"/>', back:'<path d="m15 18-6-6 6-6"/>', forward:'<path d="m9 18 6-6-6-6"/>',
     bell:'<path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/>',
     sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
@@ -25,7 +25,16 @@
   const svg=n=>`<svg class="mi mi-${n}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${ICONS[n]||ICONS.more}</svg>`;
   const wrap=(el,n)=>{if(!el||el.querySelector('.mi'))return;el.classList.add('iconized');el.insertAdjacentHTML('afterbegin',svg(n));};
   function run(){
-    document.querySelectorAll('.bottom-nav .nav').forEach(b=>{const sp=b.querySelector('span');if(!sp||sp.querySelector('.mi'))return;const s=b.dataset.screen||'';const n=s.includes('today')?'home':s.includes('schedule')?'calendar':s.includes('money')?'money':s.includes('clients')?'users':'more';sp.classList.add('nav-icon');sp.insertAdjacentHTML('afterbegin',svg(n));});
+    document.querySelectorAll('.bottom-nav .nav').forEach(b=>{
+      const sp=b.querySelector('span');
+      if(!sp)return;
+      const s=b.dataset.screen||'';
+      const n=s.includes('today')?'home':s.includes('schedule')?'calendar':s.includes('money')?'money':s.includes('clients')?'users':'more';
+      sp.classList.add('nav-icon');
+      // Navigation is self-explanatory: icon + label. Remove the old 01/02/03/04/05 numbering completely.
+      if(sp.textContent.trim()!=='')sp.textContent='';
+      if(!sp.querySelector('.mi'))sp.insertAdjacentHTML('afterbegin',svg(n));
+    });
     document.querySelectorAll('.map-chip').forEach(a=>wrap(a,/2ГИС/i.test(a.textContent)?'map':'location'));
     document.querySelectorAll('.action-chip').forEach(el=>{const t=el.textContent.trim();const n=t==='Позвонить'?'phone':t==='Отправить адрес'?'share':t==='Открыть'?'open':t==='Изм.'?'edit':t==='Архив'?'archive':t==='Вернуть'?'restore':null;if(n)wrap(el,n);});
     document.querySelectorAll('[data-quick="route"]').forEach(el=>wrap(el,'route'));document.querySelectorAll('[data-quick="done"]').forEach(el=>wrap(el,'check'));document.querySelectorAll('[data-quick="paid"]').forEach(el=>wrap(el,'paid'));
@@ -37,7 +46,70 @@
     document.querySelectorAll('.status-pill').forEach(el=>{if(el.querySelector('.mi'))return;const t=el.textContent.trim();const n=t.includes('Выполнен')?'check':t.includes('В пути')?'route':t.includes('На объекте')?'location':t.includes('Замер')?'clock':'clock';el.insertAdjacentHTML('afterbegin',svg(n));});
     document.querySelectorAll('.detail-line').forEach(el=>{if(el.textContent.trim().startsWith('📍')){el.textContent=el.textContent.trim().replace(/^📍\s*/,'');el.insertAdjacentHTML('afterbegin',svg('location'));}});
   }
-  const style=document.createElement('style');style.textContent=`.mi{width:16px;height:16px;display:inline-block;vertical-align:-3px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}.iconized{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px}.map-chip.iconized{min-width:64px}.action-chip .mi{width:15px;height:15px}.quick-actions button.iconized{gap:5px}.nav-icon{display:grid!important;place-items:center;width:25px;height:25px;margin:0 auto 3px}.bottom-nav .nav .nav-icon .mi{width:20px;height:20px}.bottom-nav .nav small{display:block}.fab.iconized{font-size:0}.fab.iconized .mi{width:23px;height:23px}.circle-btn.iconized{font-size:0}.setting-row b.iconized{gap:4px}.status-pill .mi{width:12px;height:12px;vertical-align:-2px}.detail-line .mi{margin-right:5px;vertical-align:-3px}`;document.head.appendChild(style);
+  const style=document.createElement('style');style.textContent=`
+    .mi{width:16px;height:16px;display:inline-block;vertical-align:-3px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+    .iconized{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px}
+    .map-chip.iconized{min-width:64px}
+    .action-chip .mi{width:15px;height:15px}
+    .quick-actions button.iconized{gap:5px}
+
+    /* MONTAЖИ АА — premium floating iOS navigation */
+    .bottom-nav{
+      position:fixed!important;z-index:80!important;
+      left:12px!important;right:12px!important;bottom:max(10px,env(safe-area-inset-bottom))!important;
+      width:auto!important;height:76px!important;
+      padding:7px!important;
+      display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:4px!important;
+      align-items:stretch!important;
+      background:rgba(255,255,255,.94)!important;
+      border:1px solid rgba(20,30,22,.10)!important;border-radius:25px!important;
+      box-shadow:0 12px 36px rgba(20,30,22,.13),0 2px 8px rgba(20,30,22,.06)!important;
+      backdrop-filter:blur(24px)!important;-webkit-backdrop-filter:blur(24px)!important;
+      overflow:hidden!important;
+    }
+    .bottom-nav .nav{
+      position:relative!important;min-width:0!important;height:60px!important;
+      border:0!important;border-radius:19px!important;background:transparent!important;
+      color:#8a908a!important;padding:6px 2px!important;margin:0!important;
+      display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;
+      -webkit-tap-highlight-color:transparent!important;
+      transition:background .18s ease,color .18s ease,transform .18s ease!important;
+    }
+    .bottom-nav .nav:active{transform:scale(.96)!important}
+    .bottom-nav .nav.active{
+      color:#263126!important;background:#e9eee6!important;
+    }
+    .bottom-nav .nav .nav-icon{
+      display:grid!important;place-items:center!important;
+      width:28px!important;height:27px!important;margin:0!important;
+    }
+    .bottom-nav .nav .nav-icon .mi{
+      width:22px!important;height:22px!important;
+      stroke-width:1.85!important;
+    }
+    .bottom-nav .nav small{
+      display:block!important;margin:0!important;
+      font-size:10px!important;line-height:12px!important;font-weight:600!important;letter-spacing:-.01em!important;
+      white-space:nowrap!important;
+    }
+    .bottom-nav .nav.active small{font-weight:700!important}
+    .app{padding-bottom:calc(98px + env(safe-area-inset-bottom))!important}
+    .fab{bottom:calc(100px + env(safe-area-inset-bottom))!important}
+    #toast{bottom:calc(100px + env(safe-area-inset-bottom))!important}
+
+    .fab.iconized{font-size:0}
+    .fab.iconized .mi{width:23px;height:23px}
+    .circle-btn.iconized{font-size:0}
+    .setting-row b.iconized{gap:4px}
+    .status-pill .mi{width:12px;height:12px;vertical-align:-2px}
+    .detail-line .mi{margin-right:5px;vertical-align:-3px}
+
+    @media(max-width:380px){
+      .bottom-nav{left:9px!important;right:9px!important;border-radius:23px!important}
+      .bottom-nav .nav small{font-size:9px!important}
+      .bottom-nav .nav .nav-icon .mi{width:21px!important;height:21px!important}
+    }
+  `;document.head.appendChild(style);
   run();
   new MutationObserver(()=>run()).observe(document.body,{childList:true,subtree:true});
 })();
