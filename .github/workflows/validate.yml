@@ -2,7 +2,7 @@ name: Validate Montaji AA production
 
 on:
   push:
-    branches: ["Astera-smart", "product-overhaul-20260819"]
+    branches: ["Astera-smart", "product-overhaul-20260819", "design/master-redesign"]
   pull_request:
     branches: ["Astera-smart"]
 
@@ -37,3 +37,15 @@ jobs:
       - name: Check legacy production wiring
         run: |
           ! grep -E 'v9.js|v9-compat|app-v[0-9]|firebase-sync|archive.js|enhancement-v8.js' index.html
+      - name: Check clean secure preview architecture
+        if: github.ref_name == 'design/master-redesign'
+        run: |
+          test -f secure-app/index.html
+          test -f secure-app/boot.js
+          test -f secure-app/montaji-clean.css
+          test ! -f secure-app/notes-bridge.js
+          test ! -f notes-ui.js
+          ! grep -E 'notes-bridge|notes-ui|dark-theme|notes-theme|main-screen-final|MutationObserver|source\.replace' secure-app/index.html secure-app/boot.js
+          ! grep -R '!important' secure-app/montaji-clean.css
+          grep -F 'function renderInsight' app.js
+          grep -F 'insight--urgent' app.js

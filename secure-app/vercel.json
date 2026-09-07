@@ -1,15 +1,17 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/secure-app/index.html" },
-    { "source": "/styles.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/styles.css" },
-    { "source": "/ux-upgrades.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/ux-upgrades.css" },
-    { "source": "/premium-field-tech.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/premium-field-tech.css" },
-    { "source": "/montaji-design-v2.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/montaji-design-v2.css" },
-    { "source": "/app.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/app.js" },
-    { "source": "/boot.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/boot.js" },
-    { "source": "/notes-ui.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/notes-ui.js" },
-    { "source": "/firebase-config.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/firebase-config.js" },
-    { "source": "/manifest.json", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/manifest.json" },
-    { "source": "/icon.svg", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@Astera-smart/icon.svg" }
+    { "source": "/", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/secure-app/index.html" },
+    { "source": "/styles.css", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/styles.css" },
+    { "source": "/ux-upgrades.css", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/ux-upgrades.css" },
+    { "source": "/premium-field-tech.css", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/premium-field-tech.css" },
+    { "source": "/montaji-clean.css", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/secure-app/montaji-clean.css" },
+    { "source": "/dark-theme.css", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/dark-theme.css" },
+    { "source": "/app.js", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/app.js" },
+    { "source": "/boot.js", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/secure-app/boot.js" },
+    { "source": "/firebase-config.js", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/firebase-config.js" },
+    { "source": "/money-ui-v2.js", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/money-ui-v2.js" },
+    { "source": "/debt-ui.js", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/debt-ui.js" },
+    { "source": "/manifest.json", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/manifest.json" },
+    { "source": "/icon.svg", "destination": "https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/design/master-redesign/icon.svg" }
   ]
 }
