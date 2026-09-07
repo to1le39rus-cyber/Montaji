@@ -11,41 +11,33 @@
     route:'<circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h3c4 0 2-8 5-10"/>',
     check:'<path d="m5 12 4 4L19 6"/>',
     paid:'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M7 13h10"/><circle cx="12" cy="12.5" r="2.5"/>',
-    plus:'<path d="M12 5v14M5 12h14"/>',
-    minus:'<path d="M5 12h14"/>',
+    plus:'<path d="M12 5v14M5 12h14"/>', minus:'<path d="M5 12h14"/>',
     edit:'<path d="m4 20 4.2-1 9.6-9.6a2.2 2.2 0 0 0-3.2-3.2L5 15.8z"/><path d="m13.5 7.5 3 3"/>',
-    archive:'<path d="M4 7h16v13H4z"/><path d="M3 4h18v3H3zM8 11h8"/>',
-    restore:'<path d="M5 7v5h5"/><path d="M5.5 12A7 7 0 1 0 7 6"/>',
-    close:'<path d="m6 6 12 12M18 6 6 18"/>',
-    back:'<path d="m15 18-6-6 6-6"/>',
-    forward:'<path d="m9 18 6-6-6-6"/>',
+    archive:'<path d="M4 7h16v13H4z"/><path d="M3 4h18v3H3zM8 11h8"/>', restore:'<path d="M5 7v5h5"/><path d="M5.5 12A7 7 0 1 0 7 6"/>',
+    close:'<path d="m6 6 12 12M18 6 6 18"/>', back:'<path d="m15 18-6-6 6-6"/>', forward:'<path d="m9 18 6-6-6-6"/>',
     bell:'<path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/>',
     sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
-    moon:'<path d="M20 15.5A8.5 8.5 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z"/>',
-    download:'<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/>',
-    filter:'<path d="M4 6h16M7 12h10M10 18h4"/>',
+    moon:'<path d="M20 15.5A8.5 8.5 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z"/>', download:'<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/>',
     map:'<path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/>',
     location:'<circle cx="12" cy="10" r="3"/><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z"/>',
-    wrench:'<path d="M14.5 5.5a5 5 0 0 0-6.2 6.2L4 16l4 4 4.3-4.3a5 5 0 0 0 6.2-6.2l-3.2 3.2-2.2-2.2z"/>',
-    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
-    star:'<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9z"/>'
+    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'
   };
-  const svg=(name)=>`<svg class="mi mi-${name}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${ICONS[name]||ICONS.more}</svg>`;
-  const wrap=(el,name)=>{if(!el||el.querySelector('.mi'))return;el.classList.add('iconized');el.insertAdjacentHTML('afterbegin',svg(name));};
+  const svg=n=>`<svg class="mi mi-${n}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${ICONS[n]||ICONS.more}</svg>`;
+  const wrap=(el,n)=>{if(!el||el.querySelector('.mi'))return;el.classList.add('iconized');el.insertAdjacentHTML('afterbegin',svg(n));};
   function run(){
-    document.querySelectorAll('.bottom-nav .nav').forEach(b=>{const s=b.dataset.screen||'';const n=s.includes('today')?'home':s.includes('schedule')?'calendar':s.includes('money')?'money':s.includes('clients')?'users':'more';const sp=b.querySelector('span');if(sp){sp.textContent='';sp.insertAdjacentHTML('afterbegin',svg(n));sp.classList.add('nav-icon');}});
-    document.querySelectorAll('.map-chip').forEach(a=>{const n=/2ГИС/i.test(a.textContent)?'map':'location';wrap(a,n);a.setAttribute('aria-label',a.textContent.trim());});
+    document.querySelectorAll('.bottom-nav .nav').forEach(b=>{const sp=b.querySelector('span');if(!sp||sp.querySelector('.mi'))return;const s=b.dataset.screen||'';const n=s.includes('today')?'home':s.includes('schedule')?'calendar':s.includes('money')?'money':s.includes('clients')?'users':'more';sp.classList.add('nav-icon');sp.insertAdjacentHTML('afterbegin',svg(n));});
+    document.querySelectorAll('.map-chip').forEach(a=>wrap(a,/2ГИС/i.test(a.textContent)?'map':'location'));
     document.querySelectorAll('.action-chip').forEach(el=>{const t=el.textContent.trim();const n=t==='Позвонить'?'phone':t==='Отправить адрес'?'share':t==='Открыть'?'open':t==='Изм.'?'edit':t==='Архив'?'archive':t==='Вернуть'?'restore':null;if(n)wrap(el,n);});
-    document.querySelectorAll('[data-quick="route"]').forEach(el=>wrap(el,'route'));
-    document.querySelectorAll('[data-quick="done"]').forEach(el=>wrap(el,'check'));
-    document.querySelectorAll('[data-quick="paid"]').forEach(el=>wrap(el,'paid'));
+    document.querySelectorAll('[data-quick="route"]').forEach(el=>wrap(el,'route'));document.querySelectorAll('[data-quick="done"]').forEach(el=>wrap(el,'check'));document.querySelectorAll('[data-quick="paid"]').forEach(el=>wrap(el,'paid'));
     document.querySelectorAll('.quick-inline .text-btn,#todayNoteBtn').forEach(el=>{const t=el.textContent.trim();wrap(el,t.includes('Доход')?'plus':t.includes('Расход')?'minus':'plus');});
     document.querySelectorAll('#prevMonth,#nextMonth').forEach(el=>wrap(el,el.id==='prevMonth'?'back':'forward'));
     document.querySelectorAll('.circle-btn').forEach(el=>{if(el.id==='themeBtn')wrap(el,'sun');else if(el.textContent.trim()==='×')wrap(el,'close');});
     const fab=document.querySelector('#addBtn');if(fab)wrap(fab,'plus');
-    document.querySelectorAll('.setting-row b').forEach(el=>{if(el.querySelector('.mi'))return;el.insertAdjacentHTML('afterbegin',svg(/JSON|Excel/.test(el.textContent)?'download':'forward'));});
-    document.querySelectorAll('.status-pill').forEach(el=>{if(el.querySelector('.mi'))return;const t=el.textContent.trim();const n=t.includes('Выполнен')?'check':t.includes('В пути')?'route':t.includes('На объекте')?'location':t.includes('Замер')?'ruler':'clock';if(ICONS[n])el.insertAdjacentHTML('afterbegin',svg(n));});
+    document.querySelectorAll('.setting-row b').forEach(el=>{if(el.querySelector('.mi'))return;el.classList.add('iconized');el.insertAdjacentHTML('afterbegin',svg(/JSON|Excel/.test(el.textContent)?'download':'forward'));});
+    document.querySelectorAll('.status-pill').forEach(el=>{if(el.querySelector('.mi'))return;const t=el.textContent.trim();const n=t.includes('Выполнен')?'check':t.includes('В пути')?'route':t.includes('На объекте')?'location':t.includes('Замер')?'clock':'clock';el.insertAdjacentHTML('afterbegin',svg(n));});
     document.querySelectorAll('.detail-line').forEach(el=>{if(el.textContent.trim().startsWith('📍')){el.textContent=el.textContent.trim().replace(/^📍\s*/,'');el.insertAdjacentHTML('afterbegin',svg('location'));}});
   }
-  const style=document.createElement('style');style.textContent=`.mi{width:16px;height:16px;display:inline-block;vertical-align:-3px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}.iconized{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px}.map-chip.iconized{min-width:64px}.map-chip .mi-map{stroke-width:1.7}.action-chip .mi{width:15px;height:15px}.quick-actions button.iconized{gap:5px}.nav-icon{display:grid!important;place-items:center;width:25px;height:25px;margin:0 auto 3px}.bottom-nav .nav .nav-icon .mi{width:20px;height:20px}.bottom-nav .nav small{display:block}.fab.iconized{font-size:0}.fab.iconized .mi{width:23px;height:23px}.circle-btn.iconized{font-size:0}.setting-row b.iconized{gap:4px}.status-pill .mi{width:12px;height:12px;vertical-align:-2px}.detail-line .mi{margin-right:5px;vertical-align:-3px}.map-chip:first-child .mi-location{width:15px}.map-chip .mi-map{width:15px;height:15px}`;document.head.appendChild(style);run();new MutationObserver(run).observe(document.body,{childList:true,subtree:true});
+  const style=document.createElement('style');style.textContent=`.mi{width:16px;height:16px;display:inline-block;vertical-align:-3px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}.iconized{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px}.map-chip.iconized{min-width:64px}.action-chip .mi{width:15px;height:15px}.quick-actions button.iconized{gap:5px}.nav-icon{display:grid!important;place-items:center;width:25px;height:25px;margin:0 auto 3px}.bottom-nav .nav .nav-icon .mi{width:20px;height:20px}.bottom-nav .nav small{display:block}.fab.iconized{font-size:0}.fab.iconized .mi{width:23px;height:23px}.circle-btn.iconized{font-size:0}.setting-row b.iconized{gap:4px}.status-pill .mi{width:12px;height:12px;vertical-align:-2px}.detail-line .mi{margin-right:5px;vertical-align:-3px}`;document.head.appendChild(style);
+  run();
+  new MutationObserver(()=>run()).observe(document.body,{childList:true,subtree:true});
 })();
