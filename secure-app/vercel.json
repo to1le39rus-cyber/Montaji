@@ -1,18 +1,18 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@f794033760180a2b4d48b34ceed714ee3f5ca07f/index.html" },
-    { "source": "/styles.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@f794033760180a2b4d48b34ceed714ee3f5ca07f/styles.css" },
-    { "source": "/ux-upgrades.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@f794033760180a2b4d48b34ceed714ee3f5ca07f/ux-upgrades.css" },
-    { "source": "/premium-field-tech.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@f794033760180a2b4d48b34ceed714ee3f5ca07f/premium-field-tech.css" },
-    { "source": "/montaji-design-v2.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@f794033760180a2b4d48b34ceed714ee3f5ca07f/montaji-design-v2.css" },
-    { "source": "/icons.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@f794033760180a2b4d48b34ceed714ee3f5ca07f/icons.css" },
-    { "source": "/app.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@f794033760180a2b4d48b34ceed714ee3f5ca07f/app.js" },
-    { "source": "/boot.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@f794033760180a2b4d48b34ceed714ee3f5ca07f/boot.js" },
-    { "source": "/notes-ui.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@f794033760180a2b4d48b34ceed714ee3f5ca07f/notes-ui.js" },
-    { "source": "/money-ui-v2.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@f794033760180a2b4d48b34ceed714ee3f5ca07f/money-ui-v2.js" },
-    { "source": "/debt-ui.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@f794033760180a2b4d48b34ceed714ee3f5ca07f/debt-ui.js" },
-    { "source": "/firebase-config.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@f794033760180a2b4d48b34ceed714ee3f5ca07f/firebase-config.js" },
-    { "source": "/manifest.json", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@f794033760180a2b4d48b34ceed714ee3f5ca07f/manifest.json" },
-    { "source": "/icon.svg", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@f794033760180a2b4d48b34ceed714ee3f5ca07f/icon.svg" }
+    { "source": "/", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/index.html" },
+    { "source": "/styles.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/styles.css" },
+    { "source": "/ux-upgrades.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/ux-upgrades.css" },
+    { "source": "/premium-field-tech.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/premium-field-tech.css" },
+    { "source": "/montaji-design-v2.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/montaji-design-v2.css" },
+    { "source": "/icons.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/icons.css" },
+    { "source": "/app.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/app.js" },
+    { "source": "/boot.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/boot.js" },
+    { "source": "/notes-ui.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/notes-ui.js" },
+    { "source": "/money-ui-v2.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/money-ui-v2.js" },
+    { "source": "/debt-ui.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/debt-ui.js" },
+    { "source": "/firebase-config.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/firebase-config.js" },
+    { "source": "/manifest.json", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/manifest.json" },
+    { "source": "/icon.svg", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/icon.svg" }
   ]
 }
