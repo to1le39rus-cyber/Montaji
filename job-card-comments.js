@@ -28,6 +28,7 @@ function isImportant(text) {
 
 let jobsById = new Map();
 let listObserver = null;
+let renderQueued = false;
 
 function renderComments() {
   const cards = document.querySelectorAll('.job-card[data-job-card]');
@@ -43,7 +44,8 @@ function renderComments() {
       return;
     }
 
-    const signature = `${isImportant(comment) ? 'important' : 'normal'}:${comment}`;
+    const important = isImportant(comment);
+    const signature = `${important ? 'important' : 'normal'}:${comment}`;
     if (existing?.dataset.signature === signature) return;
     existing?.remove();
 
@@ -52,17 +54,32 @@ function renderComments() {
     if (!details) return;
 
     const block = document.createElement('div');
-    block.className = `job-comment${isImportant(comment) ? ' job-comment--important' : ''}`;
+    block.className = `job-comment${important ? ' job-comment--important' : ''}`;
     block.dataset.signature = signature;
-    block.innerHTML = `<span class="job-comment__label">${isImportant(comment) ? '⚠️ Важно перед выездом' : '💬 Комментарий'}</span><span class="job-comment__text">${esc(comment)}</span>`;
+    block.innerHTML = `<span class="job-comment__label">${important ? '⚠️ Важно перед выездом' : '💬 Комментарий'}</span><span class="job-comment__text">${esc(comment)}</span>`;
     if (status) details.insertBefore(block, status);
     else details.appendChild(block);
   });
 }
 
+function queueRender() {
+  if (renderQueued) return;
+  renderQueued = true;
+  setTimeout(() => {
+    renderQueued = false;
+    renderComments();
+  }, 80);
+}
+
 function watchJobCards() {
   if (listObserver) return;
-  listObserver = new MutationObserver(() => renderComments());
+  listObserver = new MutationObserver(mutations => {
+    const hasNewJobCard = mutations.some(mutation => [...mutation.addedNodes].some(node => {
+      if (node.nodeType !== 1) return false;
+      return node.matches?.('.job-card[data-job-card]') || !!node.querySelector?.('.job-card[data-job-card]');
+    }));
+    if (hasNewJobCard) queueRender();
+  });
   listObserver.observe(document.body, { childList: true, subtree: true });
   renderComments();
 }
