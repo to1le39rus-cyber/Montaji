@@ -103,3 +103,4 @@ Production deployment выполняется GitHub Actions через Firebase 
 Перед ручным live smoke-test необходимо дождаться зелёного production deployment и открыть Firebase Hosting URL в Safari/Chrome.
 
 <!-- stable rollback checkpoint: pre-icons -->
+<!-- redeploy rollback 2026-09-08 -->
