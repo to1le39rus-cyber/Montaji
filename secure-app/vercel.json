@@ -9,12 +9,6 @@
     { "source": "/premium-field-tech.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/premium-field-tech.css" },
     { "source": "/montaji-design-v2.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/montaji-design-v2.css" },
     { "source": "/icons.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/icons.css" },
-    { "source": "/app.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/app.js" },
-    { "source": "/boot.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/boot.js" },
-    { "source": "/notes-ui.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/notes-ui.js" },
-    { "source": "/money-ui-v2.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/money-ui-v2.js" },
-    { "source": "/debt-ui.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/debt-ui.js" },
-    { "source": "/firebase-config.js", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/firebase-config.js" },
     { "source": "/manifest.json", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/manifest.json" },
     { "source": "/icon.svg", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/icon.svg" }
   ]
