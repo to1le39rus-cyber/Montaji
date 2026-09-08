@@ -1,4 +1,4 @@
-const BASE = 'https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/';
+const BASE = 'https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@ef6f73b9e97c244eda2fa903ec3fb831c90cf6e7/';
 
 async function boot(){
   await import(BASE + 'app.js?stage2=direct-cdn');
