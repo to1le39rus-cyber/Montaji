@@ -1,4 +1,7 @@
 {
+  "headers": [
+    { "source": "/", "headers": [{ "key": "Content-Type", "value": "text/html; charset=utf-8" }] }
+  ],
   "rewrites": [
     { "source": "/", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/index.html" },
     { "source": "/styles.css", "destination": "https://cdn.jsdelivr.net/gh/to1le39rus-cyber/Montaji@eea4ec03f2e62455545ecef3a3c506c53264d7d1/styles.css" },
