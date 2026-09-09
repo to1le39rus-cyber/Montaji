@@ -1,0 +1,84 @@
+/* Montaji AA — Money screen polish / preview only
+   Presentation layer only. No Firebase, business logic or data changes. */
+#moneyScreen .money-focus{
+  background:#171a17!important;
+  color:#fff!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  border-radius:20px!important;
+  padding:20px!important;
+  box-shadow:0 16px 34px rgba(23,26,23,.14)!important;
+}
+#moneyScreen .money-focus .eyebrow{
+  color:rgba(255,255,255,.56)!important;
+  margin-bottom:8px!important;
+}
+#moneyScreen .money-focus .money-value{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  opacity:1!important;
+  font-size:44px!important;
+  line-height:1!important;
+  font-weight:820!important;
+  letter-spacing:-.06em!important;
+  margin-top:8px!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.08)!important;
+}
+#moneyScreen .money-focus .money-period{
+  color:rgba(255,255,255,.56)!important;
+  opacity:1!important;
+  margin-top:8px!important;
+  font-size:11px!important;
+}
+#moneyScreen .money-highlights{
+  gap:7px!important;
+  margin:10px 0 12px!important;
+}
+#moneyScreen .money-highlights button{
+  min-height:57px!important;
+  border-radius:14px!important;
+  background:#fff!important;
+  border:1px solid #dedfd8!important;
+  padding:10px 9px!important;
+  transition:transform .12s ease,background-color .16s ease,border-color .16s ease!important;
+}
+#moneyScreen .money-highlights button:active{transform:scale(.985)!important}
+#moneyScreen .money-highlights button span{
+  color:#777d76!important;
+  font-size:9px!important;
+}
+#moneyScreen .money-highlights button b{
+  color:#171a17!important;
+  font-size:11px!important;
+  margin-top:5px!important;
+}
+#moneyScreen .money-grid{
+  gap:7px!important;
+  margin:0 0 12px!important;
+}
+#moneyScreen .money-grid>div,
+#moneyScreen .money-grid .money-debt{
+  min-height:58px!important;
+  border-radius:15px!important;
+  background:#fff!important;
+  border:1px solid #dedfd8!important;
+}
+#moneyScreen .money-grid small{
+  color:#777d76!important;
+}
+#moneyScreen .money-grid b{
+  color:#171a17!important;
+}
+#moneyScreen .money-debt{
+  background:#f9eeeb!important;
+  border-color:#ead8d3!important;
+}
+#moneyScreen .money-debt small{color:#8d655d!important}
+#moneyScreen .money-debt span{color:#98675d!important}
+#moneyScreen .finance-actions{margin:12px 0!important}
+#moneyScreen .chart-card{background:#fff!important}
+#moneyScreen .store-row,
+#moneyScreen .expense-row,
+#moneyScreen .debt-row{min-height:42px!important}
+#moneyScreen .expense-row strong,
+#moneyScreen .store-row b,
+#moneyScreen .debt-row strong{color:#171a17!important}
