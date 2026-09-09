@@ -1,14 +1,15 @@
-/* PASS 05.1 — Calendar + Day Sheet final refinement. Presentation only. */
+/* PASS 05.2 — Calendar + Day Sheet final art-direction refinement. Presentation only. */
 #scheduleScreen .screen-head{margin-top:20px;margin-bottom:18px;align-items:flex-end}
 #scheduleScreen .eyebrow{margin-bottom:4px}
-#scheduleScreen .screen-head h1{font-size:26px;text-transform:capitalize}
+#scheduleScreen .screen-head h1{font-size:26px;text-transform:capitalize;letter-spacing:-.03em}
 #scheduleScreen .month-nav{gap:7px}
-#scheduleScreen .month-nav button{width:42px;height:42px;border-radius:14px;font-size:22px;line-height:1;color:#59644d}
-#scheduleScreen .weekdays{margin:0 0 7px;padding:0 2px;font-size:9px;font-weight:650;letter-spacing:.03em}
+#scheduleScreen .month-nav button{width:42px;height:42px;border-radius:14px;font-size:22px;line-height:1;color:#59644d;border:1px solid #dedfd8;background:#fff;box-shadow:none}
+#scheduleScreen .month-nav button:active{transform:scale(.96);background:#f3f5f0}
+#scheduleScreen .weekdays{margin:0 0 7px;padding:0 2px;font-size:9px;font-weight:650;letter-spacing:.03em;color:#7b827a}
 #scheduleScreen .calendar{gap:6px}
 #scheduleScreen .day{position:relative;min-height:76px;border:1px solid #dedfd8;border-radius:16px;padding:8px 4px 7px;background:#fff;box-shadow:none;overflow:hidden;transition:transform .14s ease,background .14s ease,border-color .14s ease}
-#scheduleScreen .day:active{transform:scale(.975)}
-#scheduleScreen .day b{font-size:14px;line-height:1;font-weight:700}
+#scheduleScreen .day:active{transform:scale(.975);background:#f8f9f6}
+#scheduleScreen .day b{font-size:14px;line-height:1;font-weight:700;letter-spacing:-.01em}
 #scheduleScreen .day span{font-size:8px;color:#8a9089;margin-top:7px;white-space:nowrap}
 #scheduleScreen .day i{font-size:8px;color:#697267;margin-top:auto;font-weight:650}
 #scheduleScreen .day.partial{box-shadow:inset 0 -3px 0 #d7e0d2}
@@ -22,31 +23,33 @@
 #scheduleScreen .day.blank{visibility:hidden}
 #scheduleScreen .legend{display:none!important}
 
-/* Day sheet */
-.modal:not(#jobModal) .sheet{padding-top:11px}
-.modal:not(#jobModal) .sheet-head{margin-bottom:16px}
-.modal:not(#jobModal) .sheet-head h2{font-size:22px;line-height:1.08}
+/* Day sheet — a focused workday, not a generic modal. */
+.modal:not(#jobModal) .backdrop{background:rgba(20,24,20,.68)}
+.modal:not(#jobModal) .sheet{padding:11px 16px calc(24px + env(safe-area-inset-bottom));max-height:92svh;border-radius:28px 28px 0 0;box-shadow:0 -12px 40px rgba(25,30,25,.12)}
+.modal:not(#jobModal) .handle{width:54px;height:5px;border-radius:999px;background:#d9dcd7;margin:0 auto 18px}
+.modal:not(#jobModal) .sheet-head{margin-bottom:16px;align-items:center}
+.modal:not(#jobModal) .sheet-head h2{font-size:22px;line-height:1.08;letter-spacing:-.025em}
+.modal:not(#jobModal) .sheet-head .circle-btn{width:42px;height:42px;border-radius:50%;border:1px solid #dedfd8;background:#fff;color:#171a17;box-shadow:none;font-size:24px}
 .modal:not(#jobModal) .day-stats{gap:6px;margin:0 0 18px}
-.modal:not(#jobModal) .day-stats>div{background:#f1f3ee;border-radius:14px;padding:11px 10px}
-.modal:not(#jobModal) .day-stats small{font-size:9px}
-.modal:not(#jobModal) .day-stats b{font-size:12px;margin-top:5px}
+.modal:not(#jobModal) .day-stats>div{background:#f1f3ee;border:1px solid #edf0e9;border-radius:14px;padding:11px 10px}
+.modal:not(#jobModal) .day-stats small{font-size:9px;color:#777d76}
+.modal:not(#jobModal) .day-stats b{font-size:12px;margin-top:5px;color:#171a17}
 .modal:not(#jobModal) .day-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:4px}
-.modal:not(#jobModal) .day-actions button{border:1px solid #dedfd8;background:#f6f7f3;color:#59644d;border-radius:12px;padding:10px 6px;font-size:10px;font-weight:700;min-height:42px}
-.modal:not(#jobModal) .sheet-section{margin:19px 0 8px;font-size:10px;letter-spacing:.1em}
-.modal:not(#jobModal) .slot{margin:0 0 9px}
+.modal:not(#jobModal) .day-actions button{border:1px solid #dedfd8;background:#f8f9f6;color:#59644d;border-radius:12px;padding:10px 6px;font-size:10px;font-weight:700;min-height:42px;transition:transform .12s ease,background .12s ease}
+.modal:not(#jobModal) .day-actions button:active{transform:scale(.98);background:#eef1ea}
+.modal:not(#jobModal) .sheet-section{margin:19px 0 8px;font-size:10px;letter-spacing:.12em;color:#777d76;font-weight:750}
+.modal:not(#jobModal) .slot{margin:0 0 10px}
 .modal:not(#jobModal) .slot-title{font-size:10px;font-weight:650;color:#777d76;margin:0 0 5px 2px}
 .modal:not(#jobModal) .free-slot{border:1px dashed #cfd4cc;background:#fafbf8;border-radius:13px;padding:12px;color:#59644d;font-size:10px}
-.modal:not(#jobModal) .job-card{border-radius:16px;padding:12px;box-shadow:none}
-.modal:not(#jobModal) .job-client{font-size:14px}
+.modal:not(#jobModal) .job-card{border-radius:18px;padding:13px;border:1px solid #dedfd8;box-shadow:none;background:#fff}
+.modal:not(#jobModal) .job-client{font-size:15px;letter-spacing:-.015em}
 .modal:not(#jobModal) .job-meta{font-size:10px}
 .modal:not(#jobModal) .job-details{margin-top:8px}
 .modal:not(#jobModal) .actions{margin-top:8px}
 .modal:not(#jobModal) .action-chip,.modal:not(#jobModal) .map-chip{padding:7px 8px;font-size:9px}
-.modal:not(#jobModal) .archive-day{margin-top:12px}
-
-/* In-day job hierarchy: primary action wins; navigation helpers stay quiet. */
 .modal:not(#jobModal) .job-card .actions .open-job,.modal:not(#jobModal) .job-card .actions .primary{background:#59644d!important;color:#fff!important;border-color:#59644d!important}
 .modal:not(#jobModal) .job-card .map-chip,.modal:not(#jobModal) .job-card .action-chip{background:#f6f7f3!important;color:#5f675e!important;border-color:#dedfd8!important}
+.modal:not(#jobModal) .archive-day{margin-top:12px}
 
 /* Job create/edit sheet */
 #jobModal .sheet{padding:11px 16px calc(24px + env(safe-area-inset-bottom));max-height:94svh}
@@ -68,5 +71,5 @@
 #jobModal .form-actions .secondary,#jobModal .form-actions .danger{min-height:42px;border-radius:12px;font-size:10px}
 #jobModal .check-label{gap:8px!important;color:#59644d!important}
 #jobModal .check-label input{min-height:auto;width:18px;height:18px;accent-color:#59644d}
-@media(max-width:520px){#scheduleScreen .calendar{gap:5px}#scheduleScreen .day{min-height:68px;border-radius:14px}#scheduleScreen .day span{font-size:7px}#scheduleScreen .day i{font-size:7px}#jobModal .sheet{padding-left:14px;padding-right:14px}#jobModal .form-actions{margin-left:-14px;margin-right:-14px;padding-left:14px;padding-right:14px}}
+@media(max-width:520px){#scheduleScreen .calendar{gap:5px}#scheduleScreen .day{min-height:68px;border-radius:14px}#scheduleScreen .day span{font-size:7px}#scheduleScreen .day i{font-size:7px}#jobModal .sheet{padding-left:14px;padding-right:14px}#jobModal .form-actions{margin-left:-14px;margin-right:-14px;padding-left:14px;padding-right:14px}.modal:not(#jobModal) .sheet{padding-left:16px;padding-right:16px}}
 @media(max-width:360px){#scheduleScreen .day{min-height:61px;padding-top:7px}#scheduleScreen .day span{display:none}#scheduleScreen .day i{font-size:7px}#jobModal .form-row{grid-template-columns:1fr}}
