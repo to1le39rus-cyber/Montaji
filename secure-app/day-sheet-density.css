@@ -1,0 +1,38 @@
+/* PASS 05.6 — mobile density correction. Presentation only. */
+.day-sheet-final{padding:8px 14px calc(20px + env(safe-area-inset-bottom))!important;max-height:90svh!important;border-radius:28px 28px 0 0!important}
+.day-sheet-final .handle{width:42px!important;height:4px!important;margin:0 auto 12px!important}
+.day-sheet-final .sheet-head{margin-bottom:7px!important}
+.day-sheet-final .sheet-head h2{font-size:23px!important;line-height:1.02!important;letter-spacing:-.04em!important;max-width:calc(100% - 58px)!important}
+.day-sheet-final .eyebrow{font-size:9px!important;letter-spacing:.18em!important;margin-bottom:5px!important}
+.day-sheet-final .circle-btn{width:38px!important;height:38px!important;font-size:21px!important}
+.day-sheet-final .day-summary{font-size:9px!important;margin:0 1px 9px!important}
+.day-sheet-final .day-summary strong{font-size:10px!important}
+.day-sheet-final .day-stats{gap:6px!important;margin-bottom:9px!important}
+.day-sheet-final .day-stats>div{padding:9px 10px!important;border-radius:13px!important}
+.day-sheet-final .day-stats small{font-size:8px!important}
+.day-sheet-final .day-stats b{font-size:12px!important;margin-top:4px!important}
+.day-sheet-final .day-actions{gap:6px!important;margin-bottom:15px!important}
+.day-sheet-final .day-actions button{min-height:40px!important;border-radius:12px!important;font-size:9px!important}
+.day-sheet-final .sheet-section{font-size:9px!important;letter-spacing:.16em!important;margin-bottom:6px!important}
+.day-sheet-final .sheet-plan-meta{font-size:9px!important;margin-top:-21px!important}
+.day-sheet-final .timeline{padding-left:15px!important;margin-left:1px!important}
+.day-sheet-final .slot{margin-bottom:10px!important}
+.day-sheet-final .slot-title{font-size:9px!important;margin-bottom:5px!important}
+.day-sheet-final .slot:before{left:-14px!important;top:4px!important;width:7px!important;height:7px!important;border-width:2px!important}
+.day-sheet-final .job-card{border-radius:16px!important;padding:10px!important}
+.day-sheet-final .job-client{font-size:14px!important;line-height:1.05!important}
+.day-sheet-final .amount{font-size:14px!important}
+.day-sheet-final .job-meta{font-size:9px!important;margin-top:3px!important}
+.day-sheet-final .detail-line{font-size:9px!important;line-height:1.25!important;margin-top:6px!important}
+.day-sheet-final .note-line{margin-top:6px!important;padding:8px!important;border-radius:10px!important;font-size:9px!important;line-height:1.25!important}
+.day-sheet-final .card-status{margin-top:7px!important}
+.day-sheet-final .status-pill{font-size:8px!important;padding:5px 8px!important}
+.day-sheet-final .actions{gap:4px!important;margin-top:7px!important}
+.day-sheet-final .actions .action-chip,.day-sheet-final .actions .map-chip{min-height:32px!important;padding:0 8px!important;border-radius:9px!important;font-size:8px!important}
+.day-sheet-final .quick-actions{display:none!important}
+.day-sheet-final .free-slot{min-height:58px!important;padding:9px 10px!important;border-radius:13px!important;font-size:9px!important}
+.day-sheet-final .free-slot strong{font-size:10px!important}
+.day-sheet-final .free-slot small{font-size:8px!important}
+.day-sheet-final .free-slot>b{font-size:8px!important}
+.day-sheet-final .day-history{min-height:40px!important;margin:5px 0 1px!important;border-radius:12px!important;font-size:9px!important}
+@media(max-width:380px){.day-sheet-final{padding-left:12px!important;padding-right:12px!important}.day-sheet-final .sheet-head h2{font-size:21px!important}.day-sheet-final .day-stats>div{padding:8px 8px!important}.day-sheet-final .actions .action-chip,.day-sheet-final .actions .map-chip{padding:0 7px!important}}
