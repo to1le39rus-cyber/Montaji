@@ -1,75 +1,77 @@
-/* PASS 05.2 — Calendar + Day Sheet final art-direction refinement. Presentation only. */
-#scheduleScreen .screen-head{margin-top:20px;margin-bottom:18px;align-items:flex-end}
-#scheduleScreen .eyebrow{margin-bottom:4px}
-#scheduleScreen .screen-head h1{font-size:26px;text-transform:capitalize;letter-spacing:-.03em}
-#scheduleScreen .month-nav{gap:7px}
-#scheduleScreen .month-nav button{width:42px;height:42px;border-radius:14px;font-size:22px;line-height:1;color:#59644d;border:1px solid #dedfd8;background:#fff;box-shadow:none}
-#scheduleScreen .month-nav button:active{transform:scale(.96);background:#f3f5f0}
-#scheduleScreen .weekdays{margin:0 0 7px;padding:0 2px;font-size:9px;font-weight:650;letter-spacing:.03em;color:#7b827a}
+/* PASS 05 FINAL — Calendar + Day Sheet. Presentation only. */
+#scheduleScreen .screen-head{margin-top:18px;margin-bottom:20px;align-items:flex-end}
+#scheduleScreen .eyebrow{margin-bottom:5px;color:#7b827a;letter-spacing:.14em}
+#scheduleScreen .screen-head h1{font-size:27px;line-height:1;letter-spacing:-.045em;text-transform:none}
+#scheduleScreen .month-nav{gap:8px}
+#scheduleScreen .month-nav button{width:44px;height:44px;border-radius:50%;font-size:21px;line-height:1;color:#20231f;border:1px solid #dcded7;background:#fff;box-shadow:0 1px 0 rgba(20,25,20,.02)}
+#scheduleScreen .month-nav button:active{transform:scale(.95);background:#f1f3ed}
+#scheduleScreen .weekdays{margin:0 0 8px;padding:0 2px;font-size:9px;font-weight:700;letter-spacing:.04em;color:#7c837b}
 #scheduleScreen .calendar{gap:6px}
-#scheduleScreen .day{position:relative;min-height:76px;border:1px solid #dedfd8;border-radius:16px;padding:8px 4px 7px;background:#fff;box-shadow:none;overflow:hidden;transition:transform .14s ease,background .14s ease,border-color .14s ease}
-#scheduleScreen .day:active{transform:scale(.975);background:#f8f9f6}
-#scheduleScreen .day b{font-size:14px;line-height:1;font-weight:700;letter-spacing:-.01em}
-#scheduleScreen .day span{font-size:8px;color:#8a9089;margin-top:7px;white-space:nowrap}
-#scheduleScreen .day i{font-size:8px;color:#697267;margin-top:auto;font-weight:650}
-#scheduleScreen .day.partial{box-shadow:inset 0 -3px 0 #d7e0d2}
-#scheduleScreen .day.busy{box-shadow:inset 0 -3px 0 #aebda4}
-#scheduleScreen .day.full{background:#59644d;border-color:#59644d;color:#fff;box-shadow:none}
-#scheduleScreen .day.full span,#scheduleScreen .day.full i{color:rgba(255,255,255,.72)}
-#scheduleScreen .day.today{outline:2px solid #59644d;outline-offset:1px}
-#scheduleScreen .day.today:not(.full){background:#f7f8f4}
-#scheduleScreen .day.has-measure{border-color:#a9b08e}
-#scheduleScreen .day.has-measure:after{content:'';position:absolute;right:7px;top:7px;width:5px;height:5px;border-radius:50%;background:#9ca77f}
+#scheduleScreen .day{position:relative;min-height:76px;border:1px solid #dfe1da;border-radius:15px;padding:9px 5px 8px;background:#fff;box-shadow:none;overflow:hidden;transition:transform .14s ease,background .14s ease,border-color .14s ease}
+#scheduleScreen .day:active{transform:scale(.975);background:#f6f8f3}
+#scheduleScreen .day b{font-size:15px;line-height:1;font-weight:750;letter-spacing:-.015em}
+#scheduleScreen .day span{font-size:8px;color:#858c84;margin-top:8px;white-space:nowrap}
+#scheduleScreen .day i{font-size:9px;color:#5e675c;margin-top:auto;font-weight:750}
+#scheduleScreen .day:before{content:'';position:absolute;left:6px;right:6px;bottom:4px;height:3px;border-radius:999px;background:#edf0ea}
+#scheduleScreen .day.partial:before{background:linear-gradient(90deg,#b8c5ae 0 33%,#edf0ea 33%)}
+#scheduleScreen .day.busy:before{background:linear-gradient(90deg,#93a389 0 66%,#edf0ea 66%)}
+#scheduleScreen .day.full{background:#59644d;border-color:#59644d;color:#fff}
+#scheduleScreen .day.full:before{background:rgba(255,255,255,.62)}
+#scheduleScreen .day.full span,#scheduleScreen .day.full i{color:rgba(255,255,255,.76)}
+#scheduleScreen .day.today{outline:0;border:2px solid #59644d;padding:8px 4px 7px;background:#f7f8f4}
+#scheduleScreen .day.today.full{background:#59644d}
+#scheduleScreen .day.has-measure{border-color:#aeb79f}
+#scheduleScreen .day.has-measure:after{content:'◆';position:absolute;right:7px;top:6px;font-size:6px;color:#8f9a78}
 #scheduleScreen .day.blank{visibility:hidden}
 #scheduleScreen .legend{display:none!important}
 
-/* Day sheet — a focused workday, not a generic modal. */
-.modal:not(#jobModal) .backdrop{background:rgba(20,24,20,.68)}
-.modal:not(#jobModal) .sheet{padding:11px 16px calc(24px + env(safe-area-inset-bottom));max-height:92svh;border-radius:28px 28px 0 0;box-shadow:0 -12px 40px rgba(25,30,25,.12)}
-.modal:not(#jobModal) .handle{width:54px;height:5px;border-radius:999px;background:#d9dcd7;margin:0 auto 18px}
-.modal:not(#jobModal) .sheet-head{margin-bottom:16px;align-items:center}
-.modal:not(#jobModal) .sheet-head h2{font-size:22px;line-height:1.08;letter-spacing:-.025em}
-.modal:not(#jobModal) .sheet-head .circle-btn{width:42px;height:42px;border-radius:50%;border:1px solid #dedfd8;background:#fff;color:#171a17;box-shadow:none;font-size:24px}
-.modal:not(#jobModal) .day-stats{gap:6px;margin:0 0 18px}
-.modal:not(#jobModal) .day-stats>div{background:#f1f3ee;border:1px solid #edf0e9;border-radius:14px;padding:11px 10px}
-.modal:not(#jobModal) .day-stats small{font-size:9px;color:#777d76}
-.modal:not(#jobModal) .day-stats b{font-size:12px;margin-top:5px;color:#171a17}
-.modal:not(#jobModal) .day-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:4px}
-.modal:not(#jobModal) .day-actions button{border:1px solid #dedfd8;background:#f8f9f6;color:#59644d;border-radius:12px;padding:10px 6px;font-size:10px;font-weight:700;min-height:42px;transition:transform .12s ease,background .12s ease}
-.modal:not(#jobModal) .day-actions button:active{transform:scale(.98);background:#eef1ea}
-.modal:not(#jobModal) .sheet-section{margin:19px 0 8px;font-size:10px;letter-spacing:.12em;color:#777d76;font-weight:750}
-.modal:not(#jobModal) .slot{margin:0 0 10px}
-.modal:not(#jobModal) .slot-title{font-size:10px;font-weight:650;color:#777d76;margin:0 0 5px 2px}
-.modal:not(#jobModal) .free-slot{border:1px dashed #cfd4cc;background:#fafbf8;border-radius:13px;padding:12px;color:#59644d;font-size:10px}
-.modal:not(#jobModal) .job-card{border-radius:18px;padding:13px;border:1px solid #dedfd8;box-shadow:none;background:#fff}
-.modal:not(#jobModal) .job-client{font-size:15px;letter-spacing:-.015em}
+/* Workday sheet: strong hierarchy, calm surfaces, clear actions. */
+.modal:not(#jobModal) .backdrop{background:rgba(18,22,18,.72)}
+.modal:not(#jobModal) .sheet{padding:10px 16px calc(26px + env(safe-area-inset-bottom));max-height:92svh;border-radius:30px 30px 0 0;background:#fdfdfb;box-shadow:0 -18px 55px rgba(18,23,18,.16)}
+.modal:not(#jobModal) .handle{width:52px;height:5px;border-radius:999px;background:#d8dcd6;margin:0 auto 19px}
+.modal:not(#jobModal) .sheet-head{margin-bottom:18px;align-items:center}
+.modal:not(#jobModal) .sheet-head h2{font-size:24px;line-height:1.04;letter-spacing:-.035em}
+.modal:not(#jobModal) .sheet-head .circle-btn{width:44px;height:44px;border-radius:50%;border:1px solid #dfe1da;background:#fff;color:#171a17;box-shadow:none;font-size:23px}
+.modal:not(#jobModal) .day-stats{gap:7px;margin:0 0 18px}
+.modal:not(#jobModal) .day-stats>div{background:#f0f3ed;border:0;border-radius:16px;padding:12px 11px}
+.modal:not(#jobModal) .day-stats small{font-size:9px;color:#7b827a}
+.modal:not(#jobModal) .day-stats b{font-size:13px;margin-top:6px;color:#171a17}
+.modal:not(#jobModal) .day-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:4px}
+.modal:not(#jobModal) .day-actions button{border:1px solid #dfe1da;background:#fff;color:#59644d;border-radius:13px;padding:10px 6px;font-size:10px;font-weight:750;min-height:43px;transition:transform .12s ease,background .12s ease}
+.modal:not(#jobModal) .day-actions button:active{transform:scale(.98);background:#f0f3ed}
+.modal:not(#jobModal) .sheet-section{margin:20px 0 8px;font-size:10px;letter-spacing:.14em;color:#777d76;font-weight:800}
+.modal:not(#jobModal) .slot{margin:0 0 11px}
+.modal:not(#jobModal) .slot-title{font-size:10px;font-weight:700;color:#777d76;margin:0 0 6px 3px}
+.modal:not(#jobModal) .free-slot{border:1px dashed #cbd2c6;background:#fafbf8;border-radius:14px;padding:12px;color:#59644d;font-size:10px}
+.modal:not(#jobModal) .job-card{border-radius:19px;padding:14px;border:1px solid #dfe1da;box-shadow:0 1px 0 rgba(20,25,20,.02);background:#fff}
+.modal:not(#jobModal) .job-client{font-size:16px;letter-spacing:-.02em}
 .modal:not(#jobModal) .job-meta{font-size:10px}
-.modal:not(#jobModal) .job-details{margin-top:8px}
-.modal:not(#jobModal) .actions{margin-top:8px}
-.modal:not(#jobModal) .action-chip,.modal:not(#jobModal) .map-chip{padding:7px 8px;font-size:9px}
-.modal:not(#jobModal) .job-card .actions .open-job,.modal:not(#jobModal) .job-card .actions .primary{background:#59644d!important;color:#fff!important;border-color:#59644d!important}
+.modal:not(#jobModal) .job-details{margin-top:9px}
+.modal:not(#jobModal) .actions{margin-top:9px}
+.modal:not(#jobModal) .action-chip,.modal:not(#jobModal) .map-chip{padding:8px 9px;font-size:9px}
+.modal:not(#jobModal) .job-card .actions .open-job,.modal:not(#jobModal) .job-card .actions .primary{background:#59644d!important;color:#fff!important;border-color:#59644d!important;-webkit-text-fill-color:#fff!important}
 .modal:not(#jobModal) .job-card .map-chip,.modal:not(#jobModal) .job-card .action-chip{background:#f6f7f3!important;color:#5f675e!important;border-color:#dedfd8!important}
 .modal:not(#jobModal) .archive-day{margin-top:12px}
 
-/* Job create/edit sheet */
-#jobModal .sheet{padding:11px 16px calc(24px + env(safe-area-inset-bottom));max-height:94svh}
-#jobModal .sheet-head{position:sticky;top:-11px;z-index:3;margin:0 -2px 12px;padding:4px 2px 11px;background:rgba(255,255,255,.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
-#jobModal .sheet-head h2{font-size:24px;line-height:1.05}
+/* Create/edit job sheet */
+#jobModal .sheet{padding:10px 16px calc(26px + env(safe-area-inset-bottom));max-height:94svh;background:#fdfdfb;border-radius:30px 30px 0 0}
+#jobModal .sheet-head{position:sticky;top:-10px;z-index:3;margin:0 -2px 12px;padding:4px 2px 11px;background:rgba(253,253,251,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+#jobModal .sheet-head h2{font-size:24px;line-height:1.05;letter-spacing:-.035em}
 #jobModal .type-tabs{margin:0 -1px 14px;padding:0 1px 4px;gap:6px}
-#jobModal .type-tabs button{border-color:#dfe1db;background:#f6f7f3;color:#727970;border-radius:11px;padding:9px 12px;font-size:10px;font-weight:650}
+#jobModal .type-tabs button{border-color:#dfe1db;background:#f6f7f3;color:#727970;border-radius:12px;padding:10px 12px;font-size:10px;font-weight:700}
 #jobModal .type-tabs button.selected{background:#59644d;border-color:#59644d;color:#fff}
-#jobModal .sheet form label{font-size:10px;color:#70776f;gap:6px;margin:9px 0;font-weight:650}
-#jobModal .sheet input,#jobModal .sheet textarea,#jobModal .sheet select{border-color:#dedfd8;background:#f8f9f6;border-radius:12px;padding:12px 11px;font-size:13px;min-height:43px}
+#jobModal .sheet form label{font-size:10px;color:#70776f;gap:6px;margin:9px 0;font-weight:700}
+#jobModal .sheet input,#jobModal .sheet textarea,#jobModal .sheet select{border-color:#dedfd8;background:#f8f9f6;border-radius:13px;padding:12px 11px;font-size:13px;min-height:44px;color:#171a17}
 #jobModal .sheet textarea{line-height:1.4}
 #jobModal .form-row{gap:8px}
-#jobModal .measure-panel{border:1px solid #dfe4da;background:#f1f3ee;border-radius:16px;padding:12px;margin:10px 0}
+#jobModal .measure-panel{border:1px solid #dfe4da;background:#f0f3ed;border-radius:16px;padding:12px;margin:10px 0}
 #jobModal .measure-title{font-size:11px}
 #jobModal .measure-panel p{font-size:9px}
 #jobModal .warning{border:1px solid #ead8cd;background:#f7ece6;border-radius:12px;padding:10px;font-size:10px}
-#jobModal .form-actions{position:sticky;bottom:-24px;z-index:4;margin:14px -16px -24px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(255,255,255,.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid #e3e4df}
-#jobModal .form-actions .primary{min-height:47px;border-radius:14px;background:#59644d;font-size:12px}
+#jobModal .form-actions{position:sticky;bottom:-26px;z-index:4;margin:14px -16px -26px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(253,253,251,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid #e3e4df}
+#jobModal .form-actions .primary{min-height:48px;border-radius:14px;background:#59644d;font-size:12px;color:#fff;-webkit-text-fill-color:#fff}
 #jobModal .form-actions .secondary,#jobModal .form-actions .danger{min-height:42px;border-radius:12px;font-size:10px}
 #jobModal .check-label{gap:8px!important;color:#59644d!important}
 #jobModal .check-label input{min-height:auto;width:18px;height:18px;accent-color:#59644d}
-@media(max-width:520px){#scheduleScreen .calendar{gap:5px}#scheduleScreen .day{min-height:68px;border-radius:14px}#scheduleScreen .day span{font-size:7px}#scheduleScreen .day i{font-size:7px}#jobModal .sheet{padding-left:14px;padding-right:14px}#jobModal .form-actions{margin-left:-14px;margin-right:-14px;padding-left:14px;padding-right:14px}.modal:not(#jobModal) .sheet{padding-left:16px;padding-right:16px}}
-@media(max-width:360px){#scheduleScreen .day{min-height:61px;padding-top:7px}#scheduleScreen .day span{display:none}#scheduleScreen .day i{font-size:7px}#jobModal .form-row{grid-template-columns:1fr}}
+@media(max-width:520px){#scheduleScreen .calendar{gap:5px}#scheduleScreen .day{min-height:69px;border-radius:14px}#scheduleScreen .day span{font-size:7px}#scheduleScreen .day i{font-size:8px}.modal:not(#jobModal) .sheet{padding-left:16px;padding-right:16px}#jobModal .sheet{padding-left:14px;padding-right:14px}#jobModal .form-actions{margin-left:-14px;margin-right:-14px;padding-left:14px;padding-right:14px}}
+@media(max-width:360px){#scheduleScreen .day{min-height:62px;padding-top:7px}#scheduleScreen .day span{display:none}#scheduleScreen .day i{font-size:7px}#jobModal .form-row{grid-template-columns:1fr}}
