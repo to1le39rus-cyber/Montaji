@@ -1,13 +1,13 @@
 /* PASS 05.3 — premium Workday sheet. Presentation + interaction shell only. */
 .day-sheet-final{background:#fdfdfb!important;border-radius:32px 32px 0 0!important;padding:9px 16px calc(28px + env(safe-area-inset-bottom))!important;max-height:94svh!important;box-shadow:0 -24px 70px rgba(20,25,20,.2)!important;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .day-sheet-final .handle{width:52px!important;height:5px!important;margin:0 auto 18px!important;background:#d9ddd6!important}
-.day-sheet-final .sheet-head{margin:0 0 18px!important;align-items:flex-start!important}
+.day-sheet-final .sheet-head{margin:0 0 12px!important;align-items:flex-start!important}
 .day-sheet-final .eyebrow{font-size:10px!important;letter-spacing:.18em!important;color:#858c84!important;margin-bottom:7px!important}
 .day-sheet-final .sheet-head h2{font-size:27px!important;line-height:1.02!important;letter-spacing:-.045em!important;margin:0!important}
 .day-sheet-final .circle-btn{width:44px!important;height:44px!important;border-radius:50%!important;border:1px solid #dfe1da!important;background:#fff!important;color:#171a17!important;font-size:24px!important;box-shadow:none!important;flex:0 0 auto}
-.day-sheet-final .day-summary{display:flex;justify-content:space-between;align-items:center;margin:-5px 1px 14px;color:#777d76;font-size:11px;font-weight:650}
+.day-sheet-final .day-summary{display:flex;justify-content:space-between;align-items:center;margin:0 1px 15px;color:#858c84;font-size:10px;font-weight:650}
 .day-sheet-final .day-summary strong{color:#59644d;font-size:11px}
-.day-sheet-final .day-stats{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important;margin:0 0 16px!important}
+.day-sheet-final .day-stats{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important;margin:0 0 15px!important}
 .day-sheet-final .day-stats>div{min-width:0!important;background:#f0f3ed!important;border-radius:17px!important;padding:13px 11px!important}
 .day-sheet-final .day-stats small{font-size:9px!important;color:#7b827a!important;display:block!important}
 .day-sheet-final .day-stats b{display:block!important;font-size:14px!important;line-height:1.1!important;margin-top:7px!important;color:#171a17!important}
@@ -33,8 +33,15 @@
 .day-sheet-final .actions{display:flex!important;flex-wrap:wrap!important;gap:5px!important;margin-top:10px!important}
 .day-sheet-final .actions .action-chip,.day-sheet-final .actions .map-chip{min-height:37px!important;padding:0 10px!important;border-radius:11px!important;border:1px solid #dedfd8!important;background:#f7f8f5!important;color:#5f675e!important;font-size:9px!important;font-weight:700!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;text-decoration:none!important;box-sizing:border-box!important}
 .day-sheet-final .actions .primary-chip,.day-sheet-final .actions .open-job{background:#59644d!important;color:#fff!important;border-color:#59644d!important;-webkit-text-fill-color:#fff!important}
-.day-sheet-final .free-slot{width:100%!important;min-height:76px!important;border:1px dashed #cbd2c6!important;background:#fafbf8!important;border-radius:15px!important;padding:12px!important;color:#59644d!important;font-size:10px!important;text-align:left!important}
-.day-sheet-final .free-slot strong{display:block;font-size:12px;margin-bottom:3px;color:#30372f}
-.day-sheet-final .free-slot small{color:#858c84}
+.day-sheet-final .quick-actions{display:none!important}
+.day-sheet-final .free-slot{width:100%!important;min-height:76px!important;border:1px dashed #cbd2c6!important;background:#fafbf8!important;border-radius:15px!important;padding:12px!important;color:#59644d!important;font-size:10px!important;text-align:left!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important}
+.day-sheet-final .free-slot-main{display:flex;flex-direction:column;gap:3px;text-align:left}
+.day-sheet-final .free-slot strong{display:block;font-size:12px;margin:0;color:#30372f}
+.day-sheet-final .free-slot small{color:#858c84;font-size:9px}
+.day-sheet-final .free-slot>b{font-size:9px;font-weight:750;color:#59644d;white-space:nowrap}
 .day-sheet-final .day-history{width:100%!important;min-height:48px!important;margin:8px 0 2px!important;border:1px solid #dfe1da!important;background:#fff!important;border-radius:14px!important;color:#59644d!important;font-size:10px!important;font-weight:750!important}
-@media(max-width:380px){.day-sheet-final{padding-left:13px!important;padding-right:13px!important}.day-sheet-final .sheet-head h2{font-size:24px!important}.day-sheet-final .day-stats>div{padding:11px 9px!important}.day-sheet-final .actions .action-chip,.day-sheet-final .actions .map-chip{padding:0 8px!important}}
+.day-sheet-final .day-history:active{background:#f0f3ed!important;transform:scale(.99)}
+.day-sheet-final .debt-banner{margin-top:8px;border-radius:13px!important;background:#fff5ed!important;border:1px solid #efd6c3!important;color:#9a5b32!important;padding:11px!important;font-size:10px!important;font-weight:750!important}
+.day-sheet-final .slot:has(.job-card.job-done):before{background:#59644d}
+.day-sheet-final .slot:has(.free-slot):before{background:#fff;border:2px solid #aeb7a7}
+@media(max-width:380px){.day-sheet-final{padding-left:13px!important;padding-right:13px!important}.day-sheet-final .sheet-head h2{font-size:24px!important}.day-sheet-final .day-stats>div{padding:11px 9px!important}.day-sheet-final .actions .action-chip,.day-sheet-final .actions .map-chip{padding:0 8px!important}.day-sheet-final .free-slot>b{font-size:8px}}
