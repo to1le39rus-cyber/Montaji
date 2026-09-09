@@ -1,0 +1,93 @@
+/* Montaji AA — Today final product pass. Presentation only. */
+
+/* WHAT MATTERS: one calm surface, two semantic levels */
+#insights{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:0!important;
+  overflow:hidden!important;
+  padding:0 14px!important;
+  border:1px solid #dedfd8!important;
+  border-radius:16px!important;
+  background:#fff!important;
+  box-shadow:0 6px 22px rgba(23,26,23,.035)!important;
+}
+#insights .insight{
+  width:100%!important;
+  min-height:46px!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+  padding:12px 0!important;
+  border:0!important;
+  border-bottom:1px solid #e7e7e1!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:#30342f!important;
+  font-size:13px!important;
+  font-weight:600!important;
+  text-align:left!important;
+}
+#insights .insight:last-child{border-bottom:0!important}
+#insights .insight>span:last-child{color:#969b94!important;font-size:18px!important}
+#insights .note-insight-urgent{min-height:52px!important;padding:12px 0!important}
+#insights .note-insight-copy{padding-left:14px!important}
+#insights .note-insight-copy::before{left:1px!important;top:7px!important;width:5px!important;height:5px!important;background:#59644d!important}
+#insights .note-insight-copy strong{font-size:14px!important;font-weight:680!important;color:#20231f!important}
+#insights .note-insight-copy small{font-size:11px!important;color:#8b7a66!important}
+#insights .note-insight-arrow{font-size:18px!important;color:#9a9e98!important}
+
+/* Today section rhythm */
+#todayScreen>.section-head{margin-top:25px!important;margin-bottom:9px!important}
+#todayScreen>.section-head h2{font-size:17px!important;letter-spacing:-.03em!important}
+#todayScreen>.section-head .quick-inline{gap:13px!important}
+#todayScreen>.section-head .quick-inline .text-btn{font-size:12px!important}
+
+/* Job cards: less dashboard, more field tool */
+#todayList{gap:10px!important}
+#todayList .job-card{
+  position:relative!important;
+  padding:15px!important;
+  border-radius:17px!important;
+  border:1px solid #d9ddd4!important;
+  background:#fff!important;
+  box-shadow:0 7px 24px rgba(23,26,23,.045)!important;
+  overflow:hidden!important;
+}
+#todayList .job-card:first-child{border-color:#c7d0bd!important;box-shadow:0 10px 28px rgba(48,60,43,.07)!important}
+#todayList .job-card:first-child:before{content:''!important;position:absolute!important;left:0!important;top:16px!important;bottom:16px!important;width:3px!important;border-radius:0 3px 3px 0!important;background:#59644d!important}
+#todayList .job-top{gap:12px!important}
+#todayList .job-client{font-size:17px!important;font-weight:760!important}
+#todayList .job-meta{font-size:11px!important;color:#858b83!important;margin-top:3px!important}
+#todayList .amount{font-size:18px!important;font-weight:820!important;white-space:nowrap!important}
+#todayList .detail-line{font-size:11.5px!important;color:#747b73!important}
+#todayList .note-line{font-size:11px!important;background:#f7f8f4!important;border-color:#e4e6df!important;color:#4f574d!important}
+#todayList .actions{display:flex!important;flex-wrap:wrap!important;gap:5px!important;margin-top:11px!important}
+#todayList .action-chip,#todayList .map-chip{min-height:32px!important;padding:7px 9px!important;border-radius:9px!important;font-size:9.5px!important}
+#todayList .actions .primary-chip{margin-left:auto!important}
+#todayList .quick-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;margin-top:9px!important;padding-top:9px!important;border-top:1px solid #ecece7!important}
+#todayList .quick-actions button{min-height:38px!important;border-radius:10px!important;font-size:10px!important;font-weight:680!important}
+#todayList .quick-actions button:last-child{grid-column:1/-1!important;background:#59644d!important;border-color:#59644d!important;color:#fff!important}
+
+/* Keep the full Notes source below, but visually subordinate to Today */
+#todayScreen>.inline-card:last-child{margin-top:14px!important;background:#fff!important;border:1px solid #dedfd8!important;border-radius:17px!important}
+#todayScreen>.inline-card:last-child .section-head{margin:0 0 9px!important}
+#todayScreen>.inline-card:last-child .section-head h2{font-size:16px!important}
+#todayScreen>.inline-card:last-child .note-card{padding:11px 0!important}
+#todayScreen>.inline-card:last-child .note-urgent-badge{font-size:9px!important;padding:3px 7px!important}
+
+/* Upcoming days: compact planner rows */
+#todayScreen .upcoming-list{gap:6px!important}
+#todayScreen .upcoming{min-height:46px!important;padding:9px 11px!important;border-radius:13px!important}
+
+/* Expenses: keep as a secondary utility */
+#todayScreen>.inline-card:not(:last-child){border-radius:16px!important;padding:13px!important}
+
+@media(max-width:560px){
+  #insights{padding:0 13px!important;border-radius:15px!important}
+  #insights .note-insight-copy strong{font-size:14px!important}
+  #todayList .job-card{padding:14px!important;border-radius:16px!important}
+  #todayList .job-client{font-size:16px!important}
+  #todayList .amount{font-size:17px!important}
+  #todayList .actions .primary-chip{margin-left:0!important}
+}
