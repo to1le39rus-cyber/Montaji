@@ -21,7 +21,7 @@ function patchDaySheetSource(source){
     m.querySelector('#dayAdd').onclick=()=>{m.remove();openJob(null,d,freeSlot(d),'Монтаж')};
     m.querySelector('#dayExpense').onclick=()=>{m.remove();openExpense(d)};
     m.querySelector('#dayNote').onclick=()=>{m.remove();openNote()};
-    m.querySelector('#archiveDay').onclick=()=>showDayArchive(d);
+    m.querySelector('#archiveDay').onclick=()=>{m.remove();showDayArchive(d)};
     m.querySelectorAll('.free-slot').forEach(b=>b.onclick=()=>{m.remove();openJob(null,d,b.dataset.slot,'Монтаж')});
     m.querySelectorAll('.edit').forEach(b=>b.onclick=()=>{m.remove();openJob(b.dataset.id)});
     bindQuickActions(m);
