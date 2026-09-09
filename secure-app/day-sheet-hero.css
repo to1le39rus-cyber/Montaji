@@ -1,0 +1,40 @@
+/* PASS 05.3 — premium Workday sheet. Presentation + interaction shell only. */
+.day-sheet-final{background:#fdfdfb!important;border-radius:32px 32px 0 0!important;padding:9px 16px calc(28px + env(safe-area-inset-bottom))!important;max-height:94svh!important;box-shadow:0 -24px 70px rgba(20,25,20,.2)!important;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.day-sheet-final .handle{width:52px!important;height:5px!important;margin:0 auto 18px!important;background:#d9ddd6!important}
+.day-sheet-final .sheet-head{margin:0 0 18px!important;align-items:flex-start!important}
+.day-sheet-final .eyebrow{font-size:10px!important;letter-spacing:.18em!important;color:#858c84!important;margin-bottom:7px!important}
+.day-sheet-final .sheet-head h2{font-size:27px!important;line-height:1.02!important;letter-spacing:-.045em!important;margin:0!important}
+.day-sheet-final .circle-btn{width:44px!important;height:44px!important;border-radius:50%!important;border:1px solid #dfe1da!important;background:#fff!important;color:#171a17!important;font-size:24px!important;box-shadow:none!important;flex:0 0 auto}
+.day-sheet-final .day-summary{display:flex;justify-content:space-between;align-items:center;margin:-5px 1px 14px;color:#777d76;font-size:11px;font-weight:650}
+.day-sheet-final .day-summary strong{color:#59644d;font-size:11px}
+.day-sheet-final .day-stats{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important;margin:0 0 16px!important}
+.day-sheet-final .day-stats>div{min-width:0!important;background:#f0f3ed!important;border-radius:17px!important;padding:13px 11px!important}
+.day-sheet-final .day-stats small{font-size:9px!important;color:#7b827a!important;display:block!important}
+.day-sheet-final .day-stats b{display:block!important;font-size:14px!important;line-height:1.1!important;margin-top:7px!important;color:#171a17!important}
+.day-sheet-final .day-actions{display:grid!important;grid-template-columns:1fr 1fr 1fr!important;gap:7px!important;margin:0 0 23px!important}
+.day-sheet-final .day-actions button{min-height:46px!important;border:1px solid #dfe1da!important;background:#fff!important;color:#59644d!important;border-radius:14px!important;font-size:10px!important;font-weight:750!important}
+.day-sheet-final .day-actions button:first-child{background:#59644d!important;color:#fff!important;border-color:#59644d!important}
+.day-sheet-final .sheet-section{margin:0 0 10px!important;color:#777d76!important;font-size:10px!important;letter-spacing:.15em!important;font-weight:800!important}
+.day-sheet-final .sheet-plan-meta{float:right;margin-top:-24px;color:#858c84;font-size:10px;font-weight:650}
+.day-sheet-final .timeline{position:relative;margin:0 0 4px 2px;padding-left:18px}
+.day-sheet-final .timeline:before{content:'';position:absolute;left:5px;top:12px;bottom:15px;width:1px;background:#d6dbd2}
+.day-sheet-final .slot{position:relative;margin:0 0 16px!important;padding:0!important}
+.day-sheet-final .slot:before{content:'';position:absolute;left:-17px;top:5px;width:9px;height:9px;border-radius:50%;background:#7c8677;border:3px solid #fdfdfb;box-sizing:content-box;z-index:2}
+.day-sheet-final .slot-title{font-size:10px!important;color:#70786f!important;font-weight:750!important;margin:0 0 7px 0!important}
+.day-sheet-final .job-card{border-radius:19px!important;padding:13px!important;border:1px solid #dfe1da!important;background:#fff!important;box-shadow:0 1px 0 rgba(20,25,20,.025)!important}
+.day-sheet-final .job-top{align-items:flex-start!important}
+.day-sheet-final .job-client{font-size:16px!important;line-height:1.05!important;letter-spacing:-.025em!important}
+.day-sheet-final .amount{font-size:16px!important;font-weight:800!important;white-space:nowrap!important}
+.day-sheet-final .job-meta{font-size:10px!important;color:#7b827a!important;margin-top:5px!important}
+.day-sheet-final .detail-line{font-size:10px!important;color:#777d76!important;line-height:1.35!important}
+.day-sheet-final .note-line{margin-top:8px!important;border:1px solid #e0e4dc!important;background:#f3f5f0!important;border-radius:12px!important;padding:10px!important;color:#59644d!important;font-weight:650!important}
+.day-sheet-final .card-status{margin-top:9px!important}
+.day-sheet-final .status-pill{font-size:9px!important;padding:6px 9px!important;background:#e9efe6!important;color:#596b54!important;border-radius:999px!important}
+.day-sheet-final .actions{display:flex!important;flex-wrap:wrap!important;gap:5px!important;margin-top:10px!important}
+.day-sheet-final .actions .action-chip,.day-sheet-final .actions .map-chip{min-height:37px!important;padding:0 10px!important;border-radius:11px!important;border:1px solid #dedfd8!important;background:#f7f8f5!important;color:#5f675e!important;font-size:9px!important;font-weight:700!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;text-decoration:none!important;box-sizing:border-box!important}
+.day-sheet-final .actions .primary-chip,.day-sheet-final .actions .open-job{background:#59644d!important;color:#fff!important;border-color:#59644d!important;-webkit-text-fill-color:#fff!important}
+.day-sheet-final .free-slot{width:100%!important;min-height:76px!important;border:1px dashed #cbd2c6!important;background:#fafbf8!important;border-radius:15px!important;padding:12px!important;color:#59644d!important;font-size:10px!important;text-align:left!important}
+.day-sheet-final .free-slot strong{display:block;font-size:12px;margin-bottom:3px;color:#30372f}
+.day-sheet-final .free-slot small{color:#858c84}
+.day-sheet-final .day-history{width:100%!important;min-height:48px!important;margin:8px 0 2px!important;border:1px solid #dfe1da!important;background:#fff!important;border-radius:14px!important;color:#59644d!important;font-size:10px!important;font-weight:750!important}
+@media(max-width:380px){.day-sheet-final{padding-left:13px!important;padding-right:13px!important}.day-sheet-final .sheet-head h2{font-size:24px!important}.day-sheet-final .day-stats>div{padding:11px 9px!important}.day-sheet-final .actions .action-chip,.day-sheet-final .actions .map-chip{padding:0 8px!important}}
