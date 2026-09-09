@@ -1,0 +1,22 @@
+/* PASS 07 — history scroll behavior only. */
+/* The history sheet is one continuous scroll surface. Its heading must not stick. */
+.modal.open .sheet-head,
+.modal.open .screen-head,
+.modal.open .archive-head,
+.modal.open .history-head{
+  position:relative!important;
+  top:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  left:auto!important;
+  inset:auto!important;
+  z-index:auto!important;
+  transform:none!important;
+}
+
+/* Do not create a second scroll context for history content. */
+.modal.open .archive-sheet,
+.modal.open .history-sheet{
+  overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+}
