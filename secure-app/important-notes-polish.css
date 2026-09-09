@@ -1,0 +1,29 @@
+/* PASS 04A — final important context. Calm task list, not alert cards. */
+#insights .note-insight-urgent{
+  display:grid!important;
+  grid-template-columns:1fr auto!important;
+  align-items:center!important;
+  gap:16px!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+  padding:14px 2px!important;
+  border:0!important;
+  border-bottom:1px solid #e3e4de!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:#20231f!important;
+  text-align:left!important;
+  transition:background .16s ease!important;
+}
+#insights .note-insight-urgent:last-of-type{border-bottom:0!important}
+#insights .note-insight-urgent:active{background:rgba(89,100,77,.045)!important;transform:none!important}
+#insights .note-insight-urgent:focus-visible{outline:2px solid #59644d!important;outline-offset:-2px!important;border-radius:8px!important}
+#insights .note-insight-flag{display:none!important}
+#insights .note-insight-copy{position:relative!important;min-width:0!important;display:grid!important;gap:3px!important;padding-left:13px!important}
+#insights .note-insight-copy::before{content:''!important;position:absolute!important;left:0!important;top:5px!important;width:5px!important;height:5px!important;border-radius:50%!important;background:#59644d!important}
+#insights .note-insight-copy strong{overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;color:#20231f!important;font-size:16px!important;line-height:1.3!important;font-weight:650!important;letter-spacing:-.01em!important}
+#insights .note-insight-copy small{color:#8a7560!important;font-size:12px!important;line-height:1.25!important;font-weight:550!important}
+#insights .note-insight-arrow{color:#9a9e98!important;font-size:19px!important;font-weight:400!important;line-height:1!important}
+@media(max-width:520px){#insights .note-insight-urgent{gap:12px!important;padding:13px 1px!important}#insights .note-insight-copy{padding-left:12px!important}#insights .note-insight-copy strong{font-size:15px!important}#insights .note-insight-copy small{font-size:11px!important}}
