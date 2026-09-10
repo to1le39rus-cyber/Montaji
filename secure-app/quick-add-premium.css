@@ -1,99 +1,162 @@
-/* Montaji AA — Quick Add / premium mobile interaction layer. */
+/* Montaji AA — Quick Add / compact action launcher. */
+.modal:has(.add-grid){
+  --qa-ink:#191c20;
+  --qa-muted:#8a9089;
+  --qa-line:rgba(25,32,27,.11);
+  --qa-soft:#f2f3ed;
+  --qa-olive:#59664f;
+}
+
+.modal:has(.add-grid) .backdrop{
+  background:rgba(12,15,13,.64)!important;
+  -webkit-backdrop-filter:blur(14px)!important;
+  backdrop-filter:blur(14px)!important;
+}
+
 .modal:has(.add-grid) .sheet{
-  padding:12px 20px calc(22px + env(safe-area-inset-bottom))!important;
-  background:#fafaf7!important;
-  border-radius:28px 28px 0 0!important;
-  max-height:min(66vh,600px)!important;
-  overflow:auto!important;
-  -webkit-overflow-scrolling:touch!important;
+  width:100%!important;
+  padding:10px 18px calc(18px + env(safe-area-inset-bottom))!important;
+  background:#fbfbf8!important;
+  border-radius:30px 30px 0 0!important;
+  box-shadow:0 -18px 55px rgba(0,0,0,.12)!important;
+  max-height:min(58svh,540px)!important;
+  overflow:hidden!important;
 }
+
+.modal:has(.add-grid) .handle{
+  width:34px!important;
+  height:4px!important;
+  margin:0 auto 18px!important;
+  border-radius:99px!important;
+  background:#d3d5cf!important;
+}
+
 .modal:has(.add-grid) .sheet-head{
-  margin:2px 0 18px!important;
-  align-items:flex-start!important;
+  margin:0 0 17px!important;
+  min-height:42px!important;
+  align-items:center!important;
 }
-.modal:has(.add-grid) .sheet-head h2{
-  margin-top:4px!important;
-  font-size:30px!important;
-  line-height:1.05!important;
-  letter-spacing:-.045em!important;
-  color:#17191f!important;
+
+.modal:has(.add-grid) .sheet-head > div:first-child{
+  min-width:0!important;
 }
+
 .modal:has(.add-grid) .sheet-head .eyebrow{
-  color:#8b9189!important;
-  letter-spacing:.16em!important;
+  margin:0 0 4px!important;
+  color:var(--qa-muted)!important;
+  font-size:9px!important;
+  font-weight:650!important;
+  letter-spacing:.18em!important;
 }
+
+.modal:has(.add-grid) .sheet-head h2{
+  margin:0!important;
+  color:var(--qa-ink)!important;
+  font-size:26px!important;
+  line-height:1.05!important;
+  font-weight:760!important;
+  letter-spacing:-.045em!important;
+}
+
+.modal:has(.add-grid) .sheet-head .circle-btn{
+  flex:0 0 40px!important;
+  width:40px!important;
+  height:40px!important;
+  border:1px solid rgba(25,32,27,.10)!important;
+  background:#f1f2ed!important;
+  color:#353a35!important;
+  font-size:25px!important;
+  line-height:1!important;
+}
+
 .modal:has(.add-grid) .add-grid{
   display:grid!important;
   grid-template-columns:repeat(2,minmax(0,1fr))!important;
-  gap:9px!important;
+  gap:8px!important;
   margin:0!important;
 }
+
 .modal:has(.add-grid) .add-grid button{
+  position:relative!important;
   min-width:0!important;
-  min-height:82px!important;
-  padding:13px!important;
-  display:grid!important;
-  grid-template-columns:38px minmax(0,1fr)!important;
+  height:68px!important;
+  padding:10px 12px!important;
+  display:flex!important;
   align-items:center!important;
-  column-gap:10px!important;
+  gap:11px!important;
   text-align:left!important;
-  border:1px solid #dedfd8!important;
-  border-radius:17px!important;
-  background:#f7f7f2!important;
-  color:#17191f!important;
+  border:1px solid var(--qa-line)!important;
+  border-radius:16px!important;
+  background:#f7f7f3!important;
+  color:var(--qa-ink)!important;
   box-shadow:none!important;
   -webkit-tap-highlight-color:transparent!important;
   transition:transform .12s ease,background .12s ease,border-color .12s ease!important;
 }
+
 .modal:has(.add-grid) .add-grid button:active{
-  transform:scale(.985)!important;
-  background:#eef0e9!important;
-  border-color:#cfd4c8!important;
+  transform:scale(.975)!important;
+  background:#ecefe8!important;
+  border-color:rgba(89,102,79,.24)!important;
 }
+
 .modal:has(.add-grid) .add-grid button span{
-  width:38px!important;
-  height:38px!important;
+  position:relative!important;
+  flex:0 0 34px!important;
+  width:34px!important;
+  height:34px!important;
   display:grid!important;
   place-items:center!important;
-  border-radius:12px!important;
-  background:#e9eee4!important;
-  color:#59634a!important;
+  border-radius:11px!important;
+  background:#e9ede5!important;
+  color:var(--qa-olive)!important;
   font-size:0!important;
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif!important;
 }
+
 .modal:has(.add-grid) .add-grid button span::before{
-  font-size:22px!important;
+  font-size:20px!important;
   line-height:1!important;
   font-weight:400!important;
 }
-.modal:has(.add-grid) .add-grid button[data-add-type="Монтаж"] span::before{content:"+"}
+
+.modal:has(.add-grid) .add-grid button[data-add-type="Монтаж"] span::before{content:"+";font-weight:300!important}
 .modal:has(.add-grid) .add-grid button[data-add-type="Замер"] span::before{content:"⌖"}
-.modal:has(.add-grid) .add-grid button[data-add-type="Рекламация"] span::before{content:"↺"}
+.modal:has(.add-grid) .add-grid button[data-add-type="Рекламация"] span::before{content:"↻"}
 .modal:has(.add-grid) .add-grid button[data-add-type="Доставка"] span::before{content:"□"}
-.modal:has(.add-grid) .add-grid button[data-add-type="Расход"] span::before{content:"−"}
+.modal:has(.add-grid) .add-grid button[data-add-type="Расход"] span::before{content:"−";font-weight:300!important}
 .modal:has(.add-grid) .add-grid button[data-add-type="Заметка"] span::before{content:"✦"}
+
 .modal:has(.add-grid) .add-grid button b{
-  font-size:15px!important;
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  color:#292d31!important;
+  font-size:14px!important;
   line-height:1.1!important;
-  font-weight:760!important;
-  letter-spacing:-.015em!important;
-  color:#25282d!important;
+  font-weight:700!important;
+  letter-spacing:-.02em!important;
 }
+
 .modal:has(.add-grid) .add-grid button[data-add-type="Монтаж"] span,
 .modal:has(.add-grid) .add-grid button[data-add-type="Замер"] span{
-  background:#e4ebe0!important;
+  background:#e2e9de!important;
 }
+
 .modal:has(.add-grid) .add-grid button[data-add-type="Расход"] span{
-  background:#f0eee7!important;
-  color:#6e6654!important;
+  background:#eeece5!important;
+  color:#706956!important;
 }
+
 @media(max-width:380px){
-  .modal:has(.add-grid) .sheet{padding-left:16px!important;padding-right:16px!important}
+  .modal:has(.add-grid) .sheet{padding-left:15px!important;padding-right:15px!important}
+  .modal:has(.add-grid) .handle{margin-bottom:15px!important}
   .modal:has(.add-grid) .sheet-head{margin-bottom:14px!important}
-  .modal:has(.add-grid) .sheet-head h2{font-size:27px!important}
+  .modal:has(.add-grid) .sheet-head h2{font-size:24px!important}
   .modal:has(.add-grid) .add-grid{gap:7px!important}
-  .modal:has(.add-grid) .add-grid button{min-height:76px!important;padding:11px 10px!important;grid-template-columns:34px minmax(0,1fr)!important;column-gap:8px!important;border-radius:15px!important}
-  .modal:has(.add-grid) .add-grid button span{width:34px!important;height:34px!important;border-radius:10px!important}
-  .modal:has(.add-grid) .add-grid button span::before{font-size:20px!important}
-  .modal:has(.add-grid) .add-grid button b{font-size:14px!important}
+  .modal:has(.add-grid) .add-grid button{height:64px!important;padding:9px 10px!important;gap:9px!important;border-radius:15px!important}
+  .modal:has(.add-grid) .add-grid button span{flex-basis:32px!important;width:32px!important;height:32px!important;border-radius:10px!important}
+  .modal:has(.add-grid) .add-grid button span::before{font-size:19px!important}
+  .modal:has(.add-grid) .add-grid button b{font-size:13px!important}
 }
