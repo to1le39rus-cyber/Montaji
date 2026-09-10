@@ -1,11 +1,90 @@
-/* Montaji AA — Quick Add v6: Safari geometry lock. */
-.quick-finance-modal,.modal:has(.quick-add-v2-sheet){position:fixed!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;overflow:hidden!important;transform:none!important;transition:none!important}
-.quick-finance-modal .sheet,.modal:has(.quick-add-v2-sheet) .sheet{animation:none!important}
-.quick-finance-sheet,.modal:has(.quick-add-v2-sheet) .quick-add-v2-sheet{position:absolute!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;transform:none!important;transition:none!important;animation:none!important}
-.quick-finance-sheet form,.quick-finance-sheet form>label{width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important}
-.quick-finance-sheet input[type=date]{-webkit-appearance:none!important;appearance:none!important;width:100%!important;min-width:0!important;max-width:100%!important;inline-size:100%!important;block-size:54px!important;box-sizing:border-box!important;border-radius:15px!important;padding:0 14px!important;text-align:left!important;font-size:17px!important;line-height:54px!important;overflow:hidden!important}
-.quick-finance-sheet input[type=date]::-webkit-date-and-time-value{display:block!important;min-width:0!important;width:100%!important;max-width:100%!important;text-align:left!important;line-height:54px!important}
-.quick-finance-sheet input[type=date]::-webkit-calendar-picker-indicator{opacity:.65;margin:0 0 0 8px}
-.quick-finance-sheet input:not([type=date]),.quick-finance-sheet textarea{min-width:0!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important}
-.quick-v2-row:focus,.quick-v2-row:focus-visible,.quick-v2-money:focus,.quick-v2-money:focus-visible,.quick-v2-inline button:focus,.quick-v2-inline button:focus-visible,.quick-v2-close:focus,.quick-v2-close:focus-visible{outline:none!important;box-shadow:none!important}
-.quick-v2-row,.quick-v2-money,.quick-v2-inline button{user-select:none;-webkit-user-select:none}
+/* Montaji AA — Quick Add / Finance concept v7.
+   Presentation only. Business logic stays in the existing app flow. */
+
+.quick-add-v2-sheet,
+.quick-finance-sheet{
+  position:absolute!important;
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+  top:auto!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:18px 20px calc(20px + env(safe-area-inset-bottom))!important;
+  box-sizing:border-box!important;
+  border-radius:30px 30px 0 0!important;
+  background:#fdfdfb!important;
+  color:#111611!important;
+  box-shadow:0 -20px 60px rgba(10,14,10,.16)!important;
+  transform:translateZ(0)!important;
+  transition:none!important;
+  animation:none!important;
+}
+
+.quick-add-v2-sheet{max-height:min(88svh,760px)!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important}
+.quick-finance-sheet{max-height:min(94svh,820px)!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important}
+.quick-add-v2-sheet .handle,
+.quick-finance-sheet .handle{width:52px!important;height:5px!important;border-radius:99px!important;background:#d9ddd8!important;margin:0 auto 20px!important}
+
+.quick-v2-head,.quick-finance-head{display:flex!important;justify-content:space-between!important;align-items:flex-start!important;gap:14px!important;margin:0 0 22px!important}
+.quick-v2-kicker{font-size:11px!important;line-height:1!important;letter-spacing:.16em!important;color:#7b817b!important;font-weight:700!important;margin-bottom:9px!important}
+.quick-v2-head h2,.quick-finance-head h2{margin:0!important;font-size:30px!important;line-height:1.02!important;letter-spacing:-.045em!important;font-weight:760!important}
+.quick-finance-head h2{font-size:29px!important}
+.quick-finance-head p{margin:9px 0 0!important;color:#7b817b!important;font-size:14px!important;line-height:1.35!important}
+.quick-v2-close{flex:0 0 50px!important;width:50px!important;height:50px!important;border:1px solid rgba(20,30,22,.10)!important;border-radius:50%!important;background:#f3f4f0!important;color:#111611!important;display:grid!important;place-items:center!important;padding:0!important}
+.quick-v2-close svg{width:23px!important;height:23px!important;fill:none!important;stroke:currentColor!important;stroke-width:2!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+
+.quick-v2-section{margin-top:20px!important}
+.quick-v2-section:first-of-type{margin-top:0!important}
+.quick-v2-section-title{font-size:11px!important;letter-spacing:.15em!important;color:#7b817b!important;font-weight:750!important;margin:0 0 9px 2px!important}
+.quick-v2-list{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important}
+.quick-v2-row{min-width:0!important;min-height:76px!important;border:1px solid rgba(20,30,22,.11)!important;border-radius:18px!important;background:#f8f8f5!important;padding:10px 11px!important;display:grid!important;grid-template-columns:42px minmax(0,1fr) 14px!important;align-items:center!important;gap:9px!important;text-align:left!important;color:#111611!important}
+.quick-v2-row.primary{background:#f8f8f5!important}
+.quick-v2-row .quick-v2-icon,.quick-v2-money .quick-v2-icon{width:42px!important;height:42px!important;border-radius:13px!important;background:#e9eee6!important;display:grid!important;place-items:center!important;color:#59664e!important}
+.quick-v2-row .quick-v2-icon svg,.quick-v2-money .quick-v2-icon svg{width:22px!important;height:22px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+.quick-v2-row b{display:block!important;font-size:14px!important;line-height:1.15!important;font-weight:720!important;white-space:normal!important}
+.quick-v2-row small{display:block!important;color:#7b817b!important;font-size:10px!important;line-height:1.2!important;margin-top:4px!important}
+.quick-v2-row i,.quick-v2-money i{font-style:normal!important;color:#8b918b!important;font-size:24px!important;line-height:1!important}
+
+.quick-v2-finance{margin-top:22px!important}
+.quick-v2-money-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important}
+.quick-v2-money{min-width:0!important;min-height:72px!important;border:1px solid rgba(20,30,22,.11)!important;border-radius:18px!important;background:#f8f8f5!important;padding:10px 11px!important;display:grid!important;grid-template-columns:42px minmax(0,1fr) 14px!important;align-items:center!important;gap:9px!important;text-align:left!important;color:#111611!important}
+.quick-v2-money.income{background:#eef5ea!important}
+.quick-v2-money.expense{background:#faf0ed!important}
+.quick-v2-money.expense .quick-v2-icon{background:#f1e5df!important;color:#9a4035!important}
+.quick-v2-money b{font-size:14px!important}
+
+.quick-v2-secondary{margin-top:22px!important}
+.quick-v2-inline{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:7px!important}
+.quick-v2-inline button{min-width:0!important;min-height:68px!important;border:1px solid rgba(20,30,22,.11)!important;border-radius:17px!important;background:#f8f8f5!important;color:#555d56!important;padding:9px 5px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:7px!important;font-size:10px!important;font-weight:700!important}
+.quick-v2-inline button span{display:grid!important;place-items:center!important;width:29px!important;height:29px!important;color:#59664e!important}
+.quick-v2-inline button svg{width:21px!important;height:21px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+
+.quick-finance-head{margin-bottom:20px!important}
+#quickIncomeForm{display:grid!important;gap:13px!important}
+#quickIncomeForm label{display:grid!important;gap:7px!important;color:#69716a!important;font-size:11px!important;font-weight:700!important;line-height:1.2!important}
+#quickIncomeForm input:not([type=checkbox]),
+#quickIncomeForm textarea,
+#quickIncomeForm select{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;border:1px solid rgba(20,30,22,.14)!important;background:#fff!important;color:#111611!important;border-radius:15px!important;outline:none!important;padding:0 14px!important;font-size:16px!important;font-weight:600!important}
+#quickIncomeForm input:not([type=checkbox]),#quickIncomeForm select{height:54px!important}
+#quickIncomeForm textarea{min-height:82px!important;padding:13px 14px!important;resize:none!important;line-height:1.35!important}
+#quickIncomeForm input::placeholder,#quickIncomeForm textarea::placeholder{color:#a8ada8!important;font-weight:550!important}
+#quickIncomeForm input[type=date]{-webkit-appearance:none!important;appearance:none!important;text-align:left!important;line-height:54px!important;overflow:hidden!important}
+#quickIncomeForm input[type=date]::-webkit-date-and-time-value{display:block!important;width:auto!important;min-width:0!important;text-align:left!important;line-height:54px!important}
+#quickIncomeForm input[type=date]::-webkit-calendar-picker-indicator{opacity:.55!important;margin-left:8px!important}
+#quickIncomeForm .quick-finance-check{display:flex!important;grid-template-columns:none!important;align-items:center!important;gap:10px!important;margin:2px 0!important;color:#555d56!important;font-size:13px!important}
+#quickIncomeForm .quick-finance-check input{appearance:none!important;-webkit-appearance:none!important;width:25px!important;height:25px!important;margin:0!important;border-radius:8px!important;border:1px solid #9aa398!important;background:#fff!important;position:relative!important;flex:0 0 25px!important}
+#quickIncomeForm .quick-finance-check input:checked{background:#68775b!important;border-color:#68775b!important}
+#quickIncomeForm .quick-finance-check input:checked:after{content:'✓';position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:17px;font-weight:800}
+.quick-finance-save{width:100%!important;height:56px!important;margin-top:5px!important;border:0!important;border-radius:16px!important;background:#68775b!important;color:#fff!important;font-size:14px!important;font-weight:750!important}
+
+.quick-add-v2-sheet button:active,.quick-finance-sheet button:active{transform:scale(.985)!important}
+@media(max-width:380px){
+ .quick-add-v2-sheet,.quick-finance-sheet{padding-left:16px!important;padding-right:16px!important}
+ .quick-v2-head h2{font-size:28px!important}
+ .quick-v2-row{grid-template-columns:38px minmax(0,1fr) 10px!important;padding:9px!important;gap:7px!important}
+ .quick-v2-row .quick-v2-icon,.quick-v2-money .quick-v2-icon{width:38px!important;height:38px!important}
+ .quick-v2-row b,.quick-v2-money b{font-size:13px!important}
+}
