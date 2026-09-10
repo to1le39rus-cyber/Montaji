@@ -99,21 +99,39 @@
 .day-sheet-final .day-visit-note{margin-top:9px!important;padding:10px 11px!important;border:1px solid #e0e4dc!important;border-radius:12px!important;background:#f3f5f0!important;color:#59644d!important;font-size:11px!important;line-height:1.28!important;font-weight:650!important;display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;overflow:hidden!important}
 .day-sheet-final .day-visit-foot{display:flex!important;align-items:center!important;gap:8px!important;margin-top:10px!important;min-width:0!important}
 .day-sheet-final .day-visit-foot>.status-pill{flex:0 0 auto!important;margin:0!important;font-size:9px!important;padding:5px 9px!important}
-.day-sheet-final .day-visit-actions{display:flex!important;gap:5px!important;min-width:0!important;overflow:hidden!important;flex-wrap:nowrap!important}
-.day-sheet-final .day-visit-actions .action-chip,.day-sheet-final .day-visit-actions .map-chip{
+
+/* Actual production card markup uses .actions. Keep the four operational controls inside the card at every mobile width. */
+.day-sheet-final .actions{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:5px!important;
+  width:100%!important;
+  min-width:0!important;
+  margin-top:10px!important;
+  overflow:visible!important;
+  box-sizing:border-box!important;
+}
+.day-sheet-final .actions .action-chip,
+.day-sheet-final .actions .map-chip{
+  width:100%!important;
+  min-width:0!important;
   height:34px!important;
   min-height:34px!important;
-  padding:0 10px!important;
-  display:inline-flex!important;
+  margin:0!important;
+  padding:0 6px!important;
+  display:flex!important;
   align-items:center!important;
   justify-content:center!important;
+  box-sizing:border-box!important;
   border-radius:10px!important;
   font-size:9px!important;
   line-height:1!important;
   white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
 }
-.day-sheet-final .day-visit-actions .share-address{display:none!important}
-.day-sheet-final .day-visit-actions .primary-chip{background:#59644d!important;color:#fff!important;border-color:#59644d!important;-webkit-text-fill-color:#fff!important}
+.day-sheet-final .actions .share-address{display:none!important}
+.day-sheet-final .actions .primary-chip{background:#59644d!important;color:#fff!important;border-color:#59644d!important;-webkit-text-fill-color:#fff!important}
 
 /* Empty slots use the same vertical rhythm as visit cards. */
 .day-sheet-final .day-free-slot{
@@ -142,5 +160,6 @@
   .day-sheet-final .day-stats>div{padding:11px!important}
   .day-sheet-final .day-visit{padding:12px!important}
   .day-sheet-final .day-visit-head strong{font-size:17px!important}
-  .day-sheet-final .day-visit-actions .action-chip,.day-sheet-final .day-visit-actions .map-chip{padding:0 8px!important}
+  .day-sheet-final .actions{gap:4px!important}
+  .day-sheet-final .actions .action-chip,.day-sheet-final .actions .map-chip{padding:0 4px!important;font-size:8.5px!important}
 }
