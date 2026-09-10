@@ -1,12 +1,29 @@
 /* Montaji AA — Task UI
-   Separate UX for tasks, shared note persistence underneath. */
+   Dedicated task UX; trusted note persistence remains underneath. */
 (() => {
   const text = el => (el?.textContent || '').replace(/\s+/g, ' ').trim();
+
   const close = m => {
     m?.classList.remove('open');
     m?.setAttribute('aria-hidden', 'true');
     document.body.classList.toggle('modal-open', !!document.querySelector('.modal.open'));
   };
+
+  const toastTaskSaved = () => {
+    const el = document.querySelector('#toast');
+    if (el) {
+      el.textContent = 'Задача сохранена';
+      el.dataset.state = 'success';
+      return;
+    }
+    const toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.textContent = 'Задача сохранена';
+    toast.dataset.state = 'success';
+    document.body.append(toast);
+    setTimeout(() => toast.remove(), 3400);
+  };
+
   const icon = name => {
     const p = {
       check: '<path d="m5 12 4 4L19 6"/>',
@@ -14,6 +31,51 @@
     };
     return `<svg viewBox="0 0 24 24" aria-hidden="true">${p[name] || p.check}</svg>`;
   };
+
+  async function persistThroughTrustedNote(title, details) {
+    const noteBtn = [...document.querySelectorAll('button')].find(b => {
+      const t = text(b);
+      return t === '＋ Заметка' || t === '+ Заметка';
+    });
+    if (!noteBtn) throw new Error('Trusted note action is unavailable');
+
+    noteBtn.click();
+
+    const started = Date.now();
+    let noteModal = null;
+    while (!noteModal && Date.now() - started < 1500) {
+      noteModal = [...document.querySelectorAll('.modal.open')].find(x => x.querySelector('#noteForm'));
+      if (!noteModal) await new Promise(r => setTimeout(r, 30));
+    }
+
+    const noteForm = noteModal?.querySelector('#noteForm');
+    const titleField = noteModal?.querySelector('#nTitle');
+    const bodyField = noteModal?.querySelector('#nText');
+    if (!noteModal || !noteForm || !titleField || !bodyField) throw new Error('Trusted note form is unavailable');
+
+    // Keep the trusted persistence handler, but never show its UI.
+    const previousVisibility = noteModal.style.visibility;
+    const previousPointerEvents = noteModal.style.pointerEvents;
+    noteModal.style.visibility = 'hidden';
+    noteModal.style.pointerEvents = 'none';
+
+    titleField.value = `☐ ${title}`;
+    titleField.dispatchEvent(new Event('input', { bubbles: true }));
+    bodyField.value = details || title;
+    bodyField.dispatchEvent(new Event('input', { bubbles: true }));
+
+    try {
+      // Call the existing async submit handler directly. This is deterministic on iOS
+      // and avoids relying on a synthetic button click while the modal is hidden.
+      if (typeof noteForm.onsubmit !== 'function') throw new Error('Trusted note submit handler is unavailable');
+      await noteForm.onsubmit({ preventDefault() {}, currentTarget: noteForm });
+    } finally {
+      if (noteModal.isConnected) {
+        noteModal.style.visibility = previousVisibility;
+        noteModal.style.pointerEvents = previousPointerEvents;
+      }
+    }
+  }
 
   function openTask() {
     let modal = document.querySelector('#quickTaskModal');
@@ -47,50 +109,37 @@
         </div>`;
       document.body.append(modal);
       modal.querySelectorAll('[data-task-close]').forEach(b => b.addEventListener('click', () => close(modal)));
-      modal.querySelector('#quickTaskForm').addEventListener('submit', e => {
+      modal.querySelector('#quickTaskForm').addEventListener('submit', async e => {
         e.preventDefault();
         const form = e.currentTarget;
+        const save = form.querySelector('.quick-task-save');
         const title = form.elements.title.value.trim();
         const details = form.elements.details.value.trim();
-        if (!title) return;
+        if (!title || save?.disabled) return;
 
-        const noteBtn = [...document.querySelectorAll('button')].find(b => {
-          const t = text(b);
-          return t === '＋ Заметка' || t === '+ Заметка';
-        });
-        if (!noteBtn) return;
+        if (save) {
+          save.disabled = true;
+          save.textContent = 'Сохраняем…';
+        }
 
-        close(modal);
-        noteBtn.click();
-        setTimeout(() => {
-          const noteModal = [...document.querySelectorAll('.modal.open')].find(x => x.querySelector('#noteForm'));
-          const noteForm = noteModal?.querySelector('#noteForm');
-          const titleField = noteModal?.querySelector('#nTitle');
-          const bodyField = noteModal?.querySelector('#nText');
-          if (!noteForm || !titleField || !bodyField) return;
-
-          // Reuse the trusted note save handler, but never expose the note UI to the user.
-          noteModal.dataset.taskBridge = '1';
-          const previousVisibility = noteModal.style.visibility;
-          const previousPointerEvents = noteModal.style.pointerEvents;
-          noteModal.style.visibility = 'hidden';
-          noteModal.style.pointerEvents = 'none';
-
-          titleField.value = `☐ ${title}`;
-          titleField.dispatchEvent(new Event('input', { bubbles: true }));
-          bodyField.value = details || title;
-          bodyField.dispatchEvent(new Event('input', { bubbles: true }));
-          noteForm.querySelector('button[type="submit"]')?.click();
-
-          setTimeout(() => {
-            if (noteModal?.dataset.taskBridge === '1') {
-              noteModal.style.visibility = previousVisibility;
-              noteModal.style.pointerEvents = previousPointerEvents;
-              delete noteModal.dataset.taskBridge;
-              close(noteModal);
-            }
-          }, 350);
-        }, 80);
+        try {
+          await persistThroughTrustedNote(title, details);
+          toastTaskSaved();
+          close(modal);
+          // The Quick Add sheet was never removed by the task flow.
+          // It stays underneath as the logical parent screen.
+        } catch (err) {
+          console.error(err);
+          if (save) {
+            save.disabled = false;
+            save.textContent = 'Создать задачу';
+          }
+          const el = document.querySelector('#toast');
+          if (el) {
+            el.textContent = 'Не удалось сохранить задачу';
+            el.dataset.state = 'error';
+          }
+        }
       });
     }
 
@@ -99,6 +148,11 @@
     document.body.classList.add('modal-open');
     const form = modal.querySelector('#quickTaskForm');
     form?.reset();
+    const save = form?.querySelector('.quick-task-save');
+    if (save) {
+      save.disabled = false;
+      save.textContent = 'Создать задачу';
+    }
     requestAnimationFrame(() => form?.elements.title?.focus({ preventScroll: true }));
   }
 
