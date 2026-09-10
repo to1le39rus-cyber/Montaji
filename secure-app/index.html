@@ -7,7 +7,7 @@ const files=['index.html','styles.css','ux-upgrades.css','premium-field-tech.css
 const get=async p=>{const c=new AbortController(),t=setTimeout(()=>c.abort(),15000);try{const r=await fetch(base+p,{cache:'no-store',signal:c.signal});if(!r.ok)throw Error(p+' HTTP '+r.status);return await r.text()}finally{clearTimeout(t)}};
 try{
 const [index,css,ux,premium,icons,boot,config]=await Promise.all(files.map(get));
-const local=['final-polish.css','money-polish.css','auth-polish.css','important-notes-polish.css','today-final.css','calendar-window-final.css','day-sheet-hero.css','day-sheet-density.css','day-sheet-recomposition.css','day-sheet-balance.css','clients-final.css','history-scroll-fix.css'];
+const local=['final-polish.css','money-polish.css','auth-polish.css','important-notes-polish.css','today-final.css','calendar-window-final.css','day-sheet-hero.css','day-sheet-density.css','day-sheet-recomposition.css','day-sheet-balance.css','day-sheet-actions.css','clients-final.css','history-scroll-fix.css'];
 const localCss=await Promise.all(local.map(async p=>{const r=await fetch('/'+p,{cache:'no-store'});if(!r.ok)throw Error(p+' HTTP '+r.status);return r.text()}));
 const dayRuntime=await (await fetch('/day-sheet-runtime.js',{cache:'no-store'})).text();
 let h=index;
