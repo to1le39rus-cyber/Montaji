@@ -8,7 +8,7 @@ function patchDaySheetSource(source){
       const time=isMeasure(j)?(j.time||SLOTS[j.slot]||''):SLOTS[j.slot]||j.time||'';
       const amount=isMeasure(j)?num(j.measurePrice||j.price):num(j.price);
       const note=j.comment?'<div class="day-visit-note">'+esc(j.comment)+'</div>':'';
-      const address=j.address?'<div class="day-visit-address">📍 '+esc(j.address)+'</div>':'';
+      const address=j.address?'<div class="day-visit-address"><span class="day-visit-address-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.3"/></svg></span><span>'+esc(j.address)+'</span></div>':'';
       const actions=(j.address?mapLinks(j.address):'')+callLink(j.phone)+shareAddress(j)+'<button class="action-chip primary-chip edit" data-id="'+esc(j.id)+'">Открыть</button>';
       return '<article class="day-visit '+(isDone(j)?'is-done':'')+'"><div class="day-visit-head"><div><strong>'+esc(j.client||'Без клиента')+'</strong><span>'+esc(time)+(j.type?' · '+esc(j.type):'')+(j.store?' · '+esc(j.store):'')+'</span></div><b>'+money(amount)+'</b></div>'+address+note+'<div class="day-visit-foot">'+statusLabel(j)+'<div class="day-visit-actions">'+actions+'</div></div></article>';
     };
