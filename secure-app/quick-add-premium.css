@@ -1,0 +1,118 @@
+/* Montaji AA — Quick Add / premium mobile interaction layer. */
+.quick-add-modal .sheet{
+  padding:12px 20px calc(22px + env(safe-area-inset-bottom))!important;
+  background:#fafaf7!important;
+  border-radius:28px 28px 0 0!important;
+  max-height:min(68vh,620px)!important;
+  overflow:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+.quick-add-modal .sheet-head{
+  margin:2px 0 18px!important;
+  align-items:flex-start!important;
+}
+.quick-add-modal .sheet-head h2{
+  margin-top:4px!important;
+  font-size:30px!important;
+  line-height:1.05!important;
+  letter-spacing:-.045em!important;
+  color:#17191f!important;
+}
+.quick-add-modal .sheet-head .eyebrow{
+  color:#8b9189!important;
+  letter-spacing:.16em!important;
+}
+.quick-add-modal .quick-add-intro{
+  margin:-8px 2px 16px!important;
+  color:#7b8179!important;
+  font-size:12px!important;
+  line-height:1.4!important;
+}
+.quick-add-modal .add-grid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:9px!important;
+  margin:0!important;
+}
+.quick-add-modal .add-grid button{
+  min-width:0!important;
+  min-height:82px!important;
+  padding:13px 13px!important;
+  display:grid!important;
+  grid-template-columns:38px minmax(0,1fr)!important;
+  grid-template-rows:auto auto!important;
+  column-gap:10px!important;
+  align-content:center!important;
+  text-align:left!important;
+  border:1px solid #dedfd8!important;
+  border-radius:17px!important;
+  background:#f7f7f2!important;
+  color:#17191f!important;
+  box-shadow:none!important;
+  -webkit-tap-highlight-color:transparent!important;
+  transition:transform .12s ease,background .12s ease,border-color .12s ease!important;
+}
+.quick-add-modal .add-grid button:active{
+  transform:scale(.985)!important;
+  background:#eef0e9!important;
+  border-color:#cfd4c8!important;
+}
+.quick-add-modal .add-grid button .quick-add-icon{
+  grid-row:1 / span 2!important;
+  width:38px!important;
+  height:38px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:12px!important;
+  background:#e9eee4!important;
+  color:#59634a!important;
+}
+.quick-add-modal .add-grid button .quick-add-icon svg{
+  width:21px!important;
+  height:21px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.7!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+.quick-add-modal .add-grid button b{
+  align-self:end!important;
+  font-size:15px!important;
+  line-height:1.1!important;
+  font-weight:760!important;
+  letter-spacing:-.015em!important;
+  color:#25282d!important;
+}
+.quick-add-modal .add-grid button small{
+  align-self:start!important;
+  margin-top:3px!important;
+  font-size:10px!important;
+  line-height:1.15!important;
+  color:#858b83!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.quick-add-modal .add-grid button[data-add-type="Монтаж"] .quick-add-icon,
+.quick-add-modal .add-grid button[data-add-type="Замер"] .quick-add-icon{
+  background:#e4ebe0!important;
+}
+.quick-add-modal .add-grid button[data-add-type="Расход"] .quick-add-icon{
+  background:#f0eee7!important;
+  color:#6e6654!important;
+}
+.quick-add-modal .add-grid button[data-add-type="Заметка"] .quick-add-icon{
+  background:#edf0ea!important;
+}
+@media(max-width:380px){
+  .quick-add-modal .sheet{padding-left:16px!important;padding-right:16px!important}
+  .quick-add-modal .sheet-head{margin-bottom:14px!important}
+  .quick-add-modal .sheet-head h2{font-size:27px!important}
+  .quick-add-modal .add-grid{gap:7px!important}
+  .quick-add-modal .add-grid button{min-height:76px!important;padding:11px 10px!important;grid-template-columns:34px minmax(0,1fr)!important;column-gap:8px!important;border-radius:15px!important}
+  .quick-add-modal .add-grid button .quick-add-icon{width:34px!important;height:34px!important;border-radius:10px!important}
+  .quick-add-modal .add-grid button .quick-add-icon svg{width:19px!important;height:19px!important}
+  .quick-add-modal .add-grid button b{font-size:14px!important}
+  .quick-add-modal .add-grid button small{font-size:9px!important}
+}
