@@ -1,0 +1,45 @@
+/* Montaji AA — Day Sheet action row.
+   Component-specific interaction layer. No business logic. */
+.day-sheet-final .day-visit-actions{
+  display:flex!important;
+  flex:1 1 auto!important;
+  min-width:0!important;
+  gap:5px!important;
+  overflow:visible!important;
+  flex-wrap:nowrap!important;
+}
+.day-sheet-final .day-visit-actions .action-chip,
+.day-sheet-final .day-visit-actions .map-chip{
+  flex:1 1 0!important;
+  width:auto!important;
+  min-width:0!important;
+  height:34px!important;
+  min-height:34px!important;
+  margin:0!important;
+  padding:0 6px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  box-sizing:border-box!important;
+  border-radius:10px!important;
+  font-size:9px!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.day-sheet-final .day-visit-actions .share-address{display:none!important}
+.day-sheet-final .day-visit-actions .primary-chip{
+  background:#59644d!important;
+  color:#fff!important;
+  border-color:#59644d!important;
+  -webkit-text-fill-color:#fff!important;
+}
+@media(max-width:380px){
+  .day-sheet-final .day-visit-actions{gap:4px!important}
+  .day-sheet-final .day-visit-actions .action-chip,
+  .day-sheet-final .day-visit-actions .map-chip{
+    padding:0 4px!important;
+    font-size:8.5px!important;
+  }
+}
