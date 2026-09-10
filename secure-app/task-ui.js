@@ -69,11 +69,27 @@
           const bodyField = noteModal?.querySelector('#nText');
           if (!noteForm || !titleField || !bodyField) return;
 
+          // Reuse the trusted note save handler, but never expose the note UI to the user.
+          noteModal.dataset.taskBridge = '1';
+          const previousVisibility = noteModal.style.visibility;
+          const previousPointerEvents = noteModal.style.pointerEvents;
+          noteModal.style.visibility = 'hidden';
+          noteModal.style.pointerEvents = 'none';
+
           titleField.value = `☐ ${title}`;
           titleField.dispatchEvent(new Event('input', { bubbles: true }));
           bodyField.value = details || title;
           bodyField.dispatchEvent(new Event('input', { bubbles: true }));
           noteForm.querySelector('button[type="submit"]')?.click();
+
+          setTimeout(() => {
+            if (noteModal?.dataset.taskBridge === '1') {
+              noteModal.style.visibility = previousVisibility;
+              noteModal.style.pointerEvents = previousPointerEvents;
+              delete noteModal.dataset.taskBridge;
+              close(noteModal);
+            }
+          }, 350);
         }, 80);
       });
     }
