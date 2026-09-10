@@ -1,7 +1,6 @@
-/* Montaji AA — Quick Add / final composition pass. */
+/* Montaji AA — Quick Add / touch comfort pass. */
 .modal:has(.add-grid){
   --qa-ink:#171a1d;
-  --qa-muted:#7b817b;
   --qa-line:rgba(23,28,24,.10);
   --qa-surface:#fafaf7;
   --qa-soft:#eef1e9;
@@ -16,112 +15,100 @@
 
 .modal:has(.add-grid) .sheet{
   width:100%!important;
-  padding:9px 18px calc(15px + env(safe-area-inset-bottom))!important;
+  padding:10px 18px calc(18px + env(safe-area-inset-bottom))!important;
   background:var(--qa-surface)!important;
   border-radius:30px 30px 0 0!important;
   box-shadow:0 -18px 55px rgba(0,0,0,.14)!important;
-  max-height:min(50svh,500px)!important;
+  max-height:min(58svh,560px)!important;
   overflow:hidden!important;
 }
 
-.modal:has(.add-grid) .handle{
-  width:30px!important;
-  height:4px!important;
-  margin:0 auto 13px!important;
-  border-radius:99px!important;
-  background:#d2d4ce!important;
-}
-
 .modal:has(.add-grid) .sheet-head{
-  margin:0 0 13px!important;
-  min-height:38px!important;
+  margin:0 0 14px!important;
+  min-height:44px!important;
   align-items:center!important;
 }
 
-.modal:has(.add-grid) .sheet-head > div:first-child{min-width:0!important}
-
-/* The launcher is an action surface, not a headline screen. */
-.modal:has(.add-grid) .sheet-head .eyebrow{
-  display:none!important;
-}
+.modal:has(.add-grid) .sheet-head .eyebrow{display:none!important}
 
 .modal:has(.add-grid) .sheet-head h2{
   margin:0!important;
   color:var(--qa-ink)!important;
-  font-size:22px!important;
+  font-size:24px!important;
   line-height:1!important;
   font-weight:720!important;
   letter-spacing:-.04em!important;
 }
 
 .modal:has(.add-grid) .sheet-head .circle-btn{
-  flex:0 0 38px!important;
-  width:38px!important;
-  height:38px!important;
+  flex:0 0 42px!important;
+  width:42px!important;
+  height:42px!important;
   border:1px solid var(--qa-line)!important;
   background:#f1f2ee!important;
   color:#343934!important;
-  font-size:24px!important;
+  font-size:25px!important;
   line-height:1!important;
 }
 
-/* One composition: two primary actions + four quiet utilities. */
+/* Thumb-first: two columns, all six actions remain comfortably tappable. */
 .modal:has(.add-grid) .add-grid{
   display:grid!important;
-  grid-template-columns:repeat(4,minmax(0,1fr))!important;
-  grid-template-rows:74px 58px!important;
-  gap:8px!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  grid-template-rows:78px 68px 68px!important;
+  gap:9px!important;
   margin:0!important;
 }
 
 .modal:has(.add-grid) .add-grid button{
   min-width:0!important;
-  min-height:0!important;
+  min-height:44px!important;
   height:auto!important;
   margin:0!important;
-  padding:0!important;
+  padding:0 14px!important;
   display:flex!important;
   align-items:center!important;
+  justify-content:flex-start!important;
+  gap:12px!important;
   border:1px solid var(--qa-line)!important;
   border-radius:17px!important;
   background:#f7f7f4!important;
   color:var(--qa-ink)!important;
   box-shadow:none!important;
   -webkit-tap-highlight-color:transparent!important;
+  touch-action:manipulation!important;
   transition:transform .12s ease,background .12s ease,border-color .12s ease!important;
 }
 
 .modal:has(.add-grid) .add-grid button:nth-child(1),
 .modal:has(.add-grid) .add-grid button:nth-child(2){
-  grid-column:span 2!important;
-  padding:0 14px!important;
-  gap:11px!important;
+  grid-column:auto!important;
   background:var(--qa-soft)!important;
-  border-color:rgba(88,99,79,.12)!important;
+  border-color:rgba(88,99,79,.14)!important;
 }
 
 .modal:has(.add-grid) .add-grid button:nth-child(n+3){
-  flex-direction:column!important;
-  justify-content:center!important;
+  flex-direction:row!important;
+  justify-content:flex-start!important;
   align-items:center!important;
-  gap:4px!important;
-  padding:5px 4px!important;
-  border-radius:14px!important;
+  gap:10px!important;
+  padding:0 12px!important;
+  border-radius:15px!important;
 }
 
 .modal:has(.add-grid) .add-grid button:active{
-  transform:scale(.975)!important;
+  transform:scale(.985)!important;
   background:#e9ede5!important;
   border-color:rgba(88,99,79,.24)!important;
 }
 
 .modal:has(.add-grid) .add-grid button span{
-  flex:0 0 34px!important;
-  width:34px!important;
-  height:34px!important;
+  flex:0 0 36px!important;
+  width:36px!important;
+  height:36px!important;
   display:grid!important;
   place-items:center!important;
-  border-radius:10px!important;
+  border-radius:11px!important;
   background:#e1e8dd!important;
   color:var(--qa-olive)!important;
   font-size:0!important;
@@ -129,19 +116,19 @@
 }
 
 .modal:has(.add-grid) .add-grid button:nth-child(n+3) span{
-  flex-basis:25px!important;
-  width:25px!important;
-  height:25px!important;
-  border-radius:8px!important;
+  flex-basis:30px!important;
+  width:30px!important;
+  height:30px!important;
+  border-radius:9px!important;
 }
 
 .modal:has(.add-grid) .add-grid button span::before{
-  font-size:20px!important;
+  font-size:21px!important;
   line-height:1!important;
   font-weight:400!important;
 }
 
-.modal:has(.add-grid) .add-grid button:nth-child(n+3) span::before{font-size:15px!important}
+.modal:has(.add-grid) .add-grid button:nth-child(n+3) span::before{font-size:17px!important}
 
 .modal:has(.add-grid) .add-grid button[data-add-type="Монтаж"] span::before{content:"+";font-weight:300!important}
 .modal:has(.add-grid) .add-grid button[data-add-type="Замер"] span::before{content:"⌖"}
@@ -158,14 +145,14 @@
   color:#292d31!important;
   font-size:14px!important;
   line-height:1.05!important;
-  font-weight:720!important;
+  font-weight:700!important;
   letter-spacing:-.02em!important;
 }
 
 .modal:has(.add-grid) .add-grid button:nth-child(n+3) b{
-  font-size:10px!important;
+  font-size:13px!important;
   font-weight:650!important;
-  color:#5e655e!important;
+  color:#4f564f!important;
 }
 
 .modal:has(.add-grid) .add-grid button[data-add-type="Расход"] span{
@@ -175,14 +162,14 @@
 
 @media(max-width:390px){
   .modal:has(.add-grid) .sheet{padding-left:15px!important;padding-right:15px!important}
-  .modal:has(.add-grid) .sheet-head{margin-bottom:11px!important}
-  .modal:has(.add-grid) .sheet-head h2{font-size:21px!important}
-  .modal:has(.add-grid) .sheet-head .circle-btn{flex-basis:36px!important;width:36px!important;height:36px!important}
-  .modal:has(.add-grid) .add-grid{grid-template-rows:68px 54px!important;gap:7px!important}
-  .modal:has(.add-grid) .add-grid button:nth-child(1),
-  .modal:has(.add-grid) .add-grid button:nth-child(2){padding:0 10px!important;gap:8px!important;border-radius:15px!important}
-  .modal:has(.add-grid) .add-grid button span{flex-basis:31px!important;width:31px!important;height:31px!important}
-  .modal:has(.add-grid) .add-grid button:nth-child(n+3) span{flex-basis:23px!important;width:23px!important;height:23px!important}
+  .modal:has(.add-grid) .sheet-head{margin-bottom:12px!important}
+  .modal:has(.add-grid) .sheet-head h2{font-size:22px!important}
+  .modal:has(.add-grid) .sheet-head .circle-btn{flex-basis:40px!important;width:40px!important;height:40px!important}
+  .modal:has(.add-grid) .add-grid{grid-template-rows:72px 64px 64px!important;gap:8px!important}
+  .modal:has(.add-grid) .add-grid button{padding:0 10px!important;gap:8px!important;border-radius:15px!important}
+  .modal:has(.add-grid) .add-grid button:nth-child(n+3){padding:0 9px!important;gap:7px!important}
+  .modal:has(.add-grid) .add-grid button span{flex-basis:32px!important;width:32px!important;height:32px!important}
+  .modal:has(.add-grid) .add-grid button:nth-child(n+3) span{flex-basis:28px!important;width:28px!important;height:28px!important}
   .modal:has(.add-grid) .add-grid button b{font-size:13px!important}
-  .modal:has(.add-grid) .add-grid button:nth-child(n+3) b{font-size:9px!important}
+  .modal:has(.add-grid) .add-grid button:nth-child(n+3) b{font-size:12px!important}
 }
