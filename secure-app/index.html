@@ -7,10 +7,11 @@ const files=['index.html','styles.css','ux-upgrades.css','premium-field-tech.css
 const get=async p=>{const c=new AbortController(),t=setTimeout(()=>c.abort(),15000);try{const r=await fetch(base+p,{cache:'no-store',signal:c.signal});if(!r.ok)throw Error(p+' HTTP '+r.status);return await r.text()}finally{clearTimeout(t)}};
 try{
 const [index,css,ux,premium,icons,boot,config]=await Promise.all(files.map(get));
-const local=['final-polish.css','money-polish.css','auth-polish.css','important-notes-polish.css','today-final.css','calendar-window-final.css','day-sheet-hero.css','day-sheet-density.css','day-sheet-recomposition.css','day-sheet-balance.css','day-sheet-actions.css','clients-final.css','history-scroll-fix.css','quick-add-premium.css'];
+const local=['final-polish.css','money-polish.css','auth-polish.css','important-notes-polish.css','today-final.css','calendar-window-final.css','day-sheet-hero.css','day-sheet-density.css','day-sheet-recomposition.css','day-sheet-balance.css','day-sheet-actions.css','clients-final.css','history-scroll-fix.css','quick-add-premium.css','task-ui.css'];
 const localCss=await Promise.all(local.map(async p=>{const r=await fetch('/'+p,{cache:'no-store'});if(!r.ok)throw Error(p+' HTTP '+r.status);return r.text()}));
 const dayRuntime=await (await fetch('/day-sheet-runtime.js',{cache:'no-store'})).text();
 const quickAddRuntime=await (await fetch('/quick-add-runtime.js',{cache:'no-store'})).text();
+const taskRuntime=await (await fetch('/task-ui.js',{cache:'no-store'})).text();
 let h=index;
 h=h.replace(/<link[^>]+href=["']styles\.css\?[^"']*["'][^>]*>/i,'<style>'+css+'</style>');
 h=h.replace(/<link[^>]+href=["']ux-upgrades\.css\?[^"']*["'][^>]*>/i,'<style>'+ux+'</style>');
@@ -24,6 +25,6 @@ let b=boot;
 b=b.replace(/const APP_URL = new URL\('app\.js\?[^']*', location\.href\);/,"const APP_URL = new URL('"+base+"app.js');");
 b=b.replaceAll('https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/',base);
 b=b.replace('let source = await response.text();',"let source = await response.text();\nsource = source.replace(\"import { firebaseConfig } from './firebase-config.js';\","+JSON.stringify(config)+");\nsource = source.replace(\"j.comment&&!compact\",\"j.comment\");\nsource = source.replace(\"late=state.jobs.filter(j=>!isCancelled(j)&&!isDone(j)&&j.date<d).length\",\"late=state.jobs.filter(j=>j?.type==='Монтаж'&&j?.status==='Перенос').length\");\nsource = source.replace(\"const d=today();const list=state.jobs.filter(j=>!isCancelled(j)&&!isDone(j)&&j.date<d).sort((a,b)=>a.date.localeCompare(b.date));\",\"const list=state.jobs.filter(j=>j?.type==='Монтаж'&&j?.status==='Перенос').sort((a,b)=>a.date.localeCompare(b.date));\");\nsource = source.replace(\"F.getDocFromServer(F.doc(db,...SHARED_DOC)),F.getDocFromServer(F.doc(db,...NOTES_DOC))\",\"F.getDoc(F.doc(db,...SHARED_DOC)),F.getDoc(F.doc(db,...NOTES_DOC))\");\nsource = source.replace(\"if(await loadServer())startRealtime();\",\"startRealtime();loadServer();\");\nsource = new Function('source',"+JSON.stringify(dayRuntime)+"+';return patchDaySheetSource(source);')(source);\nsource += \"\\nglobalThis.__montajiOpenOverdue=openOverdueJobs;\\n\";");
-const s=document.createElement('script');s.type='module';s.textContent=b+'\n'+quickAddRuntime;document.body.appendChild(s);
+const s=document.createElement('script');s.type='module';s.textContent=b+'\n'+quickAddRuntime+'\n'+taskRuntime;document.body.appendChild(s);
 }catch(e){const el=document.getElementById('boot');if(el)el.innerHTML='<div><b>Не удалось загрузить приложение</b><br><small>'+String(e?.message||e)+'</small></div>';console.error(e)}})();
 </script></body></html>
