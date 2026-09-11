@@ -3,8 +3,6 @@
   const text = el => (el?.textContent || '').replace(/\s+/g, ' ').trim();
 
   // 1) Calendar: completed jobs remain visible on their date.
-  // The base calendar uses activeJobs(), which intentionally excludes completed jobs.
-  // For a field-service calendar this makes a job entered as completed on TODAY look missing.
   const patchCalendar = () => {
     try {
       if (!globalThis.__montajiCalendarPatched && typeof globalThis.__montajiPatchSource === 'function') {
@@ -22,10 +20,13 @@
   };
 
   // 3) The address already has explicit Яндекс / 2ГИС / route actions.
-  // Suppress any experimental long-press action sheet if one is injected later.
+  // IMPORTANT: never remove a real Day Sheet merely because its job cards contain
+  // those same actions. The previous heuristic matched populated Day Sheets and
+  // immediately removed them after open; empty days therefore appeared to work.
   const removeAddressLongPressUI = () => {
     document.querySelectorAll('[role="dialog"], .modal, .sheet').forEach(el => {
       if (el.dataset.feedbackLongpressRemoved === '1') return;
+      if (el.matches('.day-sheet-modal, .day-sheet-final') || el.closest('.day-sheet-modal, .day-sheet-final')) return;
       const t = text(el);
       const looksLikeAddressActions = /Отправить адрес|Скопировать адрес|Поделиться адресом/i.test(t) && /Яндекс|2ГИС|маршрут/i.test(t);
       if (looksLikeAddressActions && el.id !== 'jobModal') {
