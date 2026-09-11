@@ -13,8 +13,13 @@
     if (!input || !/^(date|datetime-local)$/.test(input.type) || input.dataset.montajiDateReady === '1') return;
     input.dataset.montajiDateReady = '1';
     const kind = input.type === 'date' ? 'date' : 'datetime';
-    const field = input.closest('.quick-task-field') || input.parentElement;
-    if (!field) return;
+    let field = input.closest('.quick-task-field');
+    if (!field) {
+      field = document.createElement('div');
+      field.className = 'montaji-date-field';
+      input.parentElement?.insertBefore(field,input);
+      field.appendChild(input);
+    }
     field.classList.add('montaji-date-field');
     field.dataset.kind = kind;
     const display = document.createElement('span');
