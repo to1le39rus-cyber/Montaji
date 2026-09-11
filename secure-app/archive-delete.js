@@ -1,6 +1,6 @@
 /* Montaji AA — permanently delete archived notes from the existing notes document. */
 (() => {
-  const VERSION = '2026-09-11.2';
+  const VERSION = '2026-09-11.3';
   const text = el => (el?.textContent || '').replace(/\s+/g, ' ').trim();
   const toast = (message, state='normal') => {
     let el = document.querySelector('#toast');
@@ -24,8 +24,7 @@
   };
   const findNoteId = button => {
     const card = button.closest('.note-card, [data-note-id]');
-    const archive = card?.querySelector('[data-note-archive]');
-    return archive?.dataset.noteArchive || card?.dataset.noteId || button.dataset.noteDelete || '';
+    return button.dataset.noteDelete || card?.dataset.noteId || card?.querySelector('[data-note-restore-v2]')?.dataset.noteRestoreV2 || '';
   };
   const permanentlyDelete = async (id, card) => {
     const { auth, db, fs } = await getFirebase();
@@ -44,21 +43,19 @@
     card?.remove();
   };
   const enhance = root => {
-    (root || document).querySelectorAll?.('[data-note-archive]').forEach(archiveButton => {
-      if (archiveButton.dataset.deleteReady === '1') return;
-      const label = text(archiveButton);
-      if (label !== 'Вернуть') return;
-      const card = archiveButton.closest('.note-card, [data-note-id]') || archiveButton.parentElement;
+    (root || document).querySelectorAll?.('[data-note-restore-v2]').forEach(restoreButton => {
+      if (restoreButton.dataset.deleteReady === '1') return;
+      if (text(restoreButton) !== 'Вернуть') return;
+      const card = restoreButton.closest('.note-card, [data-note-id]') || restoreButton.parentElement;
       if (!card || card.querySelector('.note-archive-delete')) return;
-      const actions = document.createElement('span');
-      actions.className = 'note-archive-actions';
-      actions.dataset.version = VERSION;
+      const actions = restoreButton.closest('.note-v2-actions') || restoreButton.parentElement;
+      if (!actions) return;
       const del = document.createElement('button');
       del.type = 'button';
-      del.className = 'note-archive-delete';
+      del.className = 'mini-btn note-archive-delete';
       del.textContent = 'Удалить';
       del.setAttribute('aria-label', 'Удалить заметку навсегда');
-      del.dataset.noteDelete = archiveButton.dataset.noteArchive || '';
+      del.dataset.noteDelete = restoreButton.dataset.noteRestoreV2 || '';
       del.dataset.archiveDeleteVersion = VERSION;
       del.addEventListener('click', async e => {
         e.preventDefault();
@@ -79,14 +76,13 @@
         }
       });
       actions.appendChild(del);
-      archiveButton.parentElement?.appendChild(actions);
-      archiveButton.dataset.deleteReady = '1';
+      restoreButton.dataset.deleteReady = '1';
     });
   };
   const boot = () => {
     enhance(document);
     document.addEventListener('click', e => {
-      const b = e.target.closest?.('[data-note-archive]');
+      const b = e.target.closest?.('[data-note-restore-v2]');
       if (b) setTimeout(() => enhance(document), 50);
     }, true);
     setInterval(() => enhance(document), 700);
