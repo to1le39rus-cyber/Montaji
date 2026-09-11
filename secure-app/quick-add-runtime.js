@@ -1,4 +1,4 @@
-/* Montaji AA — Quick Add v8.
+/* Montaji AA — Quick Add v9.
    UX layer only. Existing Firebase/job/expense/note handlers remain the source of truth. */
 (() => {
   const text=el=>(el?.textContent||'').replace(/\s+/g,' ').trim();
@@ -99,11 +99,16 @@
       document.body.append(m);
       m.querySelectorAll('[data-quick-close]').forEach(b=>b.onclick=()=>close(m));
       m.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{
-        const a=b.dataset.action;close(m);
+        const a=b.dataset.action;
+        if(a==='task'){
+          // Keep the parent action sheet open. The task form is a child modal.
+          taskViaNote();
+          return;
+        }
+        close(m);
         if(a==='income')financeIncome(contextDate());
         else if(a==='expense')findButton('− Расход')?.click();
         else if(a==='note')findButton('＋ Заметка')?.click();
-        else if(a==='task')taskViaNote();
         else if(a==='client')findButton('＋ Клиент')?.click();
         else if(a==='finish'||a==='service')openNativeType('Сервис');
         else openNativeType(a==='mount'?'Монтаж':a==='measure'?'Замер':a==='claim'?'Рекламация':'Доставка');
