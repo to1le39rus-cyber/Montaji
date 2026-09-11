@@ -26,7 +26,6 @@
     const archive = card?.querySelector('[data-note-archive]');
     return archive?.dataset.noteArchive || card?.dataset.noteId || button.dataset.noteDelete || '';
   };
-  const findArchiveRoot = button => button.closest('#archiveNotes, #archivedNotes, .archive-notes, .notes-archive, .notes-section') || button.parentElement;
   const permanentlyDelete = async (id, card) => {
     const { auth, db, fs } = await getFirebase();
     const ref = fs.doc(db, 'appData', 'notes');
