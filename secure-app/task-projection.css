@@ -1,0 +1,6 @@
+/* Montaji AA — urgent task projection. Same notes data model, Today is only a projection. */
+.aa-task-insight{display:grid!important;grid-template-columns:28px minmax(0,1fr) 18px!important;align-items:center!important;gap:10px!important;text-align:left!important}
+.aa-task-insight .aa-task-check{width:28px!important;height:28px!important;border-radius:9px!important;background:#e9eee6!important;color:#59664e!important;display:grid!important;place-items:center!important}
+.aa-task-insight .aa-task-check svg{width:17px!important;height:17px!important;fill:none!important;stroke:currentColor!important;stroke-width:2!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+.aa-task-insight .aa-task-title{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+.aa-task-insight .aa-task-arrow{font-size:24px!important;line-height:1!important;color:#8b918b!important}
