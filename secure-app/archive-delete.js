@@ -1,5 +1,6 @@
 /* Montaji AA — permanently delete archived notes from the existing notes document. */
 (() => {
+  const VERSION = '2026-09-11.2';
   const text = el => (el?.textContent || '').replace(/\s+/g, ' ').trim();
   const toast = (message, state='normal') => {
     let el = document.querySelector('#toast');
@@ -51,12 +52,14 @@
       if (!card || card.querySelector('.note-archive-delete')) return;
       const actions = document.createElement('span');
       actions.className = 'note-archive-actions';
+      actions.dataset.version = VERSION;
       const del = document.createElement('button');
       del.type = 'button';
       del.className = 'note-archive-delete';
       del.textContent = 'Удалить';
       del.setAttribute('aria-label', 'Удалить заметку навсегда');
       del.dataset.noteDelete = archiveButton.dataset.noteArchive || '';
+      del.dataset.archiveDeleteVersion = VERSION;
       del.addEventListener('click', async e => {
         e.preventDefault();
         e.stopPropagation();
