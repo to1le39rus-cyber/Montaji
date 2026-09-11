@@ -3,9 +3,7 @@
 .quick-task-grid>label{width:100%!important;min-width:0!important}
 .quick-task-field{height:54px!important}
 .quick-task-field input[name="dueAt"]{width:100%!important;height:54px!important;padding-left:40px!important;padding-right:12px!important;font-size:16px!important}
-.quick-task-field:after{content:'Выбрать дату и время';position:absolute!important;left:40px!important;top:0!important;height:54px!important;display:flex!important;align-items:center!important;color:#a1a7a1!important;font-size:14px!important;font-weight:600!important;pointer-events:none!important}
-.quick-task-field.has-value:after{display:none!important}
 .quick-task-segment{width:100%!important}
 .quick-task-hint span:nth-child(2){font-size:0!important}
 .quick-task-hint span:nth-child(2):after{content:'Срочная задача попадёт в «Что важно».';font-size:11px!important;line-height:1.35!important}
-@media(max-width:380px){.quick-task-grid{grid-template-columns:1fr!important}.quick-task-field:after{font-size:13px!important}}
+@media(max-width:380px){.quick-task-grid{grid-template-columns:1fr!important}}
