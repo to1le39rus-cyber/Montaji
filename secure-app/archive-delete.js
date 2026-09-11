@@ -1,0 +1,93 @@
+/* Montaji AA — permanently delete archived notes from the existing notes document. */
+(() => {
+  const text = el => (el?.textContent || '').replace(/\s+/g, ' ').trim();
+  const toast = (message, state='normal') => {
+    let el = document.querySelector('#toast');
+    if (!el) { el = document.createElement('div'); document.body.append(el); }
+    el.textContent = message;
+    el.dataset.state = state;
+    clearTimeout(el.__timer);
+    el.__timer = setTimeout(() => el.remove(), 3000);
+  };
+  const getFirebase = async () => {
+    const [appMod, authMod, fs] = await Promise.all([
+      import('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js'),
+      import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js')
+    ]);
+    const app = appMod.getApps().find(x => x.name === 'montaji-aa-production') || appMod.getApps()[0];
+    if (!app) throw new Error('FIREBASE_APP_NOT_FOUND');
+    const auth = authMod.getAuth(app);
+    if (!auth.currentUser) throw new Error('Нет авторизации');
+    return { auth, db: fs.getFirestore(app), fs };
+  };
+  const findNoteId = button => {
+    const card = button.closest('.note-card, [data-note-id]');
+    const archive = card?.querySelector('[data-note-archive]');
+    return archive?.dataset.noteArchive || card?.dataset.noteId || button.dataset.noteDelete || '';
+  };
+  const findArchiveRoot = button => button.closest('#archiveNotes, #archivedNotes, .archive-notes, .notes-archive, .notes-section') || button.parentElement;
+  const permanentlyDelete = async (id, card) => {
+    const { auth, db, fs } = await getFirebase();
+    const ref = fs.doc(db, 'appData', 'notes');
+    await fs.runTransaction(db, async tx => {
+      const snap = await tx.get(ref);
+      if (!snap.exists()) throw new Error('NOTES_DOC_NOT_FOUND');
+      const data = snap.data()?.data || {};
+      const notes = Array.isArray(data.notes) ? data.notes : [];
+      const target = notes.find(n => n?.id === id);
+      if (!target) throw new Error('NOTE_NOT_FOUND');
+      if (!target.archived && !target.done) throw new Error('NOTE_NOT_ARCHIVED');
+      const next = notes.filter(n => n?.id !== id);
+      tx.set(ref, { data: { notes: next }, version: 2, updatedAt: fs.serverTimestamp(), updatedBy: auth.currentUser.uid }, { merge: true });
+    });
+    card?.remove();
+  };
+  const enhance = root => {
+    (root || document).querySelectorAll?.('[data-note-archive]').forEach(archiveButton => {
+      if (archiveButton.dataset.deleteReady === '1') return;
+      const label = text(archiveButton);
+      if (label !== 'Вернуть') return;
+      const card = archiveButton.closest('.note-card, [data-note-id]') || archiveButton.parentElement;
+      if (!card || card.querySelector('.note-archive-delete')) return;
+      const actions = document.createElement('span');
+      actions.className = 'note-archive-actions';
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'note-archive-delete';
+      del.textContent = 'Удалить';
+      del.setAttribute('aria-label', 'Удалить заметку навсегда');
+      del.dataset.noteDelete = archiveButton.dataset.noteArchive || '';
+      del.addEventListener('click', async e => {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = findNoteId(del);
+        if (!id) { toast('Не удалось определить заметку','error'); return; }
+        if (!window.confirm('Удалить эту заметку навсегда?\nВосстановить её будет нельзя.')) return;
+        del.disabled = true;
+        del.textContent = '…';
+        try {
+          await permanentlyDelete(id, card);
+          toast('Заметка удалена','success');
+        } catch (err) {
+          console.error('[archive-delete]', err);
+          del.disabled = false;
+          del.textContent = 'Удалить';
+          toast('Не удалось удалить заметку','error');
+        }
+      });
+      actions.appendChild(del);
+      archiveButton.parentElement?.appendChild(actions);
+      archiveButton.dataset.deleteReady = '1';
+    });
+  };
+  const boot = () => {
+    enhance(document);
+    document.addEventListener('click', e => {
+      const b = e.target.closest?.('[data-note-archive]');
+      if (b) setTimeout(() => enhance(document), 50);
+    }, true);
+    setInterval(() => enhance(document), 700);
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once:true }); else boot();
+})();
