@@ -1,0 +1,16 @@
+/* Montaji AA — unified date/time control. Native picker stays functional; presentation is ours. */
+.montaji-date-field{position:relative;display:flex!important;align-items:center;min-height:54px;width:100%;box-sizing:border-box;border:1px solid #d9ddd6;border-radius:18px;background:#fff;overflow:hidden}
+.montaji-date-field:focus-within{border-color:#78866b;box-shadow:0 0 0 3px rgba(120,134,107,.10)}
+.montaji-date-display{display:flex;align-items:center;gap:10px;width:100%;min-width:0;padding:0 44px 0 16px;box-sizing:border-box;color:#101510;font-size:16px;font-weight:600;line-height:1.2;pointer-events:none}
+.montaji-date-display::before{content:'◷';display:grid;place-items:center;flex:0 0 24px;width:24px;height:24px;border-radius:8px;color:#6f8062;font-size:18px;font-weight:500}
+.montaji-date-display.is-placeholder{color:#9ca39c;font-weight:500}
+.montaji-date-input{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;opacity:0!important;cursor:pointer!important;z-index:2!important;-webkit-appearance:none!important;appearance:none!important}
+.montaji-date-input::-webkit-date-and-time-value{height:54px}
+.montaji-date-input::-webkit-calendar-picker-indicator{opacity:0!important;width:100%!important;height:100%!important;position:absolute!important;inset:0!important}
+.montaji-date-field[data-kind="datetime"] .montaji-date-display::before{content:'◷'}
+.montaji-date-field[data-kind="date"] .montaji-date-display::before{content:'□'}
+/* Task field already owns its outer geometry; only replace the native visual. */
+.quick-task-field.montaji-date-field{min-height:54px;height:54px;border-radius:16px}
+.quick-task-field.montaji-date-field .quick-task-field-icon{display:none!important}
+.quick-task-field.montaji-date-field .montaji-date-display{padding-left:16px;padding-right:42px}
+@media(max-width:390px){.montaji-date-display{font-size:15px;padding-left:14px;padding-right:36px}.montaji-date-display::before{flex-basis:22px;width:22px}}
