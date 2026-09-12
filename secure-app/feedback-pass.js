@@ -1,4 +1,4 @@
-/* Montaji AA — user feedback pass 2026-09-11. Sandbox only. */
+/* Montaji AA — user feedback pass 2026-09-12. Sandbox only. */
 (() => {
   const text = el => (el?.textContent || '').replace(/\s+/g, ' ').trim();
 
@@ -11,11 +11,15 @@
     } catch (e) { console.warn('[feedback-pass] calendar patch skipped', e); }
   };
 
-  // 2) Remove the experimental "Следующее" insight. Today should surface actions,
-  // not a duplicate forecast of a card that is already visible below.
+  // 2) "Следующее" was intentionally removed from What matters.
+  // The Today screen must surface actionable items only; the actual job card
+  // already provides the next visit, so this duplicate forecast has no product value.
   const removeNextInsight = () => {
-    document.querySelectorAll('#insights .insight').forEach(el => {
-      if (/^Следующее\s*:/i.test(text(el))) el.remove();
+    const host = document.querySelector('#insights');
+    if (!host) return;
+    host.querySelectorAll('.insight').forEach(el => {
+      const t = text(el).replace(/^[→›\s]+/, '');
+      if (/^Следующее\s*:/i.test(t)) el.remove();
     });
   };
 
@@ -38,8 +42,7 @@
 
   // 4) Date UX: scheduled date is the single date the installer chooses.
   // Completion date remains in the data model for reporting, but is not presented
-  // as a second editable decision. When status is completed, keep it synced to the
-  // scheduled date unless the existing record already has a deliberate completion date.
+  // as a second editable decision.
   const syncCompletionDate = () => {
     const date = document.querySelector('#jobDate');
     const completed = document.querySelector('#jobCompletedDate');
@@ -54,9 +57,17 @@
     if (done && date.value && !completed.dataset.manualCompletion) completed.value = date.value;
   };
 
+  const removeExperimentalInsightRepeatedly = () => {
+    // Firebase/realtime rendering can replace #insights after the first observer
+    // pass. Keep this cleanup lightweight and bounded so the experiment can never
+    // reappear during the current Today session.
+    removeNextInsight();
+    [0, 50, 150, 300, 600, 1200, 2500, 5000].forEach(ms => setTimeout(removeNextInsight, ms));
+  };
+
   const observe = () => {
     patchCalendar();
-    removeNextInsight();
+    removeExperimentalInsightRepeatedly();
     removeAddressLongPressUI();
     syncCompletionDate();
     document.addEventListener('click', e => {
