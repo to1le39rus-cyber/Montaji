@@ -1,8 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-label="Монтажи дверей">
-  <rect width="192" height="192" rx="40" fill="#111827"/>
-  <rect x="52" y="26" width="88" height="140" rx="12" fill="#ffffff"/>
-  <rect x="72" y="42" width="48" height="108" rx="8" fill="#f3f4f6"/>
-  <circle cx="112" cy="96" r="5" fill="#111827"/>
-  <path d="M34 148h42" stroke="#10b981" stroke-width="12" stroke-linecap="round"/>
-  <path d="M34 120h58" stroke="#f59e0b" stroke-width="12" stroke-linecap="round"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-label="Монтажи АА"><rect width="192" height="192" rx="42" fill="#59644d"/><path d="M42 132V60h18l36 45 36-45h18v72h-18V88l-30 38h-12L60 88v44H42Z" fill="#fff"/><path d="M113 42h38v38" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M151 42 108 85" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round"/></svg>
