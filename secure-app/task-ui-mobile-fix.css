@@ -1,9 +1,36 @@
-/* Montaji AA — task mobile polish: iPhone-safe stacked controls. */
-.quick-task-grid{grid-template-columns:1fr!important;gap:12px!important}
-.quick-task-grid>label{width:100%!important;min-width:0!important}
-.quick-task-field{height:54px!important}
-.quick-task-field input[name="dueAt"]{width:100%!important;height:54px!important;padding-left:40px!important;padding-right:12px!important;font-size:16px!important}
-.quick-task-segment{width:100%!important}
-.quick-task-hint span:nth-child(2){font-size:0!important}
-.quick-task-hint span:nth-child(2):after{content:'Срочная задача попадёт в «Что важно».';font-size:11px!important;line-height:1.35!important}
-@media(max-width:380px){.quick-task-grid{grid-template-columns:1fr!important}}
+/* Montaji AA — task mobile polish v2: compact vertical rhythm for iPhone. */
+.quick-task-sheet{top:2vh!important;max-height:98dvh!important;padding:14px 20px calc(16px + env(safe-area-inset-bottom))!important}
+.quick-task-sheet .handle{margin-bottom:14px!important}
+.quick-task-head{gap:12px!important;margin-bottom:16px!important}
+.quick-task-head p{margin-top:6px!important;font-size:13px!important;line-height:1.25!important}
+.quick-task-head h2{font-size:28px!important}
+.quick-task-form{gap:10px!important}
+.quick-task-form label{gap:5px!important;font-size:11px!important}
+.quick-task-label-title{display:block!important;white-space:nowrap!important}
+.quick-task-label-title .optional{font-weight:600!important;color:#8a908a!important}
+.quick-task-form input,.quick-task-form select{height:50px!important;border-radius:14px!important}
+.quick-task-form textarea{min-height:76px!important;height:76px!important;border-radius:14px!important;padding:11px 13px!important}
+.quick-task-count{margin-top:-3px!important;font-size:9px!important}
+.quick-task-grid{gap:10px!important}
+.quick-task-field{height:50px!important}
+.quick-task-field-icon{top:14px!important}
+.quick-task-field input[name="dueAt"]{height:50px!important;padding-left:39px!important;padding-right:10px!important;font-size:15px!important}
+.quick-task-segment{height:50px!important;border-radius:14px!important}
+.quick-task-segment button{font-size:12px!important}
+.quick-task-reminder{gap:9px!important;padding:9px 11px!important;border-radius:15px!important}
+.quick-task-reminder-icon{width:34px!important;height:34px!important;flex-basis:34px!important;border-radius:10px!important}
+.quick-task-reminder-copy{gap:2px!important}
+.quick-task-reminder-copy b{font-size:12.5px!important}
+.quick-task-reminder-copy span{font-size:10.5px!important;line-height:1.2!important}
+.quick-task-switch{flex-basis:46px!important;width:46px!important;height:28px!important}
+.quick-task-switch>span:after{width:22px!important;height:22px!important}
+.quick-task-switch input:checked+span:after{transform:translateX(18px)!important}
+.quick-task-hint{gap:8px!important;padding:8px 11px!important;border-radius:12px!important;font-size:10.5px!important;line-height:1.25!important}
+.quick-task-hint>span:first-child{width:22px!important;height:22px!important;flex-basis:22px!important}
+.quick-task-save{height:52px!important;border-radius:15px!important;font-size:14px!important}
+@media(max-width:380px){
+  .quick-task-sheet{padding-left:16px!important;padding-right:16px!important}
+  .quick-task-head h2{font-size:27px!important}
+  .quick-task-form{gap:9px!important}
+  .quick-task-form textarea{height:72px!important;min-height:72px!important}
+}
