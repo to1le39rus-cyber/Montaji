@@ -28,6 +28,14 @@
     });
   }
 
+  function syncMainPeriod(){
+    const strip=document.querySelector('#moneyHighlights');
+    if(!strip)return;
+    const label=document.querySelector('#moneyPeriod')?.textContent?.trim()||'';
+    const wanted=label==='Сегодня'?'day':label==='Эта неделя'?'week':label==='Этот месяц'?'month':label==='Всё время'?'all':'';
+    strip.querySelectorAll('button').forEach(b=>b.classList.toggle('selected',b.dataset.fin===wanted));
+  }
+
   function makeUI(box){
     if(!box||box.previousElementSibling?.classList.contains('money-ui'))return;
     const w=document.createElement('div');w.className='money-ui';
@@ -65,10 +73,11 @@
       more.hidden=f.length<=MAX_VISIBLE;
       more.textContent=state.showAll?'Скрыть лишнее':`Показать все · ${f.length}`;
       w.querySelector('.money-ui-reset').hidden=state.category==='Все'&&state.period==='all';
+      syncMainPeriod();
     }finally{observer?.observe(document.body,{childList:true,subtree:true})}
   }
 
-  function init(){normalizeExpenseSelects();const b=document.querySelector('#expenseArchive');if(b)makeUI(b);apply()}
+  function init(){normalizeExpenseSelects();const b=document.querySelector('#expenseArchive');if(b)makeUI(b);apply();syncMainPeriod()}
   const style=document.createElement('style');
   style.textContent=`
     .money-ui{margin:0!important;padding:0 0 4px!important;border:0!important}
@@ -83,7 +92,7 @@
     .money-ui-more{width:100%;border:1px solid #d8dfd3;background:#edf1e9;color:#4e5b46;border-radius:11px;padding:9px;font-size:9px;font-weight:760;margin:0 0 8px}
   `;
   document.head.appendChild(style);
-  observer=new MutationObserver(m=>{if(m.every(x=>x.target.closest?.('.money-ui')))return;normalizeExpenseSelects();const b=document.querySelector('#expenseArchive');if(b){makeUI(b);apply()}});
+  observer=new MutationObserver(m=>{if(m.every(x=>x.target.closest?.('.money-ui')))return;normalizeExpenseSelects();const b=document.querySelector('#expenseArchive');if(b){makeUI(b);apply()}syncMainPeriod()});
   observer.observe(document.body,{childList:true,subtree:true});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
