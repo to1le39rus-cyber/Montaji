@@ -1,30 +1,33 @@
 /* Montaji AA — Money screen / UX UI concept implementation. Presentation only. */
-#moneyScreen{padding-bottom:104px!important}
-#moneyScreen .screen-head{margin:3px 3px 7px!important}
+#moneyScreen{padding-bottom:104px!important;display:flex!important;flex-direction:column!important}
+#moneyScreen .screen-head{margin:3px 3px 7px!important;order:1!important}
 #moneyScreen .screen-head .eyebrow{font-size:8px!important;letter-spacing:.18em!important;color:#72786f!important}
 #moneyScreen .screen-head h1{font-size:30px!important;line-height:.98!important;letter-spacing:-.06em!important;margin-top:3px!important}
 #moneyScreen .mpi-card{display:none!important}
-#moneyScreen .money-focus{position:relative!important;overflow:hidden!important;background:#273126!important;color:#fff!important;border:0!important;border-radius:22px!important;padding:18px 18px 17px!important;margin-bottom:8px!important;min-height:106px!important;box-shadow:0 14px 28px rgba(39,49,38,.16)!important}
-#moneyScreen .money-focus .eyebrow{font-size:8px!important;letter-spacing:.16em!important;color:rgba(255,255,255,.58)!important;margin-bottom:7px!important}
-#moneyScreen .money-focus .money-value{font-size:40px!important;line-height:.98!important;font-weight:820!important;letter-spacing:-.065em!important;color:#fff!important;-webkit-text-fill-color:#fff!important;margin:0!important;position:relative!important;z-index:2!important}
-#moneyScreen .money-focus .money-period{font-size:9px!important;color:rgba(255,255,255,.58)!important;margin-top:7px!important;position:relative!important;z-index:2!important}
-#moneyScreen .money-focus:after{content:""!important;position:absolute!important;right:18px!important;bottom:16px!important;width:82px!important;height:48px!important;background:linear-gradient(to top,rgba(255,255,255,.28) 0 72%,transparent 72%) 0 100%/8px 100% no-repeat,linear-gradient(to top,rgba(255,255,255,.36) 0 48%,transparent 48%) 18px 100%/8px 100% no-repeat,linear-gradient(to top,rgba(255,255,255,.30) 0 82%,transparent 82%) 36px 100%/8px 100% no-repeat,linear-gradient(to top,rgba(255,255,255,.42) 0 62%,transparent 62%) 54px 100%/8px 100% no-repeat,linear-gradient(to top,rgba(255,255,255,.55) 0 92%,transparent 92%) 72px 100%/8px 100% no-repeat!important;opacity:.8!important;border-radius:4px!important}
-#moneyScreen .money-highlights{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:0!important;margin:0 0 9px!important;padding:3px!important;border:1px solid #dedfd8!important;border-radius:15px!important;background:#fff!important;box-shadow:none!important}
+#moneyScreen .money-highlights{order:2!important;display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:0!important;margin:0 0 9px!important;padding:3px!important;border:1px solid #dedfd8!important;border-radius:15px!important;background:#fff!important;box-shadow:none!important}
 #moneyScreen .money-highlights button{min-width:0!important;min-height:37px!important;padding:5px 2px!important;border:0!important;border-radius:11px!important;background:transparent!important;box-shadow:none!important}
 #moneyScreen .money-highlights button span{display:block!important;font-size:8px!important;color:#858a83!important;line-height:1!important}
 #moneyScreen .money-highlights button b{display:block!important;font-size:9px!important;margin-top:4px!important;color:#171a17!important;white-space:nowrap!important;letter-spacing:-.02em!important}
 #moneyScreen .money-highlights button:first-child{background:#e8ede4!important;box-shadow:inset 0 0 0 1px #b8c2b0!important}
-#moneyScreen .money-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important;margin:0 0 9px!important}
+#moneyScreen .money-focus{order:3!important;position:relative!important;overflow:hidden!important;background:#273126!important;color:#fff!important;border:0!important;border-radius:22px!important;padding:18px 18px 17px!important;margin-bottom:8px!important;min-height:106px!important;box-shadow:0 14px 28px rgba(39,49,38,.16)!important}
+#moneyScreen .money-focus .eyebrow{font-size:8px!important;letter-spacing:.16em!important;color:rgba(255,255,255,.58)!important;margin-bottom:7px!important}
+#moneyScreen .money-focus .money-value{font-size:40px!important;line-height:.98!important;font-weight:820!important;letter-spacing:-.065em!important;color:#fff!important;-webkit-text-fill-color:#fff!important;margin:0!important;position:relative!important;z-index:2!important}
+#moneyScreen .money-focus .money-period{font-size:9px!important;color:rgba(255,255,255,.58)!important;margin-top:7px!important;position:relative!important;z-index:2!important}
+#moneyScreen .money-focus:after{content:""!important;position:absolute!important;right:18px!important;bottom:16px!important;width:82px!important;height:48px!important;background:linear-gradient(to top,rgba(255,255,255,.28) 0 72%,transparent 72%) 0 100%/8px 100% no-repeat,linear-gradient(to top,rgba(255,255,255,.36) 0 48%,transparent 48%) 18px 100%/8px 100% no-repeat,linear-gradient(to top,rgba(255,255,255,.30) 0 82%,transparent 82%) 36px 100%/8px 100% no-repeat,linear-gradient(to top,rgba(255,255,255,.42) 0 62%,transparent 62%) 54px 100%/8px 100% no-repeat,linear-gradient(to top,rgba(255,255,255,.55) 0 92%,transparent 92%) 72px 100%/8px 100% no-repeat!important;opacity:.8!important;border-radius:4px!important}
+#moneyScreen .money-grid{order:4!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important;margin:0 0 9px!important}
 #moneyScreen .money-grid>div,#moneyScreen .money-grid .money-debt{min-height:69px!important;border-radius:16px!important;padding:12px 13px!important;background:#fff!important;border:1px solid #dedfd8!important;box-shadow:none!important}
 #moneyScreen .money-grid small{display:block!important;font-size:8px!important;color:#777e76!important;margin-bottom:6px!important}
 #moneyScreen .money-grid b{display:block!important;font-size:16px!important;line-height:1.02!important;font-weight:800!important;color:#171a17!important;letter-spacing:-.025em!important}
 #moneyScreen .money-grid .money-debt{background:#edf1e9!important;border-color:#d8dfd3!important}
 #moneyScreen .money-grid .money-debt span{font-size:8px!important;color:#65705f!important;margin-top:5px!important}
-#moneyScreen .finance-actions{display:grid!important;grid-template-columns:1.45fr .75fr!important;gap:7px!important;margin:0 0 9px!important}
+#moneyScreen .finance-actions{order:5!important;display:grid!important;grid-template-columns:1.45fr .75fr!important;gap:7px!important;margin:0 0 9px!important}
 #moneyScreen .finance-actions button{min-height:43px!important;border-radius:13px!important;font-size:10px!important;font-weight:780!important}
 #moneyScreen .finance-actions .primary{background:#59664e!important;border-color:#59664e!important;color:#fff!important;box-shadow:0 8px 16px rgba(89,102,78,.14)!important}
 #moneyScreen .finance-actions .secondary{background:#fff!important;border:1px solid #dedfd8!important;color:#30362f!important}
-#moneyScreen .chart-card{border-radius:18px!important;background:#fff!important;border:1px solid #dedfd8!important;box-shadow:none!important;padding:14px!important;margin:0 0 9px!important}
+#moneyScreen>.chart-card{border-radius:18px!important;background:#fff!important;border:1px solid #dedfd8!important;box-shadow:none!important;padding:14px!important;margin:0 0 9px!important}
+#moneyScreen>.chart-card:has(#debtList){order:6!important}
+#moneyScreen>.chart-card:has(#storeBreakdown){order:7!important}
+#moneyScreen>.chart-card:has(#expenseArchive){order:8!important}
 #moneyScreen .chart-card .section-head{margin:0 0 8px!important}
 #moneyScreen .chart-card .section-head h2{font-size:15px!important;font-weight:790!important;margin:0!important;letter-spacing:-.025em!important}
 #moneyScreen .chart-card .section-head small{font-size:8px!important;color:#899088!important}
@@ -40,7 +43,7 @@
 #moneyScreen #expenseArchive .expense-row small{display:block!important;font-size:8px!important;color:#8a8f88!important;margin-top:2px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:65%!important}
 #moneyScreen #expenseArchive .expense-row strong{font-size:10px!important;font-weight:790!important}
 #moneyScreen #expenseArchive .mini-edit{font-size:8px!important;padding:4px 6px!important;border-radius:8px!important;background:#eef0ea!important;border:0!important;color:#687160!important}
-#moneyScreen .money-ui{margin-top:7px!important;padding-top:10px!important;border-top:1px solid #ecece7!important}
+#moneyScreen .money-ui{order:9!important;margin-top:7px!important;padding-top:10px!important;border-top:1px solid #ecece7!important}
 #moneyScreen .money-ui-head strong{font-size:11px!important}
 #moneyScreen .money-ui-head small,#moneyScreen .money-ui-note{font-size:8px!important}
 #moneyScreen .money-ui-periods,#moneyScreen .money-ui-cats{gap:5px!important;padding-bottom:6px!important}
@@ -52,24 +55,10 @@
 #moneyScreen #debtList .debt-row b{font-size:11px!important;font-weight:730!important}
 #moneyScreen #debtList .debt-row small{display:block!important;font-size:8px!important;color:#8a8f88!important;margin-top:2px!important}
 #moneyScreen #debtList .debt-row strong{font-size:11px!important;font-weight:790!important}
-
-/* DESIGN TRANSLATION: use the existing real DOM as the source of truth, but compose it like the designer concept. */
-#moneyScreen{display:flex!important;flex-direction:column!important}
-#moneyScreen>.screen-head{order:1!important}
-#moneyScreen>.money-highlights{order:2!important}
-#moneyScreen>.money-focus{order:3!important}
-#moneyScreen>.money-grid{order:4!important}
-#moneyScreen>.finance-actions{order:5!important}
-#moneyScreen>#debtList{order:6!important}
-#moneyScreen>#storeBreakdown{order:7!important}
-#moneyScreen>#expenseArchive{order:8!important}
-#moneyScreen>.money-ui{order:9!important}
-#moneyScreen>#debtList:empty{display:none!important}
-#moneyScreen>#debtList:has(.debt-empty),#moneyScreen>#debtList:has(.empty-state){border-radius:15px!important;padding:11px 13px!important;background:#f0f3ec!important;border:1px solid #d8dfd3!important}
-
-/* The designer's concept has no giant secondary report between the period control and KPIs. */
-#moneyScreen>.money-highlights+ .mpi-card{display:none!important}
-
+#moneyScreen>.chart-card:has(#debtList).debt-minimal{background:#fff!important;border:1px solid #dedfd8!important;border-radius:18px!important;padding:14px!important;margin:0 0 9px!important}
+#moneyScreen>.chart-card:has(#debtList).debt-minimal .section-head{border-top:0!important;padding:0 0 8px!important}
+#moneyScreen>.chart-card:has(#debtList).debt-minimal .section-head h2{color:#171a17!important;font-size:15px!important;font-weight:790!important}
+#moneyScreen>.chart-card:has(#debtList).debt-minimal .section-head small{font-size:8px!important}
 @media(max-width:560px){
  #moneyScreen .screen-head h1{font-size:29px!important}
  #moneyScreen .money-focus{min-height:101px!important;padding:17px!important}
