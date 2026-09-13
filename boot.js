@@ -22,7 +22,7 @@ async function boot(){
     source = source.slice(0, loadStart) + loadFix + source.slice(realtimeStart);
   }
   const calendarContrast=document.createElement('style');
-  calendarContrast.textContent=`.calendar .day.partial,.calendar .day.busy,.calendar .day.full{color:#172019!important;-webkit-text-fill-color:#172019!important}.calendar .day.partial b,.calendar .day.partial span,.calendar .day.partial i,.calendar .day.busy b,.calendar .day.busy span,.calendar .day.busy i,.calendar .day.full b,.calendar .day.full span,.calendar .day.busy i,.calendar .day.full i{color:#172019!important;-webkit-text-fill-color:#172019!important;opacity:1!important}`;
+  calendarContrast.textContent=`.calendar .day.partial,.calendar .day.busy,.calendar .day.full{color:#172019!important;-webkit-text-fill-color:#172019!important}.calendar .day.partial b,.calendar .day.partial span,.calendar .day.partial i,.calendar .day.busy b,.calendar .day.busy span,.calendar .day.busy i,.calendar .day.full b,.calendar .day.full span,.calendar .day.full i{color:#172019!important;-webkit-text-fill-color:#172019!important;opacity:1!important}`;
   document.head.appendChild(calendarContrast);
   const blob = new Blob([source], {type:'text/javascript'});
   const url = URL.createObjectURL(blob);
