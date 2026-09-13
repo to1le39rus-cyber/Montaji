@@ -5,6 +5,7 @@ import path from 'node:path';
 
 const root = path.resolve(process.cwd());
 const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+const boot = fs.readFileSync(path.join(root, 'boot.js'), 'utf8');
 const rules = fs.readFileSync(path.join(root, 'firestore.rules'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 
@@ -16,6 +17,11 @@ test('production entry is deterministic', () => {
   assert.equal((index.match(/type="module"/g) || []).length, 1);
   assert.ok(fs.existsSync(path.join(root, 'firebase-config.js')));
   assert.ok(fs.existsSync(path.join(root, 'firestore.rules')));
+});
+
+test('boot is only a thin canonical entrypoint', () => {
+  assert.match(boot, /import ['"]\.\/app\.js['"];?/);
+  assert.doesNotMatch(boot, /source\.replace|new Blob|cdn\.jsdelivr|raw\.githubusercontent/);
 });
 
 test('shared and notes use Firestore as source of truth', () => {
@@ -62,10 +68,11 @@ test('maps use Russian providers', () => {
   assert.doesNotMatch(app, /google\.com\/maps/);
 });
 
-test('daily capacity stays at three montage windows', () => {
+test('three planning windows are presets, not a daily montage limit', () => {
   assert.match(app, /\['1','2','3'\]/);
   has(/montageCount/);
   has(/freeSlot/);
+  assert.doesNotMatch(app, /max.*3.*монтаж|лимит.*3.*монтаж/i);
 });
 
 test('financial semantics preserve future jobs and history', () => {
@@ -75,7 +82,7 @@ test('financial semantics preserve future jobs and history', () => {
 });
 
 test('main data load is independent from notes', () => {
-  assert.match(app, /getDocFromServer\(F\.doc\(db,\.\.\.SHARED_DOC\)\)/);
-  assert.match(app, /getDocFromServer\(F\.doc\(db,\.\.\.NOTES_DOC\)\)/);
+  assert.match(app, /getDocFromServer\(F\.doc\(db,\.\.\.SHARED_DOC\)/);
+  assert.match(app, /getDocFromServer\(F\.doc\(db,\.\.\.NOTES_DOC\)/);
   assert.match(app, /Promise\.all\(\[/);
 });
