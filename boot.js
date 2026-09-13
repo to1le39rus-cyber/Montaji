@@ -1,4 +1,4 @@
-const APP_URL = new URL('app.js?runtime=20260904-notes-4', location.href);
+const APP_URL = new URL('app.js?runtime=20260913-sandbox-capacity-1', location.href);
 const NOTES_URL = new URL('https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/notes-ui.js?runtime=20260904-notes-4');
 const MONEY_UI_URL = new URL('https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/money-ui-v2.js?runtime=20260904-money-3');
 const DEBT_UI_URL = new URL('https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/debt-ui.js?runtime=20260905-debt-5');
@@ -7,23 +7,36 @@ async function boot(){
   const response = await fetch(APP_URL, {cache:'no-store'});
   if(!response.ok) throw new Error(`APP_LOAD_${response.status}`);
   let source = await response.text();
+
   source = source.replace('.slice(0,40).map(e=>', '.slice(0,1000).map(e=>');
   source = source.replace("if(t.unpaid)advice.push(`💰 ${money(t.unpaid)} ещё не оплачено`);", "const allUnpaid=state.jobs.filter(j=>!isCancelled(j)&&isDone(j)&&j.paid===false).reduce((s,j)=>s+effectiveIncome(j),0);if(allUnpaid)advice.push(`💰 ${money(allUnpaid)} ещё не оплачено`);");
+
+  // Sandbox product rule: 3 is an average workload reference, never a capacity limit.
+  source = source.replace("$('#todayLoad').textContent=`${montageCount(d)}/3`;$('#todayProgress').style.width=Math.min(100,montageCount(d)/3*100)+'%';", "$('#todayLoad').textContent=`${montageCount(d)} монтажей`;$('#todayProgress').style.width=montageCount(d)>0?'100%':'0%';");
+  source = source.replace("if(tc===3)advice.push('🔥 Завтра 3/3 монтажей — день полностью загружен');else if(tc===2)advice.push('✨ Завтра осталось одно монтажное окно');", "if(tc>=4)advice.push(`🔥 Завтра ${tc} монтажей — высокая загрузка`);else if(tc===3)advice.push('✨ Завтра 3 монтажа — плотный день');else if(tc===2)advice.push('✨ Завтра 2 монтажа — есть запас времени');");
+
+  // A slot is a time preset, not a capacity gate. Multiple jobs may share a slot.
+  source = source.replace("const w=$('#slotWarning');w.classList.toggle('hidden',!conflict);if(conflict)w.textContent=`Слот занят: ${conflict.client}.`", "const w=$('#slotWarning');w.classList.add('hidden');w.textContent=''");
+  source = source.replace("if(editingType==='Монтаж'){const conflict=state.jobs.find(j=>j.id!==id&&!isCancelled(j)&&!isDone(j)&&j.type==='Монтаж'&&j.date===d&&String(j.slot)===$('#jobSlot').value);if(conflict)return toast(`Слот занят: ${conflict.client}`,'error')}", "");
+
   const calendarStart = source.indexOf('function renderCalendar(){');
   const calendarEnd = source.indexOf('function openDay', calendarStart);
   if(calendarStart !== -1 && calendarEnd !== -1){
-    const calendarFix = `function renderCalendar(){const y=month.getFullYear(),m=month.getMonth(),start=(new Date(y,m,1).getDay()+6)%7,last=new Date(y,m+1,0).getDate();let h='';for(let i=0;i<start;i++)h+='<div class="day blank"></div>';const montageWord=n=>n===1?'монтаж':(n>=2&&n<=4?'монтажа':'монтажей');for(let n=1;n<=last;n++){const k=dateKey(new Date(y,m,n)),js=jobsForDate(k),montages=js.filter(j=>j.type==='Монтаж'),c=montages.length,hasMeasure=js.some(isMeasure);h+=\`<button class="day \${c>=3?'full':c===2?'busy':c?'partial':''} \${hasMeasure?'has-measure':''} \${k===today()?'today':''}" data-date="\${k}"><b>\${n}</b><span>\${c} \${montageWord(c)}</span><i>\${c}/3\${hasMeasure?' · замер':''}</i></button>\`; }$('#scheduleMonth').textContent=new Intl.DateTimeFormat('ru-RU',{month:'long',year:'numeric'}).format(month);$('#calendar').innerHTML=h;$$('.day[data-date]').forEach(b=>b.onclick=()=>openDay(b.dataset.date));}`;
+    const calendarFix = `function renderCalendar(){const y=month.getFullYear(),m=month.getMonth(),start=(new Date(y,m,1).getDay()+6)%7,last=new Date(y,m+1,0).getDate();let h='';for(let i=0;i<start;i++)h+='<div class="day blank"></div>';const montageWord=n=>n===1?'монтаж':(n>=2&&n<=4?'монтажа':'монтажей');for(let n=1;n<=last;n++){const k=dateKey(new Date(y,m,n)),js=jobsForDate(k),montages=js.filter(j=>j.type==='Монтаж'),c=montages.length,hasMeasure=js.some(isMeasure);h+=\`<button class="day \${c>=3?'full':c===2?'busy':c?'partial':''} \${hasMeasure?'has-measure':''} \${k===today()?'today':''}" data-date="\${k}"><b>\${n}</b><span>\${c} \${montageWord(c)}</span><i>\${c} монтаж\${c===1?'':'ей'}\${hasMeasure?' · замер':''}</i></button>\`; }$('#scheduleMonth').textContent=new Intl.DateTimeFormat('ru-RU',{month:'long',year:'numeric'}).format(month);$('#calendar').innerHTML=h;$$('.day[data-date]').forEach(b=>b.onclick=()=>openDay(b.dataset.date));}`;
     source = source.slice(0, calendarStart) + calendarFix + source.slice(calendarEnd);
   }
+
   const loadStart = source.indexOf('async function loadServer(){');
   const realtimeStart = source.indexOf('function startRealtime(){', loadStart);
   if(loadStart !== -1 && realtimeStart !== -1){
     const loadFix = `async function loadServer(){if(!user||!online){serverReady=false;state=emptyState();notes=[];render();status('Нет интернета · данные не загружены','offline');return false;}status('Подключаем общую базу…');try{const sharedSnap=await F.getDocFromServer(F.doc(db,...SHARED_DOC));state=sharedSnap.exists()?normalize(sharedSnap.data().data):emptyState();serverReady=true;notes=[];render();status('● Общая база · синхронизировано','online');}catch(err){console.error(err);serverReady=false;state=emptyState();notes=[];render();status('База недоступна','offline');toast('Не удалось получить данные с сервера.','error');return false;}try{const notesSnap=await F.getDocFromServer(F.doc(db,...NOTES_DOC));notes=currentNotesData(notesSnap);}catch(err){console.warn('Notes load skipped',err);notes=[];}renderNotes();return true;}`;
     source = source.slice(0, loadStart) + loadFix + source.slice(realtimeStart);
   }
+
   const calendarContrast=document.createElement('style');
   calendarContrast.textContent=`.calendar .day.partial,.calendar .day.busy,.calendar .day.full{color:#172019!important;-webkit-text-fill-color:#172019!important}.calendar .day.partial b,.calendar .day.partial span,.calendar .day.partial i,.calendar .day.busy b,.calendar .day.busy span,.calendar .day.busy i,.calendar .day.full b,.calendar .day.full span,.calendar .day.full i{color:#172019!important;-webkit-text-fill-color:#172019!important;opacity:1!important}`;
   document.head.appendChild(calendarContrast);
+
   const blob = new Blob([source], {type:'text/javascript'});
   const url = URL.createObjectURL(blob);
   try {
