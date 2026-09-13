@@ -1,7 +1,7 @@
 const APP_URL = new URL('app.js?runtime=20260904-notes-4', location.href);
 const NOTES_URL = new URL('https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/notes-ui.js?runtime=20260904-notes-4');
-const MONEY_UI_URL = new URL('money-ui-v2.js?runtime=20260913-money-4', location.href);
-const DEBT_UI_URL = new URL('debt-ui.js?runtime=20260913-debt-2', location.href);
+const MONEY_UI_URL = new URL('https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/money-ui-v2.js?runtime=20260904-money-3');
+const DEBT_UI_URL = new URL('https://raw.githubusercontent.com/to1le39rus-cyber/Montaji/Astera-smart/debt-ui.js?runtime=20260905-debt-5');
 
 async function boot(){
   const response = await fetch(APP_URL, {cache:'no-store'});
@@ -22,7 +22,7 @@ async function boot(){
     source = source.slice(0, loadStart) + loadFix + source.slice(realtimeStart);
   }
   const calendarContrast=document.createElement('style');
-  calendarContrast.textContent=`.calendar .day.partial,.calendar .day.busy,.calendar .day.full{color:#172019!important;-webkit-text-fill-color:#172019!important}.calendar .day.partial b,.calendar .day.partial span,.calendar .day.partial i,.calendar .day.busy b,.calendar .day.busy span,.calendar .day.busy i,.calendar .day.full b,.calendar .day.full span,.calendar .day.full i{color:#172019!important;-webkit-text-fill-color:#172019!important;opacity:1!important}`;
+  calendarContrast.textContent=`.calendar .day.partial,.calendar .day.busy,.calendar .day.full{color:#172019!important;-webkit-text-fill-color:#172019!important}.calendar .day.partial b,.calendar .day.partial span,.calendar .day.partial i,.calendar .day.busy b,.calendar .day.busy span,.calendar .day.busy i,.calendar .day.full b,.calendar .day.full span,.calendar .day.busy i,.calendar .day.full i{color:#172019!important;-webkit-text-fill-color:#172019!important;opacity:1!important}`;
   document.head.appendChild(calendarContrast);
   const blob = new Blob([source], {type:'text/javascript'});
   const url = URL.createObjectURL(blob);
