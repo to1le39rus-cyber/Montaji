@@ -121,6 +121,11 @@ function normalizeCardActions(root = document) {
 }
 
 function installStatusCleanup() {
+  document.querySelectorAll('.system-note').forEach(note => {
+    if (note.textContent.includes('Быстрые действия')) {
+      note.innerHTML = '<strong>Карточка выезда</strong><br>В «Подробнее» собраны адрес, телефон, карты и комментарий. Редактирование данных открывается отдельной кнопкой.';
+    }
+  });
   const select = document.getElementById('jobStatus');
   if (!select || select.dataset.step42Cleaned) return;
   select.dataset.step42Cleaned = '1';
