@@ -7,16 +7,17 @@ export const PLANNING_SLOTS = Object.freeze({
   '3': '3-й слот / резерв',
 });
 
-const active = job => job?.status !== 'Отменён' && job?.status !== 'Выполнен';
+const notCancelled = job => job?.status !== 'Отменён';
+const active = job => notCancelled(job) && job?.status !== 'Выполнен';
 
-/** Number of planned montage visits for a day. There is intentionally no cap. */
+/** Number of montage visits for a day, including completed history. There is intentionally no cap. */
 export function actualMontageCount(jobs = [], date) {
-  return jobs.filter(job => active(job) && job.type === 'Монтаж' && job.date === date).length;
+  return jobs.filter(job => notCancelled(job) && job.type === 'Монтаж' && job.date === date).length;
 }
 
 /**
- * Average montage load per calendar day. This is a planning indicator only;
- * it never blocks creating additional work.
+ * Average montage load per calendar day. Completed montages remain part of the
+ * historical/day metric; cancelled records do not. This is a planning indicator only.
  */
 export function averageMontageLoad(jobs = [], dates = []) {
   if (!dates.length) return 0;
