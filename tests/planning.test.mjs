@@ -19,17 +19,22 @@ const jobs = [
 ];
 
 test('3 planning windows are presets, not a daily montage limit', () => {
-  assert.equal(actualMontageCount(jobs, '2026-09-14'), 4);
+  assert.equal(actualMontageCount(jobs, '2026-09-14'), 5);
   assert.deepEqual(Object.keys(PLANNING_SLOTS), ['1', '2', '3']);
+});
+
+test('completed montages remain visible in day/history counts', () => {
+  const completedOnly = [{ id: 'done', type: 'Монтаж', date: '2026-09-14', slot: '1', status: 'Выполнен' }];
+  assert.equal(actualMontageCount(completedOnly, '2026-09-14'), 1);
 });
 
 test('extra montages do not disappear from the business metric', () => {
   const extra = [...jobs, { id: '8', type: 'Монтаж', date: '2026-09-14', slot: '7', status: 'Запланирован' }];
-  assert.equal(actualMontageCount(extra, '2026-09-14'), 5);
+  assert.equal(actualMontageCount(extra, '2026-09-14'), 6);
 });
 
 test('average load is an indicator, not a constraint', () => {
-  assert.equal(averageMontageLoad(jobs, ['2026-09-14', '2026-09-15']), 2);
+  assert.equal(averageMontageLoad(jobs, ['2026-09-14', '2026-09-15']), 2.5);
   assert.equal(averageMontageLoad(jobs, []), 0);
 });
 
