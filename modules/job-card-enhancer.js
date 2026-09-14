@@ -19,6 +19,7 @@ function addStyles() {
 }
 
 let jobsById = new Map();
+let loadInFlight = false;
 
 async function firebaseContext() {
   const [appMod, fsMod, authMod] = await Promise.all([
@@ -34,6 +35,8 @@ async function firebaseContext() {
 }
 
 async function loadJobs() {
+  if (loadInFlight) return;
+  loadInFlight = true;
   try {
     const ctx = await firebaseContext();
     if (!ctx) return;
@@ -44,6 +47,8 @@ async function loadJobs() {
     enhanceDeleteControl();
   } catch (e) {
     console.warn('Job card enhancer unavailable', e);
+  } finally {
+    loadInFlight = false;
   }
 }
 
@@ -116,7 +121,11 @@ function enhanceDeleteControl() {
 
 function boot() {
   addStyles();
-  const observer = new MutationObserver(() => { enhanceCards(); enhanceDeleteControl(); });
+  const observer = new MutationObserver(() => {
+    enhanceCards();
+    enhanceDeleteControl();
+    if (document.querySelector('[data-job-card]') && !jobsById.size) loadJobs();
+  });
   observer.observe(document.body, { childList: true, subtree: true });
   loadJobs();
   setInterval(loadJobs, 15000);
