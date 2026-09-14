@@ -75,7 +75,9 @@ function addStyles() {
 }
 
 let jobsById = new Map();
-let loadInFlight = false;
+let firebaseConnecting = false;
+let unsubscribeJobs = null;
+let retryTimer = null;
 
 async function firebaseContext() {
   const [appMod, fsMod, authMod] = await Promise.all([
@@ -90,28 +92,55 @@ async function firebaseContext() {
   return { fsMod, db: fsMod.getFirestore(app) };
 }
 
-async function loadJobs() {
-  if (loadInFlight) return;
-  loadInFlight = true;
+function applyJobs(data) {
+  jobsById = new Map((Array.isArray(data?.jobs) ? data.jobs : []).map(j => [j.id, j]));
+  enhanceCards();
+  enhanceDeleteControl();
+}
+
+async function connectRealtime() {
+  if (firebaseConnecting || unsubscribeJobs) return;
+  firebaseConnecting = true;
   try {
     const ctx = await firebaseContext();
     if (!ctx) return;
-    const snap = await ctx.fsMod.getDoc(ctx.fsMod.doc(ctx.db, ...SHARED_DOC));
-    const data = snap.exists() ? snap.data()?.data || {} : {};
-    jobsById = new Map((Array.isArray(data.jobs) ? data.jobs : []).map(j => [j.id, j]));
-    enhanceCards();
-    enhanceDeleteControl();
+    unsubscribeJobs = ctx.fsMod.onSnapshot(
+      ctx.fsMod.doc(ctx.db, ...SHARED_DOC),
+      snap => applyJobs(snap.exists() ? snap.data()?.data || {} : {}),
+      error => {
+        console.warn('Job card realtime comments unavailable', error);
+        unsubscribeJobs = null;
+        scheduleFirebaseRetry();
+      }
+    );
   } catch (e) {
-    console.warn('Job card enhancer unavailable', e);
+    console.warn('Job card realtime comments unavailable', e);
+    scheduleFirebaseRetry();
   } finally {
-    loadInFlight = false;
+    firebaseConnecting = false;
   }
+}
+
+function scheduleFirebaseRetry() {
+  if (retryTimer || unsubscribeJobs) return;
+  retryTimer = setTimeout(() => {
+    retryTimer = null;
+    connectRealtime();
+  }, 300);
 }
 
 function enhanceCards() {
   document.querySelectorAll('[data-job-card]').forEach(card => {
     const job = jobsById.get(card.dataset.jobCard);
-    if (!job?.comment || card.querySelector('.job-card-note')) return;
+    if (!job?.comment) return;
+
+    const existing = card.querySelector('.job-card-note');
+    if (existing) {
+      const text = existing.querySelector('.job-card-note__text');
+      if (text && text.textContent !== job.comment) text.textContent = job.comment;
+      return;
+    }
+
     const box = document.createElement('div');
     box.className = 'job-card-note';
     const long = job.comment.length > 110 || job.comment.split(/\n/).length > 2;
@@ -170,7 +199,6 @@ function enhanceDeleteControl() {
     existing?.remove();
     return;
   }
-
   if (existing) return;
 
   const anchor = modal.querySelector('#deleteBtn');
@@ -192,7 +220,7 @@ function scheduleEnhance() {
     observerQueued = false;
     enhanceCards();
     enhanceDeleteControl();
-    if (document.querySelector('[data-job-card]') && !jobsById.size) loadJobs();
+    if (!unsubscribeJobs) connectRealtime();
   });
 }
 
@@ -200,8 +228,7 @@ function boot() {
   addStyles();
   const observer = new MutationObserver(scheduleEnhance);
   observer.observe(document.body, { childList: true, subtree: true });
-  loadJobs();
-  setInterval(loadJobs, 15000);
+  connectRealtime();
 }
 
 if (typeof document !== 'undefined') boot();
