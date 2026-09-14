@@ -68,11 +68,20 @@ test('maps use Russian providers', () => {
   assert.doesNotMatch(app, /google\.com\/maps/);
 });
 
+test('canonical planning model is integrated into the runtime', () => {
+  assert.match(app, /planning-view\.js/);
+  assert.match(app, /planningViewModel\(state\.jobs/);
+  assert.doesNotMatch(app, /день полностью загружен/i);
+  assert.doesNotMatch(app, /c>=3/);
+  assert.doesNotMatch(app, /\$\('[^']*todayLoad[^']*'\)\.textContent=`\$\{montageCount\(d\)\}\/3`/);
+});
+
 test('three planning windows are presets, not a daily montage limit', () => {
   assert.match(app, /\['1','2','3'\]/);
   has(/montageCount/);
   has(/freeSlot/);
   assert.doesNotMatch(app, /max.*3.*монтаж|лимит.*3.*монтаж/i);
+  assert.doesNotMatch(app, /c>=3/);
 });
 
 test('financial semantics preserve future jobs and history', () => {
