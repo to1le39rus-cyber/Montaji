@@ -1,3 +1,4 @@
+import './ux-style.js';
 import {
   PLANNING_SLOTS,
   actualMontageCount,
@@ -8,8 +9,7 @@ import {
 
 /**
  * Pure UI view-model for planning surfaces.
- * No DOM access and no persistence: app.js can render this model without
- * duplicating business semantics.
+ * No persistence: app.js can render this model without duplicating business semantics.
  */
 export function planningViewModel(jobs = [], date, average = 3) {
   const count = actualMontageCount(jobs, date);
