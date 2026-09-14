@@ -1,4 +1,5 @@
 import './ux-style.js';
+import './job-card-enhancer.js';
 import {
   PLANNING_SLOTS,
   actualMontageCount,
