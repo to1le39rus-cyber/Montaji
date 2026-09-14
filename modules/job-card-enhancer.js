@@ -8,12 +8,68 @@ function addStyles() {
   const style = document.createElement('style');
   style.id = STYLE_ID;
   style.textContent = `
-    .job-card-note { margin:10px 0 0; padding:11px 12px; border-radius:14px; background:var(--surface-2,#f6f6f4); font-size:14px; line-height:1.35; color:var(--text,#25262d); }
-    .job-card-note__label { display:block; margin-bottom:4px; font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted,#858994); }
-    .job-card-note__text { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; white-space:pre-line; }
-    .job-card-note.expanded .job-card-note__text { display:block; -webkit-line-clamp:unset; }
-    .job-card-note__toggle { margin-top:6px; border:0; background:none; padding:0; font:inherit; font-size:13px; font-weight:700; color:#5c63d9; }
-    .test-delete-btn { width:100%; margin-top:8px; border:1px solid #e5b9b0; border-radius:14px; padding:13px 16px; background:#fff4f1; color:#a54b3e; font:inherit; font-weight:700; }
+    .job-card-note {
+      margin:10px 0 0;
+      padding:10px 12px 11px;
+      border:1px solid rgba(92,99,217,.14);
+      border-left:3px solid #5c63d9;
+      border-radius:12px;
+      background:rgba(245,246,255,.58);
+      font-size:13.5px;
+      line-height:1.4;
+      color:var(--text,#25262d);
+    }
+    .job-card-note__label {
+      display:flex;
+      align-items:center;
+      gap:6px;
+      margin-bottom:4px;
+      font-size:10px;
+      font-weight:750;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:#737887;
+    }
+    .job-card-note__label::before {
+      content:'';
+      width:5px;
+      height:5px;
+      border-radius:50%;
+      background:#5c63d9;
+      flex:none;
+    }
+    .job-card-note__text {
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      white-space:pre-line;
+    }
+    .job-card-note.expanded .job-card-note__text {
+      display:block;
+      -webkit-line-clamp:unset;
+    }
+    .job-card-note__toggle {
+      margin-top:6px;
+      border:0;
+      background:none;
+      padding:0;
+      font:inherit;
+      font-size:12.5px;
+      font-weight:700;
+      color:#5c63d9;
+    }
+    .test-delete-btn {
+      width:100%;
+      margin-top:8px;
+      border:1px solid #e5b9b0;
+      border-radius:14px;
+      padding:13px 16px;
+      background:#fff4f1;
+      color:#a54b3e;
+      font:inherit;
+      font-weight:700;
+    }
   `;
   document.head.append(style);
 }
@@ -59,7 +115,7 @@ function enhanceCards() {
     const box = document.createElement('div');
     box.className = 'job-card-note';
     const long = job.comment.length > 110 || job.comment.split(/\n/).length > 2;
-    box.innerHTML = `<span class="job-card-note__label">Важно</span><span class="job-card-note__text">${esc(job.comment)}</span>${long ? '<button type="button" class="job-card-note__toggle">Показать полностью</button>' : ''}`;
+    box.innerHTML = `<span class="job-card-note__label">Комментарий к монтажу</span><span class="job-card-note__text">${esc(job.comment)}</span>${long ? '<button type="button" class="job-card-note__toggle">Показать полностью</button>' : ''}`;
     const details = card.querySelector('.job-details');
     (details || card.querySelector('.job-top'))?.after(box);
     box.querySelector('.job-card-note__toggle')?.addEventListener('click', () => {
@@ -105,12 +161,21 @@ async function permanentlyDeleteTestJob(id) {
 function enhanceDeleteControl() {
   const modal = document.getElementById('jobModal');
   if (!modal?.classList.contains('open')) return;
+
   const id = modal.querySelector('#jobId')?.value;
   const job = id ? jobsById.get(id) : null;
-  modal.querySelector('.test-delete-btn')?.remove();
-  if (!id || !isTestJob(job)) return;
+  const existing = modal.querySelector('.test-delete-btn');
+
+  if (!id || !isTestJob(job)) {
+    existing?.remove();
+    return;
+  }
+
+  if (existing) return;
+
   const anchor = modal.querySelector('#deleteBtn');
   if (!anchor) return;
+
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'test-delete-btn';
@@ -119,13 +184,21 @@ function enhanceDeleteControl() {
   anchor.after(btn);
 }
 
-function boot() {
-  addStyles();
-  const observer = new MutationObserver(() => {
+let observerQueued = false;
+function scheduleEnhance() {
+  if (observerQueued) return;
+  observerQueued = true;
+  queueMicrotask(() => {
+    observerQueued = false;
     enhanceCards();
     enhanceDeleteControl();
     if (document.querySelector('[data-job-card]') && !jobsById.size) loadJobs();
   });
+}
+
+function boot() {
+  addStyles();
+  const observer = new MutationObserver(scheduleEnhance);
   observer.observe(document.body, { childList: true, subtree: true });
   loadJobs();
   setInterval(loadJobs, 15000);
