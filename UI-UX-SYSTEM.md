@@ -1,28 +1,18 @@
 # МОНТАЖИ АА — UI/UX SYSTEM
 
-> **Каноническая дизайн-система и UX-контракт приложения.**
->
-> Источник истины для будущих UI/UX-изменений, включая новые AI-чаты. Перед работой с интерфейсом читать `UI-UX-INVENTORY.md`, `UI-UX-SYSTEM.md`, `PROJECT-CONTRACT.md`, `BUSINESS-SEMANTICS.md` и релевантный UX-контракт.
->
-> **Статус:** design direction + implementation contract. Не является разрешением на изменение production.
+> **Каноническая дизайн-система и UX-контракт приложения.** Источник истины для будущих UI/UX-изменений, включая новые AI-чаты.
+
+Перед работой с интерфейсом читать `PROJECT-CONTRACT.md`, `BUSINESS-SEMANTICS.md`, `UI-UX-INVENTORY.md`, этот документ и релевантный UX-контракт.
 
 ## Визия
 
-«Монтажи АА» должен ощущаться как premium mobile product: **красивый, ясный, быстрый, живой, спокойный и полезный**.
-
-Не типичный dashboard и не Dribbble-концепт. Это рабочий инструмент, которым приятно пользоваться каждый день.
-
-**Красота усиливает рабочий UX.** Каждая деталь должна помогать понять, выбрать или сделать. Мы не боимся красоты, но не жертвуем скоростью и ясностью ради декоративности.
-
-## Creative direction
-
 **Premium × Mobile × Operations × Delight.**
 
-Много воздуха, выразительная типографика, чистые поверхности, мягкая глубина, точечные акценты, качественные иконки, компактные карточки и живые микровзаимодействия.
+«Монтажи АА» — не типичный dashboard и не Dribbble-концепт. Это рабочий продукт, которым хочется пользоваться каждый день: красивый, ясный, быстрый, живой, спокойный и полезный.
 
-Формула: **минимально по количеству элементов, максимально по качеству ощущения.**
+**Красота усиливает рабочий UX.** Каждая деталь помогает понять, выбрать или сделать. Мы не боимся wow-эффекта, но не жертвуем скоростью и ясностью.
 
-## Архитектура UI
+## Архитектура
 
 ```text
 Business semantics
@@ -38,13 +28,17 @@ Screens / sheets
 Motion + feedback
 ```
 
-UI не является источником истины.
+UI не является источником истины. Запрещены бизнес-логика в CSS, решения по DOM-тексту/классам, независимые дубли сущностей, MutationObserver/timer вместо нормального lifecycle, runtime source rewriting/Blob/CDN обходы и временные UI-патчи без migration plan.
 
-Запрещено переносить бизнес-логику в CSS, принимать бизнес-решения по DOM-тексту/классам, дублировать сущности независимыми UI-реализациями, использовать MutationObserver/timer вместо нормального lifecycle, делать runtime source rewriting/Blob/CDN обходы или оставлять временные UI-патчи без migration plan.
+## Visual language
 
-## Design tokens
+Много воздуха, выразительная типографика, чистые поверхности, мягкая глубина, точечные акценты, качественные иконки, компактные карточки и деликатная анимация.
 
-Финальные значения утверждаются после visual audit. Реализация использует семантические токены:
+Формула: **минимально по количеству элементов, максимально по качеству ощущения.**
+
+### Tokens
+
+Используем единый semantic token system:
 
 ```text
 color.*
@@ -57,30 +51,19 @@ z.*
 control.*
 ```
 
-Минимальная цветовая семантика: `--color-bg`, `--color-surface`, `--color-surface-raised`, `--color-surface-muted`, `--color-text`, `--color-text-secondary`, `--color-text-muted`, `--color-border`, `--color-accent`, `--color-accent-soft`, `--color-success`, `--color-warning`, `--color-danger`, `--color-info`.
+Цветовая семантика: `bg / surface / surface-raised / surface-muted / text / text-secondary / text-muted / border / accent / accent-soft / success / warning / danger / info`.
 
-Компонент не придумывает локальные цвета, если существует токен.
+Spacing rhythm: `4 / 8 / 12 / 16 / 20 / 24 / 32 / 40+`.
 
-## Typography
+Radius: `sm / md / lg / xl / pill`.
 
-Семантическая шкала: `Display / H1 / H2 / H3 / Body / Body Small / Label / Caption / Numeric-KPI`.
+Глубина — border + мягкая shadow + surface. Blur только точечно.
 
-Большие цифры используются только для действительно важных показателей. Вторичный текст не конкурирует с действием. Не создаём визуальные стены текста.
+### Typography
 
-## Spacing / radius / depth
+`Display / H1 / H2 / H3 / Body / Body Small / Label / Caption / Numeric-KPI`.
 
-```text
-4  micro
-8  tight
-12 compact
-16 base
-20 comfortable
-24 section
-32 major
-40+ hero
-```
-
-Радиусы: `sm / md / lg / xl / pill`. Глубина создаётся тонким border, мягкой тенью и разницей surface. Blur — точечный инструмент.
+Большие цифры только для действительно важных показателей. Вторичный текст не конкурирует с действием.
 
 ## Canonical components
 
@@ -90,13 +73,11 @@ control.*
 
 Иерархия: Client → Time/type/source → Status/amount → Comment preview → Secondary information.
 
-Комментарий к монтажу — рабочая информация. В компактной карточке используется аккуратный expandable preview.
+Комментарий к монтажу — рабочая информация. В compact используется expandable preview.
 
 ### Buttons
 
-`Primary / Secondary / Tertiary / Danger / Icon`.
-
-Один главный CTA на поверхности. Destructive action визуально отличается. Icon-only допустим только для очевидного действия.
+`Primary / Secondary / Tertiary / Danger / Icon`. Один главный CTA на поверхности. Destructive action визуально отличается.
 
 ### Fields
 
@@ -108,11 +89,11 @@ control.*
 
 ### Toast
 
-Короткий результат: **что произошло + при необходимости следующий шаг**.
+Короткий результат: **что произошло + при необходимости следующий шаг.**
 
 ## Unified Modal / Bottom Sheet System
 
-Все sheets используют единый shell:
+Все sheets используют один shell:
 
 ```text
 Backdrop
@@ -126,58 +107,43 @@ Sheet
 
 Едиными остаются geometry, handle, backdrop, close behavior, safe area, typography hierarchy, vertical rhythm и motion.
 
-Типы: `Detail Sheet / Form Sheet / Action Sheet / Day Sheet / Confirm Sheet`.
+Patterns: `Detail Sheet / Form Sheet / Action Sheet / Day Sheet / Confirm Sheet`.
 
 **Один shell, разные purpose.**
 
 ### Detail ≠ Edit
 
-Подробнее — read-only информация и быстрые действия. Изменить — form, validation, save. Пользователь всегда понимает, смотрит он данные или меняет их.
+Подробнее — read-only информация и быстрые действия.
+
+Изменить — form, validation, save.
 
 ## Навигация
 
-Bottom navigation — единый глобальный компонент с одинаковой геометрией, active state и tap feedback.
+Bottom navigation — единый компонент с одинаковой геометрией, active state и tap feedback.
 
-FAB — глобальное создание, если оно доступно текущему контексту/роли. Он не конкурирует с главным CTA экрана.
+FAB — глобальное создание, если доступно текущему контексту/роли; не конкурирует с CTA экрана.
 
 ## Screen UX
 
-### Сегодня
+**Сегодня:** за несколько секунд понять день, монтажи, деньги, проблемы и следующий шаг.
 
-За несколько секунд ответить: что сегодня, сколько монтажей, что с деньгами, есть ли проблема и что дальше.
+**График:** сразу понять нагрузку и выбрать день. 3 окна — плановые пресеты, не лимит. 4/5/6+ допустимы. `3/3` как потолок запрещён.
 
-### График
+**Деньги:** доход, расход, чистый результат, дополнительные источники и долги различимы. Количество монтажей и доход — независимые метрики.
 
-Сразу понять нагрузку и выбрать день. **3 окна — плановые пресеты, не capacity limit. 4/5/6+ допустимы. `3/3` как потолок запрещён.**
+**Клиенты:** быстрый поиск человека и контекста.
 
-### Деньги
-
-Доход, расход, чистый результат, дополнительные источники и долги должны быть различимы. Количество монтажей и доход — разные метрики.
-
-### Клиенты
-
-Быстрый поиск человека и его контекста.
-
-### Ещё
-
-Системные действия без визуального шума.
+**Ещё:** системные действия без визуального шума.
 
 ## Motion system
 
-Motion — часть продукта. Принцип: **Fast first, delightful second.**
+Принцип: **Fast first, delightful second.**
 
 Категории: `Tap / Enter / Exit / Expand / Collapse / State change / Success / Error / Loading / Navigation`.
 
-Ориентиры:
+Ориентиры: micro 80–140 ms, small 160–220 ms, sheet 220–320 ms, large state 250–400 ms.
 
-```text
-Micro feedback: 80–140 ms
-Small transition: 160–220 ms
-Sheet: 220–320 ms
-Large state: 250–400 ms
-```
-
-Вау создают хороший easing, небольшой transform/opacity, мягкое раскрытие, приятный success и физичное поведение sheet.
+Wow создают хороший easing, небольшой transform/opacity, мягкое раскрытие, приятный success и физичное поведение sheet.
 
 Запрещены бесконечные loops без смысла, постоянные timers, тяжёлый blur, сложный parallax, WebGL/canvas ради обычного UI, массовые layout-triggering animations и motion, блокирующее действие.
 
@@ -187,7 +153,7 @@ Large state: 250–400 ms
 
 Предпочтительно: CSS transitions, transform/opacity, минимальные DOM mutations, event delegation, lazy rendering, CSS variables, reuse компонентов.
 
-Особенно контролируем backdrop-filter, большие blur/shadow surfaces, сложные SVG filters, layout-triggering animation, повторные Firestore listeners и observers, вызывающие сами себя через DOM mutations.
+Контролируем backdrop-filter, большие blur/shadow surfaces, сложные SVG filters, layout-triggering animation, повторные Firestore listeners и self-triggering observers.
 
 **Если эффект можно сделать проще без потери ощущения качества — делаем проще.**
 
@@ -195,17 +161,17 @@ Large state: 250–400 ms
 
 Каждый интерактивный компонент имеет: `initial / loading / loaded / empty / saving / saved / error / offline / disabled / cancelled / completed / conflict / permission-denied`.
 
-Loading не должен выглядеть как пустой экран. Empty объясняет причину и следующий шаг. Error объясняет проблему и действие. Offline — полноценное состояние продукта.
+Loading не должен выглядеть пустым. Empty объясняет причину и следующий шаг. Error объясняет проблему и действие. Offline — полноценное состояние продукта.
 
 ## Accessibility
 
-Обязательны достаточный контраст, focus states, keyboard support где применимо, aria-label для icon-only, понятные ошибки, комфортные touch targets, reduced motion и передача смысла не только цветом.
+Контраст, focus states, keyboard support где применимо, aria-label для icon-only, понятные ошибки, комфортные touch targets, reduced motion и смысл не только цветом.
 
 ## Mobile-first
 
 Приоритет: iPhone Safari/PWA → Android mobile → desktop/tablet enhancement.
 
-Учитываем safe areas, keyboard, scroll и iOS gestures. Не проектируем desktop и потом «ужимаем».
+Учитываем safe areas, keyboard, scroll и iOS gestures. Не проектируем desktop и потом ужимаем.
 
 ## Data/UI boundary
 
@@ -219,61 +185,52 @@ View model
 UI
 ```
 
-Комментарий карточки должен идти к canonical state/render path. Долгосрочная цель — убрать presentation/data bridges, когда это можно сделать безопасно.
+Комментарий карточки должен идти к canonical state/render path. Долгосрочная цель — убрать presentation/data bridges, когда это безопасно.
 
-## Business semantics, обязательные для UI
+## Business rules для UI
 
-- 3 монтажных окна — пресеты, не лимит;
+- 3 окна — пресеты, не лимит;
 - 4/5/6+ монтажей валидны;
 - нельзя блокировать новый монтаж после трёх;
 - нельзя показывать `3/3` как потолок;
-- доход и количество монтажей — независимые метрики;
-- дополнительные монтажи существуют отдельно от плановых окон;
-- комментарий к монтажу — операционно значим.
+- доход и количество монтажей независимы;
+- дополнительные монтажи отдельны от плановых окон;
+- комментарий операционно значим.
 
 ## Roles
 
-Роли описаны отдельно в `ROLE-UX-CONTRACT.md`. Сейчас роль-модель документирована, но role UI не активируется этим этапом. UI не является security boundary.
+Роли описаны в `ROLE-UX-CONTRACT.md`. Сейчас role UI не активируется этим этапом. UI не является security boundary.
 
 ## Visual QA
 
-Проверяем layout на narrow iPhone, standard mobile, desktop, long content, keyboard и safe area.
-
-Проверяем states: loading, empty, error, offline, saving, completed, cancelled, conflict, permission denied.
-
-Проверяем interaction: tap, scroll, sheet open/close, back gesture, keyboard, repeated tap, rapid navigation.
-
-Проверяем motion: no jank, no layout jumps, no blocked action, reduced motion works.
+Проверяем narrow iPhone, standard mobile, desktop, long content, keyboard, safe area; все основные states; tap/scroll/sheets/back gesture; no jank/no layout jumps/no blocked action; reduced motion.
 
 ## Definition of Done
 
 - [ ] фича есть в UI inventory;
-- [ ] паттерн определён в UI/UX system;
-- [ ] используется существующий component/shell либо документировано расширение;
+- [ ] паттерн определён здесь;
+- [ ] переиспользован canonical component/shell или документировано расширение;
 - [ ] нет дублирующего visual pattern;
 - [ ] состояния определены;
 - [ ] mobile-first проверен;
-- [ ] motion проверен;
-- [ ] reduced motion учтён;
+- [ ] motion и reduced motion проверены;
 - [ ] accessibility проверена;
 - [ ] performance не ухудшена;
 - [ ] business semantics не изменены случайно;
-- [ ] Firebase Rules/data не затронуты без отдельного разрешения;
+- [ ] Firebase Rules/data не затронуты без approval;
 - [ ] production не изменён без approval;
 - [ ] проверки пройдены.
 
 ## Правило для AI
 
-Новый AI-чат обязан прочитать `PROJECT-CONTRACT.md`, `BUSINESS-SEMANTICS.md`, `UI-UX-INVENTORY.md`, `UI-UX-SYSTEM.md` и релевантный UX-контракт; проверить существующий component/pattern; не придумывать новую модалку/card/button без необходимости; не использовать UI как security boundary; не менять production/Firebase Rules/data без approval; при конфликте сверяться с canonical contract.
-
-> **Не изобретай интерфейс заново. Развивай систему.**
+Новый AI-чат обязан прочитать canonical документы, проверить существующий component/pattern и **не изобретать интерфейс заново — развивать систему**. При конфликте документации сначала сверяться с canonical contract. Новая модалка/card/button появляется только после фиксации в inventory/system.
 
 ## Creative north star
 
-Мы не делаем приложение скучным ради «удобства». Мы не делаем его перегруженным ради «вау».
+Мы не делаем приложение скучным ради удобства и не перегружаем его ради вау.
 
 **Функция должна ощущаться красиво, а красота — естественно.**
 
-Пользователь нажал — приложение ответило. Пользователь открыл день — всё понятно. Пользователь сохранил выезд — есть ощущение завершения. Пользователь увидел график — сразу понял картину. Пользователь открыл деньги — сразу увидел главное.
+Пользователь нажал — приложение ответило. Открыл день — всё понятно. Сохранил выезд — есть ощущение завершения. Открыл график — сразу понял картину. Открыл деньги — сразу увидел главное.
 
 **И всё это работает быстро.**
