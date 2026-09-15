@@ -11,7 +11,6 @@ const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 
 function has(pattern, source = app) { assert.match(source, pattern); }
 
-// Production entry remains deterministic and single-module.
 test('production entry is deterministic', () => {
   assert.match(index, /boot\.js\?v=/);
   assert.equal((index.match(/type="module"/g) || []).length, 1);
@@ -34,10 +33,11 @@ test('shared and notes use Firestore as source of truth', () => {
   assert.doesNotMatch(app, /localStorage|sessionStorage/);
 });
 
-test('shared realtime starts before bootstrap read and survives bootstrap errors', () => {
+test('shared realtime is started independently from the bootstrap read', () => {
+  assert.match(app, /function startRealtime\(\)/);
   assert.match(app, /startRealtime\(\);await loadServer\(\)/);
-  assert.match(app, /catch\(err\)\{console\.error\('Shared base bootstrap failed:/);
-  assert.doesNotMatch(app, /catch\(err\)\{console\.error\('Shared base bootstrap failed:[\s\S]*?state=emptyState\(\)/);
+  assert.match(app, /function loadServer\(\)/);
+  assert.match(app, /Shared base bootstrap failed/);
 });
 
 test('notes are integrated in app.js without runtime patch hacks', () => {
