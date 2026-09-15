@@ -1,0 +1,1 @@
+Temporary diagnostic branch: baseline from step6-ui-system to isolate the Firebase bootstrap regression. No production deployment and no Firebase data/rules changes.
