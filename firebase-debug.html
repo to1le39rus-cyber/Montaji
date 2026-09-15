@@ -4,6 +4,7 @@
 <script type="module">
 import { firebaseConfig } from './firebase-config.js';
 const V='10.14.1'; const APP_NAME='montaji-aa-production'; const out=document.querySelector('#out'); const log=x=>out.textContent=typeof x==='string'?x:JSON.stringify(x,null,2);
+async function waitForUser(auth,AU){return new Promise((resolve,reject)=>{let done=false;const timer=setTimeout(()=>{if(!done){done=true;unsub?.();reject(new Error('auth-state-timeout'))}},8000);const unsub=AU.onAuthStateChanged(auth,u=>{if(done)return;done=true;clearTimeout(timer);unsub();resolve(u)});});}
 async function run(){
   log('1/4 Загружаю Firebase…');
   try{
@@ -13,9 +14,9 @@ async function run(){
       import(`https://www.gstatic.com/firebasejs/${V}/firebase-firestore.js`)
     ]);
     const app=A.initializeApp(firebaseConfig,APP_NAME); const auth=AU.getAuth(app); const db=FS.getFirestore(app);
-    await new Promise(r=>setTimeout(r,250));
-    const user=auth.currentUser;
-    if(!user){log('2/4 НЕТ АКТИВНОЙ СЕССИИ\n\nОткрой сначала основное приложение на этом же домене, войди и затем снова открой эту страницу.');return;}
+    log('2/4 Жду восстановления Firebase-сессии…');
+    const user=await waitForUser(auth,AU);
+    if(!user){log('2/4 НЕТ АКТИВНОЙ СЕССИИ\n\nFirebase восстановил состояние, но пользователь не авторизован в этой сессии.');return;}
     log(`2/4 Пользователь найден\nemail: ${user.email}\nuid: ${user.uid}\n\n3/4 Обновляю Firebase ID token…`);
     await user.getIdToken(true); const claims=await user.getIdTokenResult(true);
     log(`3/4 Token OK\nemail claim: ${claims.claims.email||'(нет)'}\nexpires: ${claims.expirationTime}\n\n4/4 Читаю /appData/shared…`);
