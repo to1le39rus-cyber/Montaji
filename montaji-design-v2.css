@@ -1,3 +1,5 @@
+@import url('./modules/profile-ui.css?v=20260915-profile3');
+
 /* Montaji UI System V2 — Today-first visual direction. */
 :root{
   --ui-bg:#f4f4ef;--ui-surface:#fff;--ui-surface-muted:#eef0ea;--ui-surface-raised:#fff;
