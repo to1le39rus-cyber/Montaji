@@ -11,7 +11,6 @@ const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 
 function has(pattern, source = app) { assert.match(source, pattern); }
 
-// Production entry remains deterministic and single-module.
 test('production entry is deterministic', () => {
   assert.match(index, /boot\.js\?v=/);
   assert.equal((index.match(/type="module"/g) || []).length, 1);
@@ -20,17 +19,24 @@ test('production entry is deterministic', () => {
 });
 
 test('boot is only a thin canonical entrypoint', () => {
-  assert.match(boot, /import ['"]\.\/app\.js['"];?/);
+  assert.match(boot, /import ['"]\.\/app\.js(?:\?[^'"]+)?['"];?/);
   assert.doesNotMatch(boot, /source\.replace|new Blob|cdn\.jsdelivr|raw\.githubusercontent/);
 });
 
 test('shared and notes use Firestore as source of truth', () => {
   has(/SHARED_DOC\s*=\s*\['appData',\s*'shared'\]/);
   has(/NOTES_DOC\s*=\s*\['appData',\s*'notes'\]/);
-  has(/getDocFromServer/);
+  has(/getDocFromServer\(/);
   has(/onSnapshot/);
   has(/runTransaction/);
   assert.doesNotMatch(app, /localStorage|sessionStorage/);
+});
+
+test('shared realtime starts only after a successful bootstrap', () => {
+  assert.match(app, /function startRealtime\(\)/);
+  assert.match(app, /const ok=await loadServer\(\);if\(ok\)startRealtime\(\)/);
+  assert.match(app, /function loadServer\(\)/);
+  assert.match(app, /Shared base read failed/);
 });
 
 test('notes are integrated in app.js without runtime patch hacks', () => {
@@ -44,7 +50,7 @@ test('notes are integrated in app.js without runtime patch hacks', () => {
 
 test('notes realtime failures do not replace shared state', () => {
   assert.match(app, /unsubscribeNotes=F\.onSnapshot\(F\.doc\(db,\.\.\.NOTES_DOC\)/);
-  assert.match(app, /unsubscribeNotes=.*?\(\)=>\{\}/);
+  assert.match(app, /unsubscribeNotes\?\.\(\)/);
 });
 
 test('two operator accounts are enforced for legacy production data', () => {
@@ -90,8 +96,17 @@ test('financial semantics preserve future jobs and history', () => {
   assert.ok(/isDone/.test(app));
 });
 
-test('main data load is independent from notes', () => {
+test('main shared data load is server-forced and independent from notes', () => {
   assert.match(app, /getDocFromServer\(F\.doc\(db,\.\.\.SHARED_DOC\)/);
   assert.match(app, /getDocFromServer\(F\.doc\(db,\.\.\.NOTES_DOC\)/);
-  assert.match(app, /Promise\.all\(\[/);
+  assert.doesNotMatch(app, /Promise\.all\(\[\s*F\.getDoc/);
+  assert.match(app, /try\{const notesSnap=/);
+  assert.match(app, /Shared base read failed/);
+});
+
+test('Firebase read, data normalization and render have separate failure boundaries', () => {
+  assert.match(app, /Shared base read failed/);
+  assert.match(app, /Shared data normalization failed/);
+  assert.match(app, /Render after shared bootstrap failed/);
+  assert.match(app, /getIdToken\(user,true\)/);
 });

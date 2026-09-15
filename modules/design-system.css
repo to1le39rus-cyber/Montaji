@@ -1,0 +1,26 @@
+/* Montaji Design System — canonical primitives. Do not style the same primitive in feature CSS. */
+:root{
+  --ui-bg:#f5f5f1;--ui-surface:#fff;--ui-surface-muted:#f0f1ec;--ui-text:#171a18;--ui-text-2:#5f665f;--ui-text-3:#8b918a;--ui-border:#dedfd9;
+  --ui-accent:#59634a;--ui-accent-strong:#414a36;--ui-accent-soft:#e7ebe1;--ui-success:#4e704f;--ui-warning:#966b2f;--ui-danger:#a45147;--ui-info:#496b91;
+  --ui-radius-sm:10px;--ui-radius-md:14px;--ui-radius-lg:18px;--ui-radius-xl:24px;--ui-radius-pill:999px;
+  --ui-space-xs:4px;--ui-space-sm:8px;--ui-space-md:12px;--ui-space-lg:16px;--ui-space-xl:24px;--ui-space-xxl:32px;
+  --ui-control-height:48px;--ui-control-height-compact:40px;--ui-motion-fast:120ms;--ui-motion:180ms;--ui-motion-sheet:280ms;
+  --ui-shadow-sm:0 5px 18px rgba(25,30,24,.045);--ui-shadow-md:0 12px 32px rgba(25,30,24,.09);
+}
+*,*::before,*::after{box-sizing:border-box}
+button,input,select,textarea{font:inherit}
+button,a{touch-action:manipulation}
+button{cursor:pointer}
+input,select,textarea{min-height:var(--ui-control-height);border:1px solid var(--ui-border);border-radius:var(--ui-radius-sm);background:var(--ui-surface);color:var(--ui-text);outline:0;transition:border-color var(--ui-motion-fast) ease,box-shadow var(--ui-motion-fast) ease,transform var(--ui-motion-fast) ease}
+input::placeholder,textarea::placeholder{color:var(--ui-text-3)}
+input:focus,select:focus,textarea:focus{border-color:var(--ui-accent);box-shadow:0 0 0 3px rgba(89,99,74,.10)}
+button.primary,.primary{min-height:var(--ui-control-height);border:1px solid var(--ui-accent);border-radius:var(--ui-radius-md);background:var(--ui-accent);color:#fff;font-weight:750;transition:transform var(--ui-motion-fast) ease,filter var(--ui-motion-fast) ease}
+button.secondary,.secondary{min-height:var(--ui-control-height);border:1px solid var(--ui-border);border-radius:var(--ui-radius-md);background:var(--ui-surface);color:var(--ui-text);font-weight:700}
+button.danger,.danger{min-height:var(--ui-control-height);border:1px solid transparent;border-radius:var(--ui-radius-md);background:#f5e5e2;color:var(--ui-danger);font-weight:700}
+button.primary:active,button.secondary:active,button.danger:active,.primary:active,.secondary:active,.danger:active{transform:scale(.98)}
+.status-pill{display:inline-flex;align-items:center;min-height:28px;padding:5px 10px;border:0;border-radius:var(--ui-radius-pill);font-size:10px;font-weight:750;line-height:1}
+.action-chip{min-height:var(--ui-control-height-compact);padding:8px 11px;border:1px solid var(--ui-border);border-radius:var(--ui-radius-sm);background:var(--ui-surface-muted);color:var(--ui-text-2);font-size:11px;font-weight:700}
+.modal{background:rgba(23,26,24,.44);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+.modal .sheet{background:#fafaf7;border-radius:26px 26px 0 0}
+.modal .sheet input,.modal .sheet select,.modal .sheet textarea{min-height:var(--ui-control-height);width:100%}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}

@@ -14,9 +14,9 @@ test('business semantics allow more than three montages on one date', () => {
   assert.equal(workloadLabel(6), 'Выше средней · 6');
 });
 
-test('completed and cancelled work does not inflate current planning load', () => {
+test('completed history remains in the daily montage metric while cancelled work is excluded', () => {
   const jobs = [montage(1), montage(2, 'Выполнен'), montage(3, 'Отменён')];
-  assert.equal(actualMontageCount(jobs, date), 1);
+  assert.equal(actualMontageCount(jobs, date), 2);
 });
 
 test('average load is calculated separately from actual daily count', () => {
