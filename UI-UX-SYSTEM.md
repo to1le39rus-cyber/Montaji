@@ -2,8 +2,6 @@
 
 > **Каноническая дизайн-система и UX-контракт приложения.** Источник истины для будущих UI/UX-изменений, включая новые AI-чаты.
 
-Перед работой с интерфейсом читать `PROJECT-CONTRACT.md`, `BUSINESS-SEMANTICS.md`, `UI-UX-INVENTORY.md`, этот документ и релевантный UX-контракт.
-
 ## Визия
 
 **Premium × Mobile × Operations × Delight.**
@@ -18,7 +16,7 @@
 
 **Минимально по количеству элементов, максимально по качеству ощущения.**
 
-## Архитектура
+## Архитектура UI
 
 ```text
 Business semantics
@@ -98,7 +96,11 @@ Patterns: `Detail Sheet / Form Sheet / Action Sheet / Day Sheet / Confirm Sheet`
 
 **Один shell, разные purpose.**
 
-Подробнее — read-only информация и быстрые действия. Изменить — form, validation, save. **Detail ≠ Edit.**
+### Detail ≠ Edit
+
+Подробнее — read-only информация и быстрые действия.
+
+Изменить — form, validation, save.
 
 ## Навигация
 
