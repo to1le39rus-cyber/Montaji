@@ -2,6 +2,8 @@
 
 > **Каноническая дизайн-система и UX-контракт приложения.** Источник истины для будущих UI/UX-изменений, включая новые AI-чаты.
 
+Перед работой с интерфейсом читать `PROJECT-CONTRACT.md`, `BUSINESS-SEMANTICS.md`, `UI-UX-INVENTORY.md`, этот документ и релевантный UX-контракт.
+
 ## Визия
 
 **Premium × Mobile × Operations × Delight.**
@@ -96,11 +98,7 @@ Patterns: `Detail Sheet / Form Sheet / Action Sheet / Day Sheet / Confirm Sheet`
 
 **Один shell, разные purpose.**
 
-### Detail ≠ Edit
-
-Подробнее — read-only информация и быстрые действия.
-
-Изменить — form, validation, save.
+Подробнее — read-only информация и быстрые действия. Изменить — form, validation, save. **Detail ≠ Edit.**
 
 ## Навигация
 
