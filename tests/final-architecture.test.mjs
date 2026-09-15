@@ -26,18 +26,17 @@ test('boot is only a thin canonical entrypoint', () => {
 test('shared and notes use Firestore as source of truth', () => {
   has(/SHARED_DOC\s*=\s*\['appData',\s*'shared'\]/);
   has(/NOTES_DOC\s*=\s*\['appData',\s*'notes'\]/);
-  has(/getDoc\(/);
+  has(/getDocFromServer\(/);
   has(/onSnapshot/);
   has(/runTransaction/);
-  assert.doesNotMatch(app, /getDocFromServer/);
   assert.doesNotMatch(app, /localStorage|sessionStorage/);
 });
 
-test('shared realtime is started independently from the bootstrap read', () => {
+test('shared realtime starts only after a successful bootstrap', () => {
   assert.match(app, /function startRealtime\(\)/);
-  assert.match(app, /startRealtime\(\);await loadServer\(\)/);
+  assert.match(app, /const ok=await loadServer\(\);if\(ok\)startRealtime\(\)/);
   assert.match(app, /function loadServer\(\)/);
-  assert.match(app, /Shared base bootstrap failed/);
+  assert.match(app, /Shared base read failed/);
 });
 
 test('notes are integrated in app.js without runtime patch hacks', () => {
@@ -97,10 +96,17 @@ test('financial semantics preserve future jobs and history', () => {
   assert.ok(/isDone/.test(app));
 });
 
-test('main data load is independent from notes', () => {
-  assert.match(app, /getDoc\(F\.doc\(db,\.\.\.SHARED_DOC\)/);
-  assert.match(app, /getDoc\(F\.doc\(db,\.\.\.NOTES_DOC\)/);
+test('main shared data load is server-forced and independent from notes', () => {
+  assert.match(app, /getDocFromServer\(F\.doc\(db,\.\.\.SHARED_DOC\)/);
+  assert.match(app, /getDocFromServer\(F\.doc\(db,\.\.\.NOTES_DOC\)/);
   assert.doesNotMatch(app, /Promise\.all\(\[\s*F\.getDoc/);
   assert.match(app, /try\{const notesSnap=/);
-  assert.match(app, /Shared base bootstrap failed/);
+  assert.match(app, /Shared base read failed/);
+});
+
+test('Firebase read, data normalization and render have separate failure boundaries', () => {
+  assert.match(app, /Shared base read failed/);
+  assert.match(app, /Shared data normalization failed/);
+  assert.match(app, /Render after shared bootstrap failed/);
+  assert.match(app, /getIdToken\(user,true\)/);
 });
