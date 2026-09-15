@@ -27,10 +27,17 @@ test('boot is only a thin canonical entrypoint', () => {
 test('shared and notes use Firestore as source of truth', () => {
   has(/SHARED_DOC\s*=\s*\['appData',\s*'shared'\]/);
   has(/NOTES_DOC\s*=\s*\['appData',\s*'notes'\]/);
-  has(/getDocFromServer/);
+  has(/getDoc\(/);
   has(/onSnapshot/);
   has(/runTransaction/);
+  assert.doesNotMatch(app, /getDocFromServer/);
   assert.doesNotMatch(app, /localStorage|sessionStorage/);
+});
+
+test('shared realtime starts before bootstrap read and survives bootstrap errors', () => {
+  assert.match(app, /startRealtime\(\);await loadServer\(\)/);
+  assert.match(app, /catch\(err\)\{console\.error\('Shared base bootstrap failed:/);
+  assert.doesNotMatch(app, /catch\(err\)\{console\.error\('Shared base bootstrap failed:[\s\S]*?state=emptyState\(\)/);
 });
 
 test('notes are integrated in app.js without runtime patch hacks', () => {
@@ -91,7 +98,8 @@ test('financial semantics preserve future jobs and history', () => {
 });
 
 test('main data load is independent from notes', () => {
-  assert.match(app, /getDocFromServer\(F\.doc\(db,\.\.\.SHARED_DOC\)/);
-  assert.match(app, /getDocFromServer\(F\.doc\(db,\.\.\.NOTES_DOC\)/);
+  assert.match(app, /getDoc\(F\.doc\(db,\.\.\.SHARED_DOC\)/);
+  assert.match(app, /getDoc\(F\.doc\(db,\.\.\.NOTES_DOC\)/);
   assert.match(app, /Promise\.all\(\[/);
+  assert.match(app, /try\{const notesSnap=/);
 });
