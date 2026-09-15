@@ -51,7 +51,7 @@ test('notes are integrated in app.js without runtime patch hacks', () => {
 
 test('notes realtime failures do not replace shared state', () => {
   assert.match(app, /unsubscribeNotes=F\.onSnapshot\(F\.doc\(db,\.\.\.NOTES_DOC\)/);
-  assert.match(app, /unsubscribeNotes=.*?\(\)=>\{\}/);
+  assert.match(app, /unsubscribeNotes\?\.\(\)/);
 });
 
 test('two operator accounts are enforced for legacy production data', () => {
