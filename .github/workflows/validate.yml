@@ -1,10 +1,9 @@
-name: Validate Montaji AA production
+name: Validate Montaji AA
 
 on:
   push:
-    branches: ["Astera-smart", "product-overhaul-20260819"]
+    branches: ["Astera-smart", "product-overhaul-20260819", "design/today-v2"]
   pull_request:
-    branches: ["Astera-smart"]
 
 jobs:
   syntax-and-architecture:
@@ -14,7 +13,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Run production regression suite
+      - name: Run regression suite
         run: npm test
       - name: Check production wiring
         run: |
