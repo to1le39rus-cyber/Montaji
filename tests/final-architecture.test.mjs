@@ -100,6 +100,7 @@ test('financial semantics preserve future jobs and history', () => {
 test('main data load is independent from notes', () => {
   assert.match(app, /getDoc\(F\.doc\(db,\.\.\.SHARED_DOC\)/);
   assert.match(app, /getDoc\(F\.doc\(db,\.\.\.NOTES_DOC\)/);
-  assert.match(app, /Promise\.all\(\[/);
+  assert.doesNotMatch(app, /Promise\.all\(\[/);
   assert.match(app, /try\{const notesSnap=/);
+  assert.match(app, /Shared base bootstrap failed/);
 });
