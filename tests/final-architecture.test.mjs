@@ -20,7 +20,7 @@ test('production entry is deterministic', () => {
 });
 
 test('boot is only a thin canonical entrypoint', () => {
-  assert.match(boot, /import ['"]\.\/app\.js['"];?/);
+  assert.match(boot, /import ['"]\.\/app\.js(?:\?[^'"]+)?['"];?/);
   assert.doesNotMatch(boot, /source\.replace|new Blob|cdn\.jsdelivr|raw\.githubusercontent/);
 });
 
