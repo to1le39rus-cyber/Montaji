@@ -6,7 +6,7 @@
 >
 > **Статус:** design direction + implementation contract. Не является разрешением на изменение production.
 
-## 1. Визия
+## Визия
 
 «Монтажи АА» должен ощущаться как premium mobile product: **красивый, ясный, быстрый, живой, спокойный и полезный**.
 
@@ -14,15 +14,15 @@
 
 **Красота усиливает рабочий UX.** Каждая деталь должна помогать понять, выбрать или сделать. Мы не боимся красоты, но не жертвуем скоростью и ясностью ради декоративности.
 
-## 2. Creative direction
+## Creative direction
 
-Направление: **Premium × Mobile × Operations × Delight**.
+**Premium × Mobile × Operations × Delight.**
 
-Ощущение: много воздуха, выразительная типографика, чистые поверхности, мягкая глубина, точечные акценты, качественные иконки, компактные карточки и живые микровзаимодействия.
+Много воздуха, выразительная типографика, чистые поверхности, мягкая глубина, точечные акценты, качественные иконки, компактные карточки и живые микровзаимодействия.
 
 Формула: **минимально по количеству элементов, максимально по качеству ощущения.**
 
-## 3. Архитектура UI
+## Архитектура UI
 
 ```text
 Business semantics
@@ -42,7 +42,7 @@ UI не является источником истины.
 
 Запрещено переносить бизнес-логику в CSS, принимать бизнес-решения по DOM-тексту/классам, дублировать сущности независимыми UI-реализациями, использовать MutationObserver/timer вместо нормального lifecycle, делать runtime source rewriting/Blob/CDN обходы или оставлять временные UI-патчи без migration plan.
 
-## 4. Design tokens
+## Design tokens
 
 Финальные значения утверждаются после visual audit. Реализация использует семантические токены:
 
@@ -78,15 +78,13 @@ control.*
 
 Компонент не придумывает локальные цвета, если существует токен.
 
-## 5. Typography
+## Typography
 
 Семантическая шкала: `Display / H1 / H2 / H3 / Body / Body Small / Label / Caption / Numeric-KPI`.
 
 Большие цифры используются только для действительно важных показателей. Вторичный текст не конкурирует с действием. Не создаём визуальные стены текста.
 
-## 6. Spacing / radius / depth
-
-Базовый rhythm:
+## Spacing / radius / depth
 
 ```text
 4  micro
@@ -101,9 +99,9 @@ control.*
 
 Радиусы: `sm / md / lg / xl / pill`.
 
-Глубина создаётся тонким border, мягкой тенью и разницей surface. Blur — точечный инструмент, не стиль всего приложения.
+Глубина создаётся тонким border, мягкой тенью и разницей surface. Blur — точечный инструмент.
 
-## 7. Canonical components
+## Canonical components
 
 ### Job Card
 
@@ -127,13 +125,13 @@ control.*
 
 ### Status / Chips
 
-Семантика: `planned / active / completed / cancelled / warning / error`. Смысл не передаётся только цветом.
+`planned / active / completed / cancelled / warning / error`. Смысл не передаётся только цветом.
 
 ### Toast
 
 Короткий результат: **что произошло + при необходимости следующий шаг**.
 
-## 8. Unified Modal / Bottom Sheet System
+## Unified Modal / Bottom Sheet System
 
 Все sheets используют единый shell:
 
@@ -161,13 +159,13 @@ Sheet
 
 Пользователь всегда понимает, смотрит он данные или меняет их.
 
-## 9. Навигация
+## Навигация
 
 Bottom navigation — единый глобальный компонент с одинаковой геометрией, active state и tap feedback.
 
 FAB — глобальное создание, если оно доступно текущему контексту/роли. Он не конкурирует с главным CTA экрана.
 
-## 10. Screen UX
+## Screen UX
 
 ### Сегодня
 
@@ -189,11 +187,9 @@ FAB — глобальное создание, если оно доступно 
 
 Системные действия без визуального шума.
 
-## 11. Motion system
+## Motion system
 
-Motion — часть продукта.
-
-Принцип: **Fast first, delightful second.**
+Motion — часть продукта. Принцип: **Fast first, delightful second.**
 
 Категории: `Tap / Enter / Exit / Expand / Collapse / State change / Success / Error / Loading / Navigation`.
 
@@ -212,7 +208,7 @@ Large state: 250–400 ms
 
 Всегда уважать `prefers-reduced-motion`.
 
-## 12. Performance
+## Performance
 
 Предпочтительно: CSS transitions, transform/opacity, минимальные DOM mutations, event delegation, lazy rendering, CSS variables, reuse компонентов.
 
@@ -220,23 +216,23 @@ Large state: 250–400 ms
 
 **Если эффект можно сделать проще без потери ощущения качества — делаем проще.**
 
-## 13. States
+## States
 
 Каждый интерактивный компонент имеет: `initial / loading / loaded / empty / saving / saved / error / offline / disabled / cancelled / completed / conflict / permission-denied`.
 
 Loading не должен выглядеть как пустой экран. Empty объясняет причину и следующий шаг. Error объясняет проблему и действие. Offline — полноценное состояние продукта.
 
-## 14. Accessibility
+## Accessibility
 
 Обязательны достаточный контраст, focus states, keyboard support где применимо, aria-label для icon-only, понятные ошибки, комфортные touch targets, reduced motion и передача смысла не только цветом.
 
-## 15. Mobile-first
+## Mobile-first
 
 Приоритет: iPhone Safari/PWA → Android mobile → desktop/tablet enhancement.
 
 Учитываем safe areas, keyboard, scroll и iOS gestures. Не проектируем desktop и потом «ужимаем».
 
-## 16. Data/UI boundary
+## Data/UI boundary
 
 ```text
 Firestore / canonical state
@@ -250,7 +246,7 @@ UI
 
 Комментарий карточки должен идти к canonical state/render path. Долгосрочная цель — убрать presentation/data bridges, когда это можно сделать безопасно.
 
-## 17. Business semantics, обязательные для UI
+## Business semantics, обязательные для UI
 
 - 3 монтажных окна — пресеты, не лимит;
 - 4/5/6+ монтажей валидны;
@@ -260,7 +256,7 @@ UI
 - дополнительные монтажи существуют отдельно от плановых окон;
 - комментарий к монтажу — операционно значим.
 
-## 18. Roles
+## Roles
 
 Роли описаны отдельно в `ROLE-UX-CONTRACT.md`.
 
@@ -268,7 +264,7 @@ UI
 
 UI не является security boundary: визуальное скрытие не заменяет Firebase Rules.
 
-## 19. Visual QA
+## Visual QA
 
 Проверяем layout на narrow iPhone, standard mobile, desktop, long content, keyboard и safe area.
 
@@ -278,7 +274,7 @@ UI не является security boundary: визуальное скрытие 
 
 Проверяем motion: no jank, no layout jumps, no blocked action, reduced motion works.
 
-## 20. Definition of Done
+## Definition of Done
 
 - [ ] фича есть в UI inventory;
 - [ ] паттерн определён в UI/UX system;
@@ -295,13 +291,13 @@ UI не является security boundary: визуальное скрытие 
 - [ ] production не изменён без approval;
 - [ ] проверки пройдены.
 
-## 21. Правило для AI
+## Правило для AI
 
 Новый AI-чат обязан прочитать `PROJECT-CONTRACT.md`, `BUSINESS-SEMANTICS.md`, `UI-UX-INVENTORY.md`, `UI-UX-SYSTEM.md` и релевантный UX-контракт; проверить существующий component/pattern; не придумывать новую модалку/card/button без необходимости; не использовать UI как security boundary; не менять production/Firebase Rules/data без approval; при конфликте сверяться с canonical contract.
 
 > **Не изобретай интерфейс заново. Развивай систему.**
 
-## 22. Creative north star
+## Creative north star
 
 Мы не делаем приложение скучным ради «удобства».
 
