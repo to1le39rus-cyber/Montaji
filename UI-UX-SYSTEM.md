@@ -12,6 +12,12 @@
 
 **Красота усиливает рабочий UX.** Каждая деталь помогает понять, выбрать или сделать. Мы не боимся wow-эффекта, но не жертвуем скоростью и ясностью.
 
+## Creative direction
+
+Много воздуха, выразительная типографика, чистые поверхности, мягкая глубина, точечные акценты, качественные иконки, компактные карточки и живые микровзаимодействия.
+
+**Минимально по количеству элементов, максимально по качеству ощущения.**
+
 ## Архитектура
 
 ```text
@@ -28,27 +34,14 @@ Screens / sheets
 Motion + feedback
 ```
 
-UI не является источником истины. Запрещены бизнес-логика в CSS, решения по DOM-тексту/классам, независимые дубли сущностей, MutationObserver/timer вместо нормального lifecycle, runtime source rewriting/Blob/CDN обходы и временные UI-патчи без migration plan.
+UI не является источником истины. Запрещены бизнес-логика в CSS, решения по DOM-тексту/классам, дубли сущностей, MutationObserver/timer вместо нормального lifecycle, runtime source rewriting/Blob/CDN обходы и временные UI-патчи без migration plan.
 
-## Visual language
+## Design tokens
 
-Много воздуха, выразительная типографика, чистые поверхности, мягкая глубина, точечные акценты, качественные иконки, компактные карточки и деликатная анимация.
-
-Формула: **минимально по количеству элементов, максимально по качеству ощущения.**
-
-### Tokens
-
-Используем единый semantic token system:
+Финальные значения утверждаются после visual audit. Используем единые семантические токены:
 
 ```text
-color.*
-type.*
-space.*
-radius.*
-shadow.*
-motion.*
-z.*
-control.*
+color.*  type.*  space.*  radius.*  shadow.*  motion.*  z.*  control.*
 ```
 
 Цветовая семантика: `bg / surface / surface-raised / surface-muted / text / text-secondary / text-muted / border / accent / accent-soft / success / warning / danger / info`.
@@ -59,21 +52,15 @@ Radius: `sm / md / lg / xl / pill`.
 
 Глубина — border + мягкая shadow + surface. Blur только точечно.
 
-### Typography
-
-`Display / H1 / H2 / H3 / Body / Body Small / Label / Caption / Numeric-KPI`.
-
-Большие цифры только для действительно важных показателей. Вторичный текст не конкурирует с действием.
-
 ## Canonical components
 
 ### Job Card
 
-Одна сущность — одна базовая карточка. Варианты плотности: Today / primary, Day Sheet / compact, History / compact, Client context, Detail.
+Одна сущность — одна базовая карточка. Варианты: Today / primary, Day Sheet / compact, History / compact, Client context, Detail.
 
 Иерархия: Client → Time/type/source → Status/amount → Comment preview → Secondary information.
 
-Комментарий к монтажу — рабочая информация. В compact используется expandable preview.
+Комментарий к монтажу — рабочая информация; compact использует expandable preview.
 
 ### Buttons
 
@@ -81,7 +68,7 @@ Radius: `sm / md / lg / xl / pill`.
 
 ### Fields
 
-Один field system: `default / focused / filled / invalid / disabled / saving / saved`. Дата, сумма, телефон и текст — вариации общей системы.
+Единый field system: `default / focused / filled / invalid / disabled / saving / saved`.
 
 ### Status / Chips
 
@@ -91,7 +78,7 @@ Radius: `sm / md / lg / xl / pill`.
 
 Короткий результат: **что произошло + при необходимости следующий шаг.**
 
-## Unified Modal / Bottom Sheet System
+## Unified Modal / Bottom Sheet
 
 Все sheets используют один shell:
 
@@ -111,11 +98,7 @@ Patterns: `Detail Sheet / Form Sheet / Action Sheet / Day Sheet / Confirm Sheet`
 
 **Один shell, разные purpose.**
 
-### Detail ≠ Edit
-
-Подробнее — read-only информация и быстрые действия.
-
-Изменить — form, validation, save.
+Подробнее — read-only информация и быстрые действия. Изменить — form, validation, save. **Detail ≠ Edit.**
 
 ## Навигация
 
@@ -127,9 +110,9 @@ FAB — глобальное создание, если доступно тек�
 
 **Сегодня:** за несколько секунд понять день, монтажи, деньги, проблемы и следующий шаг.
 
-**График:** сразу понять нагрузку и выбрать день. 3 окна — плановые пресеты, не лимит. 4/5/6+ допустимы. `3/3` как потолок запрещён.
+**График:** сразу понять нагрузку и выбрать день. **3 окна — плановые пресеты, не capacity limit. 4/5/6+ допустимы. `3/3` как потолок запрещён.**
 
-**Деньги:** доход, расход, чистый результат, дополнительные источники и долги различимы. Количество монтажей и доход — независимые метрики.
+**Деньги:** доход, расход, чистый результат, дополнительные источники и долги различимы. Количество монтажей и доход — разные метрики.
 
 **Клиенты:** быстрый поиск человека и контекста.
 
@@ -153,15 +136,13 @@ Wow создают хороший easing, небольшой transform/opacity, 
 
 Предпочтительно: CSS transitions, transform/opacity, минимальные DOM mutations, event delegation, lazy rendering, CSS variables, reuse компонентов.
 
-Контролируем backdrop-filter, большие blur/shadow surfaces, сложные SVG filters, layout-triggering animation, повторные Firestore listeners и self-triggering observers.
+Особенно контролируем backdrop-filter, большие blur/shadow surfaces, сложные SVG filters, layout-triggering animation, повторные Firestore listeners и self-triggering observers.
 
 **Если эффект можно сделать проще без потери ощущения качества — делаем проще.**
 
 ## States
 
 Каждый интерактивный компонент имеет: `initial / loading / loaded / empty / saving / saved / error / offline / disabled / cancelled / completed / conflict / permission-denied`.
-
-Loading не должен выглядеть пустым. Empty объясняет причину и следующий шаг. Error объясняет проблему и действие. Offline — полноценное состояние продукта.
 
 ## Accessibility
 
@@ -212,8 +193,7 @@ UI
 - [ ] переиспользован canonical component/shell или документировано расширение;
 - [ ] нет дублирующего visual pattern;
 - [ ] состояния определены;
-- [ ] mobile-first проверен;
-- [ ] motion и reduced motion проверены;
+- [ ] mobile-first, motion и reduced motion проверены;
 - [ ] accessibility проверена;
 - [ ] performance не ухудшена;
 - [ ] business semantics не изменены случайно;
@@ -223,7 +203,9 @@ UI
 
 ## Правило для AI
 
-Новый AI-чат обязан прочитать canonical документы, проверить существующий component/pattern и **не изобретать интерфейс заново — развивать систему**. При конфликте документации сначала сверяться с canonical contract. Новая модалка/card/button появляется только после фиксации в inventory/system.
+Новый AI-чат обязан прочитать `PROJECT-CONTRACT.md`, `BUSINESS-SEMANTICS.md`, `UI-UX-INVENTORY.md`, `UI-UX-SYSTEM.md` и релевантный UX-контракт; проверить существующий component/pattern; не придумывать новую модалку/card/button без необходимости; не использовать UI как security boundary; не менять production/Firebase Rules/data без approval.
+
+> **Не изобретай интерфейс заново. Развивай систему.**
 
 ## Creative north star
 
