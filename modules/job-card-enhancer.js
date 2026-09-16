@@ -1,78 +1,6 @@
 const STYLE_ID = 'montaji-job-card-enhancer-style';
 const FIREBASE_VERSION = '10.14.1';
 const SHARED_DOC = ['appData', 'shared'];
-const esc = s => String(s ?? '').replace(/[&<>\"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[m]));
-
-function addStyles() {
-  if (document.getElementById(STYLE_ID)) return;
-  const style = document.createElement('style');
-  style.id = STYLE_ID;
-  style.textContent = `
-    .job-card-note {
-      margin:10px 0 0;
-      padding:10px 12px 11px;
-      border:1px solid rgba(92,99,217,.14);
-      border-left:3px solid #5c63d9;
-      border-radius:12px;
-      background:rgba(245,246,255,.58);
-      font-size:13.5px;
-      line-height:1.4;
-      color:var(--text,#25262d);
-    }
-    .job-card-note__label {
-      display:flex;
-      align-items:center;
-      gap:6px;
-      margin-bottom:4px;
-      font-size:10px;
-      font-weight:750;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-      color:#737887;
-    }
-    .job-card-note__label::before {
-      content:'';
-      width:5px;
-      height:5px;
-      border-radius:50%;
-      background:#5c63d9;
-      flex:none;
-    }
-    .job-card-note__text {
-      display:-webkit-box;
-      -webkit-line-clamp:2;
-      -webkit-box-orient:vertical;
-      overflow:hidden;
-      white-space:pre-line;
-    }
-    .job-card-note.expanded .job-card-note__text {
-      display:block;
-      -webkit-line-clamp:unset;
-    }
-    .job-card-note__toggle {
-      margin-top:6px;
-      border:0;
-      background:none;
-      padding:0;
-      font:inherit;
-      font-size:12.5px;
-      font-weight:700;
-      color:#5c63d9;
-    }
-    .test-delete-btn {
-      width:100%;
-      margin-top:8px;
-      border:1px solid #e5b9b0;
-      border-radius:14px;
-      padding:13px 16px;
-      background:#fff4f1;
-      color:#a54b3e;
-      font:inherit;
-      font-weight:700;
-    }
-  `;
-  document.head.append(style);
-}
 
 let jobsById = new Map();
 let firebaseConnecting = false;
@@ -94,8 +22,16 @@ async function firebaseContext() {
 
 function applyJobs(data) {
   jobsById = new Map((Array.isArray(data?.jobs) ? data.jobs : []).map(j => [j.id, j]));
-  enhanceCards();
+  syncNativeComments();
   enhanceDeleteControl();
+}
+
+function syncNativeComments() {
+  document.querySelectorAll('[data-job-card]').forEach(card => {
+    const job = jobsById.get(card.dataset.jobCard);
+    const note = card.querySelector('.note-line');
+    if (note && job?.comment) note.textContent = job.comment;
+  });
 }
 
 async function connectRealtime() {
@@ -127,31 +63,6 @@ function scheduleFirebaseRetry() {
     retryTimer = null;
     connectRealtime();
   }, 300);
-}
-
-function enhanceCards() {
-  document.querySelectorAll('[data-job-card]').forEach(card => {
-    const job = jobsById.get(card.dataset.jobCard);
-    if (!job?.comment) return;
-
-    const existing = card.querySelector('.job-card-note');
-    if (existing) {
-      const text = existing.querySelector('.job-card-note__text');
-      if (text && text.textContent !== job.comment) text.textContent = job.comment;
-      return;
-    }
-
-    const box = document.createElement('div');
-    box.className = 'job-card-note';
-    const long = job.comment.length > 110 || job.comment.split(/\n/).length > 2;
-    box.innerHTML = `<span class="job-card-note__label">Комментарий к монтажу</span><span class="job-card-note__text">${esc(job.comment)}</span>${long ? '<button type="button" class="job-card-note__toggle">Показать полностью</button>' : ''}`;
-    const details = card.querySelector('.job-details');
-    (details || card.querySelector('.job-top'))?.after(box);
-    box.querySelector('.job-card-note__toggle')?.addEventListener('click', () => {
-      const expanded = box.classList.toggle('expanded');
-      box.querySelector('.job-card-note__toggle').textContent = expanded ? 'Свернуть' : 'Показать полностью';
-    });
-  });
 }
 
 function isTestJob(job) {
@@ -218,14 +129,13 @@ function scheduleEnhance() {
   observerQueued = true;
   queueMicrotask(() => {
     observerQueued = false;
-    enhanceCards();
+    syncNativeComments();
     enhanceDeleteControl();
     if (!unsubscribeJobs) connectRealtime();
   });
 }
 
 function boot() {
-  addStyles();
   const observer = new MutationObserver(scheduleEnhance);
   observer.observe(document.body, { childList: true, subtree: true });
   connectRealtime();

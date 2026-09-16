@@ -1,0 +1,1 @@
+The canonical shared primitive layer has been established in `modules/design-system.css` and its tokens in `modules/design-tokens.js`. It is intended to be loaded once by the app shell and reused by every screen. Screen-specific CSS should only compose these primitives, never redefine their geometry.
