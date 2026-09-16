@@ -86,21 +86,12 @@ function openJobDetail(card) {
   });
 }
 
-function normalizeCardActions(root = document) {
-  root.querySelectorAll('.job-card .edit').forEach(button => {
-    if (button.textContent.trim() !== 'Подробнее') button.textContent = 'Подробнее';
-  });
-}
-
 if (typeof document !== 'undefined') {
-  const observer = new MutationObserver(() => normalizeCardActions());
-  observer.observe(document.documentElement, { childList: true, subtree: true });
   document.addEventListener('click', event => {
     const edit = event.target.closest?.('.job-card .edit');
-    if (!edit || window.__montajiBypassEditCapture) return;
+    if (!edit || window.__montajiBypassEditCapture || edit.closest('.sheet')) return;
     event.preventDefault();
     event.stopImmediatePropagation();
     openJobDetail(edit.closest('.job-card'));
   }, true);
-  normalizeCardActions();
 }
