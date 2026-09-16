@@ -1,236 +1,260 @@
-/* Montaji Today — 2026 product pass
-   Intent: calm, premium, operational. Keep data + behavior intact; change hierarchy only. */
+/* Montaji Today — 2026 redesign / product hierarchy pass.
+   Goal: modern field-service dashboard, not a stacked CRM card wall.
+   Data, actions and business logic remain untouched. */
 #todayScreen{
-  --today-bg:#f4f5f1;
-  --today-ink:#151a16;
-  --today-muted:#7b837a;
-  --today-line:#e3e6df;
-  --today-soft:#edf1eb;
-  --today-accent:#74836a;
-  --today-dark:#202a22;
+  --today-bg:#f5f6f2;
+  --today-ink:#111611;
+  --today-muted:#818981;
+  --today-line:rgba(17,22,17,.09);
+  --today-accent:#74846a;
+  --today-deep:#202a22;
   display:block;
+  padding-top:2px;
 }
 
+/* Header: quiet, editorial, not a second dashboard. */
 #todayScreen .hero-card{
-  min-height:172px;
-  margin:4px 0 12px;
-  padding:18px 18px 15px;
+  min-height:184px;
+  margin:10px 0 14px;
+  padding:20px 20px 17px;
+  overflow:hidden;
+  position:relative;
   border:0;
-  border-radius:28px;
+  border-radius:30px;
+  color:#fff;
   background:
-    radial-gradient(circle at 92% 5%,rgba(184,199,177,.14) 0 13%,transparent 13.5%),
-    radial-gradient(circle at 92% 5%,transparent 0 24%,rgba(184,199,177,.10) 24.5% 25%,transparent 25.5%),
-    linear-gradient(145deg,#253027 0%,#1e2820 100%);
-  box-shadow:0 18px 45px rgba(24,34,27,.13);
+    radial-gradient(circle at 88% 0%,rgba(181,199,174,.34) 0 9%,transparent 9.4%),
+    radial-gradient(circle at 88% 0%,transparent 0 21%,rgba(181,199,174,.13) 21.4% 21.8%,transparent 22.2%),
+    radial-gradient(circle at 88% 0%,transparent 0 33%,rgba(181,199,174,.08) 33.3% 33.7%,transparent 34%),
+    linear-gradient(145deg,#273329 0%,#1d261f 100%);
+  box-shadow:0 20px 48px rgba(24,34,27,.16);
 }
-#todayScreen .hero-card:before{right:-70px;top:-98px;width:210px;height:210px;border-color:rgba(220,230,215,.13);box-shadow:0 0 0 12px rgba(220,230,215,.025)}
-#todayScreen .hero-card:after{right:-16px;top:-36px;width:126px;height:126px;border-width:3px;opacity:.8}
-#todayScreen .hero-row{font-size:11px;color:rgba(255,255,255,.48)}
-#todayScreen .hero-row strong{font-size:12px;letter-spacing:-.01em}
-#todayScreen .hero-income{margin-top:17px;font-size:clamp(48px,13vw,62px);font-weight:820;letter-spacing:-.075em}
-#todayScreen .hero-label{margin-top:3px;font-size:8px;letter-spacing:.22em;color:rgba(255,255,255,.36)}
-#todayScreen .hero-mini{gap:28px;margin-top:17px;font-size:9px;color:rgba(255,255,255,.45)}
-#todayScreen .hero-mini b{font-size:13px}
-#todayScreen .progress{height:5px;margin-top:15px;background:rgba(255,255,255,.11)}
-#todayScreen .progress span{background:#cbd7c4}
+#todayScreen .hero-card:before{right:-82px;top:-126px;width:255px;height:255px;border:1px solid rgba(225,235,220,.14);border-radius:50%;box-shadow:0 0 0 15px rgba(225,235,220,.025)}
+#todayScreen .hero-card:after{right:-18px;top:-45px;width:145px;height:145px;border:3px solid rgba(216,228,208,.5);border-left-color:rgba(216,228,208,.08);border-radius:50%;pointer-events:none}
+#todayScreen .hero-row{position:relative;z-index:2;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;color:rgba(255,255,255,.52);font-size:11px}
+#todayScreen .hero-row strong{color:#fff;font-size:18px;line-height:1;letter-spacing:-.04em}
+#todayScreen .hero-income{position:relative;z-index:2;margin-top:25px;color:#fff;font-size:clamp(44px,12vw,58px);line-height:.9;font-weight:820;letter-spacing:-.075em}
+#todayScreen .hero-label{position:relative;z-index:2;margin-top:7px;color:rgba(255,255,255,.38);font-size:8px;letter-spacing:.2em;text-transform:uppercase}
+#todayScreen .hero-mini{position:relative;z-index:2;display:flex;gap:34px;margin-top:20px;color:rgba(255,255,255,.5);font-size:9px}
+#todayScreen .hero-mini>span{display:flex;flex-direction:column;gap:4px}
+#todayScreen .hero-mini b{color:#fff;font-size:14px;font-weight:760}
+#todayScreen .progress{position:relative;z-index:2;height:4px;margin-top:17px;background:rgba(255,255,255,.13);border-radius:99px}
+#todayScreen .progress span{background:#d0dcc9}
 
+/* Money becomes a metric rail, not two more cards. */
 #todayScreen .period-strip{
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:8px;
-  margin:0 0 25px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:0;
+  margin:0 0 28px;
+  padding:0;
+  background:transparent;
 }
 #todayScreen .period-strip>div{
-  min-height:64px;
-  padding:11px 13px;
-  border:1px solid rgba(24,30,25,.07);
-  border-radius:18px;
-  background:rgba(255,255,255,.72);
-  box-shadow:0 6px 20px rgba(24,30,25,.025);
+  min-height:56px;
+  padding:4px 18px 3px 1px;
+  background:transparent;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
 }
-#todayScreen .period-strip small{font-size:9px;color:#929990}
-#todayScreen .period-strip b{margin-top:4px;font-size:20px;letter-spacing:-.045em}
+#todayScreen .period-strip>div+div{padding-left:18px;border-left:1px solid var(--today-line)}
+#todayScreen .period-strip small{font-size:10px;color:#929a91}
+#todayScreen .period-strip b{margin-top:4px;font-size:23px;line-height:1;letter-spacing:-.055em}
 
-#todayScreen .section-head{
-  margin:24px 2px 10px;
-}
-#todayScreen .section-head h2{
-  font-size:20px;
-  font-weight:820;
-  letter-spacing:-.045em;
-}
-#todayScreen .section-head .quick-inline{gap:2px}
-#todayScreen .section-head .text-btn{font-size:10px;padding:5px 2px;font-weight:760}
+/* Section rhythm. */
+#todayScreen .section-head{margin:26px 1px 11px}
+#todayScreen .section-head h2{font-size:22px;line-height:1;font-weight:820;letter-spacing:-.055em}
+#todayScreen .section-head .quick-inline{gap:10px}
+#todayScreen .section-head .text-btn{padding:5px 0;color:var(--today-accent);font-size:10px;font-weight:780}
 
-#todayScreen .insights{gap:8px}
+/* Important = one calm notification surface. */
+#todayScreen .insights{display:block}
 #todayScreen .insight{
-  min-height:52px;
-  padding:12px 14px;
-  border:1px solid rgba(24,30,25,.075);
-  border-radius:17px;
-  background:rgba(255,255,255,.82);
-  box-shadow:0 7px 24px rgba(24,30,25,.025);
+  min-height:54px;
+  padding:15px 15px 15px 14px;
+  color:#353c35;
+  background:#edf1ea;
+  border:0;
+  border-left:3px solid #7b8b70;
+  border-radius:15px;
+  box-shadow:none;
   font-size:12px;
+  line-height:1.35;
 }
-#todayScreen .insight span{font-size:15px}
+#todayScreen .insight span{margin-right:7px;color:#75836b;font-size:15px}
 
-#todayScreen .job-list{gap:9px}
+/* Today jobs: operational timeline cards, not form containers. */
+#todayScreen .job-list{display:grid;gap:10px}
 #todayScreen .job-card{
-  padding:15px 14px 13px;
-  border:1px solid #e0e4dd;
-  border-radius:21px;
-  box-shadow:0 9px 28px rgba(25,32,26,.045);
+  position:relative;
+  overflow:hidden;
+  padding:16px 15px 14px 18px;
+  background:#fff;
+  border:0;
+  border-radius:22px;
+  box-shadow:0 8px 30px rgba(22,29,23,.055);
+  transition:transform 180ms ease,box-shadow 180ms ease;
 }
-#todayScreen .job-card:first-child{border-color:#d3dbcf}
+#todayScreen .job-card:first-child{border:0}
 #todayScreen .job-card:first-child:before{
-  top:14px;bottom:14px;width:3px;border-radius:0 4px 4px 0;
-  background:#7a896f;
+  content:"";
+  position:absolute;
+  left:0;
+  top:15px;
+  bottom:15px;
+  width:4px;
+  background:#78886e;
+  border-radius:0 5px 5px 0;
 }
-#todayScreen .job-top{align-items:flex-start;gap:14px}
-#todayScreen .job-client{font-size:17px;line-height:1.12;font-weight:800;letter-spacing:-.035em}
-#todayScreen .amount{font-size:17px;font-weight:820;letter-spacing:-.035em}
-#todayScreen .job-meta{margin-top:5px;font-size:10px;color:#737c73}
-#todayScreen .job-details{gap:7px;margin-top:11px}
-#todayScreen .detail-line{font-size:11px;line-height:1.38;color:#5f685f}
-#todayScreen .job-details .detail-line:first-child{color:#586258}
+#todayScreen .job-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+#todayScreen .job-client{min-width:0;color:#111611;font-size:18px;line-height:1.08;font-weight:810;letter-spacing:-.04em}
+#todayScreen .amount{flex:0 0 auto;color:#111611;font-size:18px;line-height:1;font-weight:820;letter-spacing:-.04em}
+#todayScreen .job-meta{margin-top:6px;color:#7b837a;font-size:10px;line-height:1.25}
+#todayScreen .job-details{display:grid;gap:7px;margin-top:12px}
+#todayScreen .detail-line{color:#596159;font-size:11px;line-height:1.4;overflow-wrap:anywhere}
+#todayScreen .job-details .detail-line:first-child{color:#4e574f}
 #todayScreen .job-details .note-line{
+  position:relative;
   display:-webkit-box;
   -webkit-box-orient:vertical;
   -webkit-line-clamp:2;
   line-clamp:2;
   overflow:hidden;
-  max-height:54px;
-  padding:8px 10px 8px 25px;
-  position:relative;
-  color:#59625a;
-  background:#f2f4ef;
-  border:1px solid #e0e4dc;
-  border-left:3px solid #7a896f;
+  max-height:53px;
+  padding:9px 10px 9px 28px;
+  color:#525b53;
+  background:#f3f5f1;
+  border:0;
   border-radius:13px;
-  line-height:1.4;
+  line-height:1.35;
 }
-#todayScreen .job-details .note-line:before{
-  content:'“';
-  position:absolute;
-  left:8px;
-  top:4px;
-  color:#7a896f;
-  font-size:18px;
-  font-weight:800;
-  line-height:1;
-}
-#todayScreen .card-status{margin-top:3px}
-#todayScreen .status-pill{padding:5px 9px;font-size:9px;border-radius:999px}
-#todayScreen .actions{margin-top:9px}
-#todayScreen .actions .map-chip,
-#todayScreen .actions .action-chip:not(.primary-chip),
-#todayScreen .quick-actions{display:none}
+#todayScreen .job-details .note-line:before{content:"“";position:absolute;left:9px;top:5px;color:#819076;font-size:19px;font-weight:800;line-height:1}
+#todayScreen .card-status{margin-top:5px}
+#todayScreen .status-pill{padding:6px 9px;color:#31402f;font-size:9px;font-weight:740;background:#e8eee5;border-radius:99px}
+#todayScreen .actions{display:flex;justify-content:flex-end;margin-top:10px}
+#todayScreen .actions .map-chip,#todayScreen .actions .action-chip:not(.primary-chip),#todayScreen .quick-actions{display:none}
 #todayScreen .actions .primary-chip{
-  min-width:88px;
-  padding:8px 12px;
-  border-radius:10px;
+  min-width:auto;
+  padding:8px 2px;
+  color:#6f7e66;
+  background:transparent;
+  border:0;
+  border-radius:0;
   font-size:10px;
-  background:#263127;
-  border-color:#263127;
+  font-weight:800;
 }
+#todayScreen .actions .primary-chip:after{content:"  ›";font-size:16px;line-height:0;vertical-align:-1px}
 
-/* The secondary blocks become quiet utility rows instead of more cards. */
+/* Utility sections lose the repeated card treatment. */
 #todayScreen .inline-card{
-  margin-top:13px;
-  padding:14px 1px 2px;
+  margin-top:18px;
+  padding:0 1px;
+  background:transparent;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+}
+#todayScreen .inline-card .section-head{margin:0 1px 9px}
+#todayScreen .inline-card .section-head h2{font-size:18px}
+#todayScreen #todayExpenses{
+  padding:13px 14px;
+  background:#fff;
+  border:0;
+  border-radius:15px;
+  box-shadow:0 7px 24px rgba(22,29,23,.04);
+}
+#todayScreen #todayExpenses:empty:after{padding:0;color:#838b83;font-size:11px}
+
+/* Upcoming: compact list, visually secondary. */
+#todayScreen .upcoming-list{display:grid;gap:5px}
+#todayScreen .upcoming-row{
+  min-height:48px;
+  padding:9px 11px;
+  grid-template-columns:75px minmax(0,1fr) auto;
+  border:0;
+  border-radius:14px;
+  background:rgba(255,255,255,.72);
+  box-shadow:inset 0 0 0 1px rgba(17,22,17,.055);
+}
+#todayScreen .upcoming-row span{font-size:10px;font-weight:760}
+#todayScreen .upcoming-row b{padding:5px 8px;color:#53614f;font-size:9px;background:#e9eee7;border-radius:8px}
+#todayScreen .upcoming-row small{font-size:8px;color:#8c938b}
+
+/* Notes: useful, but not a giant panel. */
+#todayScreen .inline-card:last-child{
+  margin-top:23px;
+  padding:0 1px;
   background:transparent;
   border:0;
   border-radius:0;
 }
-#todayScreen .inline-card .section-head{margin:0 1px 8px}
-#todayScreen .inline-card .section-head h2{font-size:17px}
-#todayScreen #todayExpenses{padding:11px 13px;background:rgba(255,255,255,.68);border:1px solid rgba(24,30,25,.065);border-radius:16px}
-#todayScreen #todayExpenses:empty:after{padding:0;font-size:11px}
+#todayScreen .inline-card:last-child .section-head{margin:0 1px 9px}
+#todayScreen .inline-card:last-child .section-head small{font-size:9px;color:#9aa19a}
+#todayScreen .note-card{padding:10px 0;border-top:1px solid rgba(17,22,17,.07)}
+#todayScreen .note-card:first-child{border-top:0}
+#todayScreen .note-card p{font-size:11px;color:#626a62;line-height:1.4}
 
-#todayScreen .upcoming-list{gap:7px}
-#todayScreen .upcoming-row{
-  min-height:49px;
-  padding:8px 11px;
-  grid-template-columns:74px minmax(0,1fr) auto;
-  border:1px solid rgba(24,30,25,.065);
-  border-radius:15px;
-  background:rgba(255,255,255,.74);
-}
-#todayScreen .upcoming-row span{font-size:10px}
-#todayScreen .upcoming-row b{padding:6px 9px;font-size:9px;background:#e9eee7}
-#todayScreen .upcoming-row small{font-size:8px}
-
-#todayScreen .inline-card:last-child{
-  margin-top:14px;
-  padding:15px;
-  background:rgba(255,255,255,.72);
-  border:1px solid rgba(24,30,25,.065);
-  border-radius:20px;
-}
-#todayScreen .inline-card:last-child .section-head{margin:0 0 8px}
-#todayScreen .note-card{padding:9px 0;border-top:1px solid #e7e9e4}
-#todayScreen .note-card p{font-size:11px}
-
-/* Header: quiet glass, stronger identity. */
+/* Header and nav are deliberately quieter so Today content wins. */
 .topbar{
   min-height:68px;
-  padding:calc(9px + env(safe-area-inset-top)) 18px 9px;
-  border-bottom:1px solid rgba(21,25,21,.045);
-  background:rgba(245,246,242,.82);
+  padding:calc(8px + env(safe-area-inset-top)) 18px 9px;
+  background:rgba(245,246,242,.88);
+  border-bottom:1px solid rgba(17,22,17,.045);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
 }
-.brand{font-size:11px;letter-spacing:.16em}
+.brand{font-size:11px;letter-spacing:.15em}
 .top-date{font-size:10px}
 
-/* Bottom navigation: one floating control surface. */
 .bottom-nav{
   left:50%;
   right:auto;
   bottom:max(10px,env(safe-area-inset-bottom));
+  width:min(calc(100% - 24px),700px);
+  padding:5px;
+  gap:2px;
   transform:translateX(-50%);
-  width:min(calc(100% - 20px),700px);
-  padding:6px;
-  gap:3px;
-  border:1px solid rgba(21,25,21,.08);
-  border-radius:23px;
-  background:rgba(255,255,255,.90);
-  box-shadow:0 16px 40px rgba(20,28,21,.14);
+  border:1px solid rgba(17,22,17,.08);
+  border-radius:22px;
+  background:rgba(255,255,255,.9);
+  box-shadow:0 15px 38px rgba(20,28,21,.14);
   backdrop-filter:blur(22px);
   -webkit-backdrop-filter:blur(22px);
 }
 .bottom-nav .nav{
-  min-height:51px;
-  padding:7px 5px;
-  border-radius:17px;
+  min-height:50px;
+  padding:7px 4px;
+  color:#a0a69f;
   background:transparent;
   border:0;
-  color:#9aa198;
+  border-radius:16px;
   transition:background 180ms ease,color 180ms ease,transform 180ms ease;
 }
 .bottom-nav .nav span{display:none}
-.bottom-nav .nav small{font-size:9px;font-weight:720;letter-spacing:-.01em}
-.bottom-nav .nav.active{color:#202920;background:#e9eee7}
+.bottom-nav .nav small{font-size:9px;font-weight:740}
+.bottom-nav .nav.active{color:#182018;background:#e9eee7}
 
-#todayScreen + *{}
 .fab{
-  width:58px!important;height:58px!important;
-  right:18px!important;
-  bottom:calc(80px + env(safe-area-inset-bottom))!important;
-  border-radius:19px!important;
-  background:#77876d!important;
-  box-shadow:0 12px 30px rgba(43,55,43,.22)!important;
-  font-size:31px!important;
-  font-weight:300!important;
+  width:58px;
+  height:58px;
+  right:18px;
+  bottom:calc(79px + env(safe-area-inset-bottom));
+  border-radius:19px;
+  color:#fff;
+  background:#718168;
+  box-shadow:0 13px 30px rgba(47,61,47,.24);
+  font-size:31px;
+  font-weight:300;
 }
 
-@media (min-width:721px){
-  #todayScreen .hero-card{margin-top:10px}
+@media(max-width:390px){
+  #todayScreen .hero-card{min-height:178px;padding:18px 17px 15px}
+  #todayScreen .hero-row strong{font-size:17px}
+  #todayScreen .hero-income{font-size:47px}
+  #todayScreen .period-strip b{font-size:21px}
+  #todayScreen .section-head h2{font-size:21px}
+  #todayScreen .job-client,#todayScreen .amount{font-size:17px}
 }
-@media (max-width:390px){
-  #todayScreen .hero-card{min-height:166px;padding:16px 16px 14px}
-  #todayScreen .hero-income{font-size:48px}
-  #todayScreen .period-strip b{font-size:18px}
-  #todayScreen .job-client,#todayScreen .amount{font-size:16px}
-  #todayScreen .section-head h2{font-size:19px}
-}
-@media(prefers-reduced-motion:reduce){
-  .bottom-nav .nav,.fab,#todayScreen .job-card{transition:none!important}
-}
+@media(min-width:721px){#todayScreen .hero-card{margin-top:12px}}
+@media(prefers-reduced-motion:reduce){#todayScreen .job-card,.bottom-nav .nav{transition:none}}
