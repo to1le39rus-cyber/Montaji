@@ -1,5 +1,4 @@
 import './ux-style.js';
-import './ux-polish.js';
 import {
   PLANNING_SLOTS,
   actualMontageCount,
