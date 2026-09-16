@@ -8,6 +8,9 @@ const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
 const boot = fs.readFileSync(path.join(root, 'boot.js'), 'utf8');
 const rules = fs.readFileSync(path.join(root, 'firestore.rules'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const designCss = fs.readFileSync(path.join(root, 'montaji-design-v3.css'), 'utf8');
+const uxCss = fs.readFileSync(path.join(root, 'modules/ux-style.css'), 'utf8');
+const uxJs = fs.readFileSync(path.join(root, 'modules/ux-style.js'), 'utf8');
 
 function has(pattern, source = app) { assert.match(source, pattern); }
 
@@ -62,10 +65,20 @@ test('two operator accounts are enforced for legacy production data', () => {
   assert.match(rules, /allow read, write: if signedIn\(\) && isOperator\(\)/);
 });
 
-test('no legacy production patch files are required', () => {
-  for (const file of ['notes-fix.js', 'control-fix.js', 'sync-recovery.js', 'montaji-design-v3.css', 'boot-calendar-20260902.js']) {
+test('removed production patch files stay removed', () => {
+  for (const file of ['notes-fix.js', 'control-fix.js', 'sync-recovery.js', 'boot-calendar-20260902.js']) {
     assert.equal(fs.existsSync(path.join(root, file)), false, `${file} should stay removed`);
   }
+});
+
+test('canonical visual layers are static and linked', () => {
+  assert.match(index, /montaji-design-v3\.css/);
+  assert.match(designCss, /@import url\(['"]\.\/modules\/profile-ui\.css/);
+  assert.match(uxCss, /\.job-detail-sheet/);
+  assert.match(designCss, /modules\/profile-ui\.css/);
+  assert.match(uxJs, /Presentation lives in modules\/ux-style\.css/);
+  assert.doesNotMatch(uxJs, /document\.createElement\(['"]style['"]\)/);
+  assert.doesNotMatch(uxJs, /\.textContent\s*=\s*`[\s\S]*!important/);
 });
 
 test('maps use Russian providers', () => {
