@@ -8,6 +8,7 @@ const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
 const boot = fs.readFileSync(path.join(root, 'boot.js'), 'utf8');
 const rules = fs.readFileSync(path.join(root, 'firestore.rules'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const planningView = fs.readFileSync(path.join(root, 'modules/planning-view.js'), 'utf8');
 const designCss = fs.readFileSync(path.join(root, 'montaji-design-v3.css'), 'utf8');
 const uxCss = fs.readFileSync(path.join(root, 'modules/ux-style.css'), 'utf8');
 const uxJs = fs.readFileSync(path.join(root, 'modules/ux-style.js'), 'utf8');
@@ -23,6 +24,7 @@ test('production entry is deterministic', () => {
 
 test('boot is only a thin canonical entrypoint', () => {
   assert.match(boot, /import ['"]\.\/app\.js(?:\?[^'"]+)?['"];?/);
+  assert.match(boot, /import ['"]\.\/ux-style\.js(?:\?[^'"]+)?['"];?/);
   assert.doesNotMatch(boot, /source\.replace|new Blob|cdn\.jsdelivr|raw\.githubusercontent/);
 });
 
@@ -79,6 +81,13 @@ test('canonical visual layers are static and linked', () => {
   assert.match(uxJs, /Presentation lives in modules\/ux-style\.css/);
   assert.doesNotMatch(uxJs, /document\.createElement\(['"]style['"]\)/);
   assert.doesNotMatch(uxJs, /\.textContent\s*=\s*`[\s\S]*!important/);
+});
+
+test('planning view-model has no UI side effects', () => {
+  assert.match(planningView, /export function planningViewModel/);
+  assert.match(planningView, /export function planningPeriodViewModel/);
+  assert.doesNotMatch(planningView, /document|window|MutationObserver|createElement|innerHTML|addEventListener/);
+  assert.doesNotMatch(planningView, /ux-style|ux-polish|job-card-enhancer/);
 });
 
 test('maps use Russian providers', () => {
