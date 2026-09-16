@@ -1,0 +1,62 @@
+/* Montaji AA — approved concept implementation layer. Visual only. */
+:root{--c-bg:#f4f5f0;--c-card:#fff;--c-ink:#151915;--c-muted:#7f887d;--c-olive:#6d7c60;--c-deep:#202a21;--c-soft:#e8ede4;--c-line:#dedfd8}
+html,body{background:var(--c-bg)!important;color:var(--c-ink)!important}
+.app{background:var(--c-bg)!important}
+/* Today header: visually connected to the dark hero, as in the approved concept. */
+.app:has(#todayScreen.active) .topbar{background:var(--c-deep)!important;color:#fff!important;border:0!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;padding:18px 20px 14px!important;min-height:88px!important}
+.app:has(#todayScreen.active) .profile-hello{color:#fff!important}
+.app:has(#todayScreen.active) .profile-sub{color:rgba(255,255,255,.62)!important}
+.app:has(#todayScreen.active) .profile-bell{background:rgba(255,255,255,.10)!important;border-color:rgba(255,255,255,.22)!important;color:#fff!important;box-shadow:none!important}
+.app:has(#todayScreen.active) .profile-avatar{border-color:rgba(255,255,255,.72)!important;box-shadow:none!important}
+.app:has(#todayScreen.active) .main{padding-top:0!important}
+.app:has(#todayScreen.active) .hero-card{margin-top:0!important;border-radius:0 0 30px 30px!important;min-height:250px!important;padding:24px 24px 21px!important;background-color:#202a21!important;background-image:linear-gradient(180deg,rgba(21,29,22,.20),rgba(21,29,22,.18)),url('./assets/montaji-mountain.svg')!important;background-size:cover!important;background-position:center!important;box-shadow:0 18px 40px rgba(20,28,21,.16)!important}
+.app:has(#todayScreen.active) .hero-card:before{width:175px!important;height:175px!important;right:-50px!important;top:-55px!important;background:rgba(190,204,181,.16)!important;filter:none!important;border:1px solid rgba(221,230,216,.30)!important}
+.app:has(#todayScreen.active) .hero-card:after{right:-55px!important;top:-60px!important;width:185px!important;height:185px!important;border:7px solid rgba(214,225,208,.82)!important;border-left-color:rgba(214,225,208,.18)!important;background:transparent!important;box-sizing:border-box!important;z-index:0!important}
+.app:has(#todayScreen.active) .hero-row{font-size:13px!important;color:rgba(255,255,255,.66)!important}
+.app:has(#todayScreen.active) .hero-income{font-size:55px!important;margin-top:27px!important;letter-spacing:-.075em!important}
+.app:has(#todayScreen.active) .hero-label{color:rgba(255,255,255,.48)!important}
+.app:has(#todayScreen.active) .hero-mini{margin-top:25px!important;gap:34px!important}
+.app:has(#todayScreen.active) .hero-mini>span{display:flex!important;flex-direction:column!important;gap:3px!important}
+.app:has(#todayScreen.active) .hero-mini b{font-size:16px!important}
+.app:has(#todayScreen.active) .progress{margin-top:20px!important;height:6px!important;background:rgba(255,255,255,.16)!important}
+.app:has(#todayScreen.active) .progress span{background:#b8c8af!important}
+/* Compact period cards. */
+.app:has(#todayScreen.active) .period-strip{margin:12px 0 28px!important;gap:10px!important}
+.app:has(#todayScreen.active) .period-strip>div{min-height:84px!important;border-radius:19px!important;padding:13px 15px!important}
+.app:has(#todayScreen.active) .period-strip b{font-size:20px!important}
+/* Section rhythm and job cards follow the concept: white surfaces, thin line, less visual noise. */
+.app:has(#todayScreen.active) .section-head{margin:22px 2px 11px!important}
+.app:has(#todayScreen.active) .section-head h2{font-size:20px!important;font-weight:850!important}
+.app:has(#todayScreen.active) .insight{border-radius:18px!important;padding:16px 17px!important;background:#fff!important;box-shadow:none!important}
+.app:has(#todayScreen.active) .job-list{gap:10px!important}
+.app:has(#todayScreen.active) .job-card{border-radius:18px!important;padding:14px!important;box-shadow:0 7px 22px rgba(27,34,27,.055)!important}
+.app:has(#todayScreen.active) .job-client{font-size:16px!important;font-weight:820!important}
+.app:has(#todayScreen.active) .job-meta{font-size:11px!important}
+.app:has(#todayScreen.active) .amount{font-size:17px!important}
+.app:has(#todayScreen.active) .status-pill{padding:6px 10px!important}
+.app:has(#todayScreen.active) .montage-comment,.app:has(#todayScreen.active) .job-comment-preview{border-left:3px solid #66775b!important;background:#f7f8f4!important;border-radius:13px!important;padding:10px 11px!important}
+.app:has(#todayScreen.active) .inline-card{border-radius:19px!important;padding:14px!important}
+.app:has(#todayScreen.active) .upcoming-row{min-height:51px!important;border-radius:15px!important;padding:10px 13px!important}
+.app:has(#todayScreen.active) .upcoming-row b{border-radius:10px!important;padding:7px 9px!important}
+/* FAB and bottom navigation become quieter, floating controls from the concept. */
+.app:has(#todayScreen.active) .fab{width:56px!important;height:56px!important;border-radius:17px!important;right:18px!important;bottom:calc(86px + env(safe-area-inset-bottom))!important;font-size:30px!important}
+.bottom-nav{border-radius:21px!important}
+.nav{font-weight:700!important}
+/* Other screens: same design language, but preserve their existing information architecture. */
+.screen-head{margin-top:18px!important}
+.screen-head h1{font-size:30px!important;font-weight:850!important}
+.calendar{border-radius:23px!important;overflow:hidden}
+.day{border-radius:14px!important}
+.money-focus{border-radius:28px!important;padding:23px!important}
+.chart-card,.settings-card,.client-card,.system-note{border-radius:20px!important}
+.primary{font-weight:780!important}
+/* Mobile density tuned for a 390–430px phone. */
+@media(max-width:560px){
+ .app:has(#todayScreen.active) .topbar{padding-left:18px!important;padding-right:18px!important}
+ .app:has(#todayScreen.active) .hero-card{min-height:245px!important;padding-left:20px!important;padding-right:20px!important}
+ .app:has(#todayScreen.active) .hero-income{font-size:48px!important}
+ .main{padding-left:14px!important;padding-right:14px!important}
+ .app:has(#todayScreen.active) .period-strip>div{min-height:80px!important}
+ .app:has(#todayScreen.active) .job-card{padding:13px!important}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
