@@ -1,260 +1,95 @@
-/* Montaji Today — 2026 redesign / product hierarchy pass.
-   Goal: modern field-service dashboard, not a stacked CRM card wall.
-   Data, actions and business logic remain untouched. */
-#todayScreen{
-  --today-bg:#f5f6f2;
-  --today-ink:#111611;
-  --today-muted:#818981;
-  --today-line:rgba(17,22,17,.09);
-  --today-accent:#74846a;
-  --today-deep:#202a22;
-  display:block;
-  padding-top:2px;
-}
+/* Montaji Today — 2026 redesign / command-center layer.
+   Visual direction: premium mobile field-operations dashboard.
+   Principle: hierarchy first, decoration second. */
+#todayScreen{padding-top:4px}
 
-/* Header: quiet, editorial, not a second dashboard. */
+/* HERO — the day is the hero, money is supporting information. */
 #todayScreen .hero-card{
-  min-height:184px;
-  margin:10px 0 14px;
-  padding:20px 20px 17px;
-  overflow:hidden;
-  position:relative;
-  border:0;
+  min-height:190px;
+  margin:8px 0 20px;
+  padding:19px 20px 17px;
   border-radius:30px;
-  color:#fff;
   background:
-    radial-gradient(circle at 88% 0%,rgba(181,199,174,.34) 0 9%,transparent 9.4%),
-    radial-gradient(circle at 88% 0%,transparent 0 21%,rgba(181,199,174,.13) 21.4% 21.8%,transparent 22.2%),
-    radial-gradient(circle at 88% 0%,transparent 0 33%,rgba(181,199,174,.08) 33.3% 33.7%,transparent 34%),
-    linear-gradient(145deg,#273329 0%,#1d261f 100%);
-  box-shadow:0 20px 48px rgba(24,34,27,.16);
+    radial-gradient(circle at 92% 5%,rgba(190,207,183,.42) 0 8%,transparent 8.4%),
+    radial-gradient(circle at 92% 5%,transparent 0 19%,rgba(190,207,183,.16) 19.4% 19.8%,transparent 20.2%),
+    radial-gradient(circle at 92% 5%,transparent 0 31%,rgba(190,207,183,.08) 31.3% 31.7%,transparent 32.1%),
+    linear-gradient(150deg,#263229 0%,#172019 100%);
+  box-shadow:0 22px 55px rgba(22,31,24,.19);
 }
-#todayScreen .hero-card:before{right:-82px;top:-126px;width:255px;height:255px;border:1px solid rgba(225,235,220,.14);border-radius:50%;box-shadow:0 0 0 15px rgba(225,235,220,.025)}
-#todayScreen .hero-card:after{right:-18px;top:-45px;width:145px;height:145px;border:3px solid rgba(216,228,208,.5);border-left-color:rgba(216,228,208,.08);border-radius:50%;pointer-events:none}
-#todayScreen .hero-row{position:relative;z-index:2;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;color:rgba(255,255,255,.52);font-size:11px}
-#todayScreen .hero-row strong{color:#fff;font-size:18px;line-height:1;letter-spacing:-.04em}
-#todayScreen .hero-income{position:relative;z-index:2;margin-top:25px;color:#fff;font-size:clamp(44px,12vw,58px);line-height:.9;font-weight:820;letter-spacing:-.075em}
-#todayScreen .hero-label{position:relative;z-index:2;margin-top:7px;color:rgba(255,255,255,.38);font-size:8px;letter-spacing:.2em;text-transform:uppercase}
-#todayScreen .hero-mini{position:relative;z-index:2;display:flex;gap:34px;margin-top:20px;color:rgba(255,255,255,.5);font-size:9px}
+#todayScreen .hero-card:before{right:-95px;top:-135px;width:275px;height:275px;border:1px solid rgba(224,235,219,.14);border-radius:50%;box-shadow:0 0 0 16px rgba(224,235,219,.025)}
+#todayScreen .hero-card:after{right:-17px;top:-43px;width:150px;height:150px;border:3px solid rgba(216,228,209,.52);border-left-color:rgba(216,228,209,.06);border-radius:50%}
+#todayScreen .hero-row{display:block;position:relative;z-index:3;color:rgba(255,255,255,.48);font-size:11px}
+#todayScreen .hero-row>span{display:block;margin-bottom:13px;font-size:10px;letter-spacing:.02em}
+#todayScreen .hero-row strong{display:block;color:#fff;font-size:34px;line-height:.94;font-weight:820;letter-spacing:-.065em}
+#todayScreen .hero-income{position:absolute;right:20px;top:20px;z-index:4;margin:0;color:#fff;font-size:25px;line-height:1;font-weight:790;letter-spacing:-.055em}
+#todayScreen .hero-label{position:absolute;right:21px;top:49px;z-index:4;margin:0;color:rgba(255,255,255,.38);font-size:7px;letter-spacing:.19em}
+#todayScreen .hero-mini{position:absolute;left:20px;bottom:34px;z-index:4;display:flex;gap:32px;margin:0;color:rgba(255,255,255,.46);font-size:9px}
 #todayScreen .hero-mini>span{display:flex;flex-direction:column;gap:4px}
-#todayScreen .hero-mini b{color:#fff;font-size:14px;font-weight:760}
-#todayScreen .progress{position:relative;z-index:2;height:4px;margin-top:17px;background:rgba(255,255,255,.13);border-radius:99px}
-#todayScreen .progress span{background:#d0dcc9}
+#todayScreen .hero-mini b{color:#fff;font-size:13px;font-weight:760}
+#todayScreen .progress{position:absolute;left:20px;right:20px;bottom:16px;z-index:4;height:4px;margin:0;background:rgba(255,255,255,.12);border-radius:99px}
+#todayScreen .progress span{background:#d4e0ce;border-radius:99px}
 
-/* Money becomes a metric rail, not two more cards. */
-#todayScreen .period-strip{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:0;
-  margin:0 0 28px;
-  padding:0;
-  background:transparent;
-}
-#todayScreen .period-strip>div{
-  min-height:56px;
-  padding:4px 18px 3px 1px;
-  background:transparent;
-  border:0;
-  border-radius:0;
-  box-shadow:none;
-}
-#todayScreen .period-strip>div+div{padding-left:18px;border-left:1px solid var(--today-line)}
-#todayScreen .period-strip small{font-size:10px;color:#929a91}
-#todayScreen .period-strip b{margin-top:4px;font-size:23px;line-height:1;letter-spacing:-.055em}
+/* Metric rail — numbers breathe instead of sitting in two boxes. */
+#todayScreen .period-strip{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:0 1px 31px;padding:0;background:transparent}
+#todayScreen .period-strip>div{min-height:57px;padding:3px 18px 3px 0;background:transparent;border:0;border-radius:0;box-shadow:none}
+#todayScreen .period-strip>div+div{padding-left:18px;border-left:1px solid rgba(17,22,17,.11)}
+#todayScreen .period-strip small{font-size:9px;color:#969d95}
+#todayScreen .period-strip b{display:block;margin-top:6px;font-size:23px;line-height:1;letter-spacing:-.06em}
 
-/* Section rhythm. */
-#todayScreen .section-head{margin:26px 1px 11px}
-#todayScreen .section-head h2{font-size:22px;line-height:1;font-weight:820;letter-spacing:-.055em}
-#todayScreen .section-head .quick-inline{gap:10px}
-#todayScreen .section-head .text-btn{padding:5px 0;color:var(--today-accent);font-size:10px;font-weight:780}
+/* Sections become a single visual rhythm. */
+#todayScreen .section-head{margin:27px 1px 11px}
+#todayScreen .section-head h2{font-size:21px;line-height:1.05;font-weight:820;letter-spacing:-.055em}
+#todayScreen .section-head .quick-inline{gap:12px}
+#todayScreen .section-head .text-btn{padding:4px 0;color:#75856b;font-size:10px;font-weight:780}
 
-/* Important = one calm notification surface. */
+/* Important: notification, not card. */
 #todayScreen .insights{display:block}
-#todayScreen .insight{
-  min-height:54px;
-  padding:15px 15px 15px 14px;
-  color:#353c35;
-  background:#edf1ea;
-  border:0;
-  border-left:3px solid #7b8b70;
-  border-radius:15px;
-  box-shadow:none;
-  font-size:12px;
-  line-height:1.35;
-}
-#todayScreen .insight span{margin-right:7px;color:#75836b;font-size:15px}
+#todayScreen .insight{min-height:50px;padding:14px 14px;color:#3e473e;background:#eaf0e7;border:0;border-radius:15px;box-shadow:none;font-size:11px;line-height:1.35}
+#todayScreen .insight span{margin-right:7px;color:#788a70;font-size:14px}
 
-/* Today jobs: operational timeline cards, not form containers. */
-#todayScreen .job-list{display:grid;gap:10px}
-#todayScreen .job-card{
-  position:relative;
-  overflow:hidden;
-  padding:16px 15px 14px 18px;
-  background:#fff;
-  border:0;
-  border-radius:22px;
-  box-shadow:0 8px 30px rgba(22,29,23,.055);
-  transition:transform 180ms ease,box-shadow 180ms ease;
-}
-#todayScreen .job-card:first-child{border:0}
-#todayScreen .job-card:first-child:before{
-  content:"";
-  position:absolute;
-  left:0;
-  top:15px;
-  bottom:15px;
-  width:4px;
-  background:#78886e;
-  border-radius:0 5px 5px 0;
-}
+/* JOBS — stronger hierarchy, lighter chrome. */
+#todayScreen .job-list{display:grid;gap:8px}
+#todayScreen .job-card{position:relative;overflow:hidden;padding:17px 15px 13px 18px;background:#fff;border:0;border-radius:22px;box-shadow:0 9px 30px rgba(20,28,22,.055)}
+#todayScreen .job-card:first-child:before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:4px;background:#78896e;border-radius:0 5px 5px 0}
 #todayScreen .job-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
-#todayScreen .job-client{min-width:0;color:#111611;font-size:18px;line-height:1.08;font-weight:810;letter-spacing:-.04em}
-#todayScreen .amount{flex:0 0 auto;color:#111611;font-size:18px;line-height:1;font-weight:820;letter-spacing:-.04em}
-#todayScreen .job-meta{margin-top:6px;color:#7b837a;font-size:10px;line-height:1.25}
+#todayScreen .job-client{min-width:0;color:#101510;font-size:18px;line-height:1.04;font-weight:820;letter-spacing:-.045em}
+#todayScreen .amount{flex:0 0 auto;color:#101510;font-size:18px;line-height:1;font-weight:820;letter-spacing:-.045em}
+#todayScreen .job-meta{margin-top:7px;color:#7d857d;font-size:10px;line-height:1.2}
 #todayScreen .job-details{display:grid;gap:7px;margin-top:12px}
-#todayScreen .detail-line{color:#596159;font-size:11px;line-height:1.4;overflow-wrap:anywhere}
-#todayScreen .job-details .detail-line:first-child{color:#4e574f}
-#todayScreen .job-details .note-line{
-  position:relative;
-  display:-webkit-box;
-  -webkit-box-orient:vertical;
-  -webkit-line-clamp:2;
-  line-clamp:2;
-  overflow:hidden;
-  max-height:53px;
-  padding:9px 10px 9px 28px;
-  color:#525b53;
-  background:#f3f5f1;
-  border:0;
-  border-radius:13px;
-  line-height:1.35;
-}
-#todayScreen .job-details .note-line:before{content:"“";position:absolute;left:9px;top:5px;color:#819076;font-size:19px;font-weight:800;line-height:1}
+#todayScreen .detail-line{color:#596259;font-size:11px;line-height:1.38;overflow-wrap:anywhere}
+#todayScreen .job-details .note-line{position:relative;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;max-height:52px;padding:9px 10px 9px 28px;color:#535c54;background:#f3f5f1;border:0;border-radius:13px;line-height:1.34}
+#todayScreen .job-details .note-line:before{content:"“";position:absolute;left:9px;top:5px;color:#7f906f;font-size:18px;font-weight:800;line-height:1}
 #todayScreen .card-status{margin-top:5px}
-#todayScreen .status-pill{padding:6px 9px;color:#31402f;font-size:9px;font-weight:740;background:#e8eee5;border-radius:99px}
-#todayScreen .actions{display:flex;justify-content:flex-end;margin-top:10px}
+#todayScreen .status-pill{padding:5px 9px;color:#33412f;background:#e8eee5;border-radius:99px;font-size:9px;font-weight:740}
+#todayScreen .actions{display:flex;justify-content:flex-end;margin-top:8px}
 #todayScreen .actions .map-chip,#todayScreen .actions .action-chip:not(.primary-chip),#todayScreen .quick-actions{display:none}
-#todayScreen .actions .primary-chip{
-  min-width:auto;
-  padding:8px 2px;
-  color:#6f7e66;
-  background:transparent;
-  border:0;
-  border-radius:0;
-  font-size:10px;
-  font-weight:800;
-}
-#todayScreen .actions .primary-chip:after{content:"  ›";font-size:16px;line-height:0;vertical-align:-1px}
+#todayScreen .actions .primary-chip{min-width:auto;padding:6px 1px;color:#718167;background:transparent;border:0;font-size:10px;font-weight:820}
+#todayScreen .actions .primary-chip:after{content:"  ›";font-size:16px;vertical-align:-1px}
 
-/* Utility sections lose the repeated card treatment. */
-#todayScreen .inline-card{
-  margin-top:18px;
-  padding:0 1px;
-  background:transparent;
-  border:0;
-  border-radius:0;
-  box-shadow:none;
-}
+/* Lower information: quieter and denser. */
+#todayScreen .inline-card{margin-top:19px;padding:0 1px;background:transparent;border:0;border-radius:0;box-shadow:none}
 #todayScreen .inline-card .section-head{margin:0 1px 9px}
 #todayScreen .inline-card .section-head h2{font-size:18px}
-#todayScreen #todayExpenses{
-  padding:13px 14px;
-  background:#fff;
-  border:0;
-  border-radius:15px;
-  box-shadow:0 7px 24px rgba(22,29,23,.04);
-}
-#todayScreen #todayExpenses:empty:after{padding:0;color:#838b83;font-size:11px}
-
-/* Upcoming: compact list, visually secondary. */
+#todayScreen #todayExpenses{padding:13px 14px;background:#fff;border:0;border-radius:15px;box-shadow:0 7px 24px rgba(20,28,22,.04)}
 #todayScreen .upcoming-list{display:grid;gap:5px}
-#todayScreen .upcoming-row{
-  min-height:48px;
-  padding:9px 11px;
-  grid-template-columns:75px minmax(0,1fr) auto;
-  border:0;
-  border-radius:14px;
-  background:rgba(255,255,255,.72);
-  box-shadow:inset 0 0 0 1px rgba(17,22,17,.055);
-}
+#todayScreen .upcoming-row{min-height:47px;padding:8px 11px;grid-template-columns:76px minmax(0,1fr) auto;border:0;border-radius:14px;background:rgba(255,255,255,.72);box-shadow:inset 0 0 0 1px rgba(17,22,17,.055)}
 #todayScreen .upcoming-row span{font-size:10px;font-weight:760}
 #todayScreen .upcoming-row b{padding:5px 8px;color:#53614f;font-size:9px;background:#e9eee7;border-radius:8px}
-#todayScreen .upcoming-row small{font-size:8px;color:#8c938b}
-
-/* Notes: useful, but not a giant panel. */
-#todayScreen .inline-card:last-child{
-  margin-top:23px;
-  padding:0 1px;
-  background:transparent;
-  border:0;
-  border-radius:0;
-}
-#todayScreen .inline-card:last-child .section-head{margin:0 1px 9px}
-#todayScreen .inline-card:last-child .section-head small{font-size:9px;color:#9aa19a}
-#todayScreen .note-card{padding:10px 0;border-top:1px solid rgba(17,22,17,.07)}
+#todayScreen .upcoming-row small{font-size:8px;color:#8d948c}
+#todayScreen .inline-card:last-child{margin-top:22px;padding:0 1px;background:transparent;border:0;border-radius:0}
+#todayScreen .inline-card:last-child .section-head{margin:0 1px 8px}
+#todayScreen .inline-card:last-child .section-head small{font-size:9px;color:#9ba29b}
+#todayScreen .note-card{padding:9px 0;border-top:1px solid rgba(17,22,17,.07)}
 #todayScreen .note-card:first-child{border-top:0}
 #todayScreen .note-card p{font-size:11px;color:#626a62;line-height:1.4}
 
-/* Header and nav are deliberately quieter so Today content wins. */
-.topbar{
-  min-height:68px;
-  padding:calc(8px + env(safe-area-inset-top)) 18px 9px;
-  background:rgba(245,246,242,.88);
-  border-bottom:1px solid rgba(17,22,17,.045);
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
-}
-.brand{font-size:11px;letter-spacing:.15em}
-.top-date{font-size:10px}
+/* Floating navigation: tactile glass surface. */
+.topbar{min-height:68px;padding:calc(8px + env(safe-area-inset-top)) 18px 9px;background:rgba(245,246,242,.86);border-bottom:1px solid rgba(17,22,17,.045);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
+.brand{font-size:11px;letter-spacing:.15em}.top-date{font-size:10px}
+.bottom-nav{left:50%;right:auto;bottom:max(10px,env(safe-area-inset-bottom));width:min(calc(100% - 24px),700px);padding:5px;gap:2px;transform:translateX(-50%);border:1px solid rgba(17,22,17,.08);border-radius:22px;background:rgba(255,255,255,.9);box-shadow:0 15px 38px rgba(20,28,21,.14);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
+.bottom-nav .nav{min-height:50px;padding:7px 4px;color:#9da49c;background:transparent;border:0;border-radius:16px}.bottom-nav .nav span{display:none}.bottom-nav .nav small{font-size:9px;font-weight:740}.bottom-nav .nav.active{color:#182018;background:#e8eee6}
+.fab{width:58px;height:58px;right:18px;bottom:calc(79px + env(safe-area-inset-bottom));border-radius:19px;color:#fff;background:#728269;box-shadow:0 14px 32px rgba(47,61,47,.25);font-size:31px;font-weight:300}
 
-.bottom-nav{
-  left:50%;
-  right:auto;
-  bottom:max(10px,env(safe-area-inset-bottom));
-  width:min(calc(100% - 24px),700px);
-  padding:5px;
-  gap:2px;
-  transform:translateX(-50%);
-  border:1px solid rgba(17,22,17,.08);
-  border-radius:22px;
-  background:rgba(255,255,255,.9);
-  box-shadow:0 15px 38px rgba(20,28,21,.14);
-  backdrop-filter:blur(22px);
-  -webkit-backdrop-filter:blur(22px);
-}
-.bottom-nav .nav{
-  min-height:50px;
-  padding:7px 4px;
-  color:#a0a69f;
-  background:transparent;
-  border:0;
-  border-radius:16px;
-  transition:background 180ms ease,color 180ms ease,transform 180ms ease;
-}
-.bottom-nav .nav span{display:none}
-.bottom-nav .nav small{font-size:9px;font-weight:740}
-.bottom-nav .nav.active{color:#182018;background:#e9eee7}
-
-.fab{
-  width:58px;
-  height:58px;
-  right:18px;
-  bottom:calc(79px + env(safe-area-inset-bottom));
-  border-radius:19px;
-  color:#fff;
-  background:#718168;
-  box-shadow:0 13px 30px rgba(47,61,47,.24);
-  font-size:31px;
-  font-weight:300;
-}
-
-@media(max-width:390px){
-  #todayScreen .hero-card{min-height:178px;padding:18px 17px 15px}
-  #todayScreen .hero-row strong{font-size:17px}
-  #todayScreen .hero-income{font-size:47px}
-  #todayScreen .period-strip b{font-size:21px}
-  #todayScreen .section-head h2{font-size:21px}
-  #todayScreen .job-client,#todayScreen .amount{font-size:17px}
-}
+@media(max-width:390px){#todayScreen .hero-card{min-height:186px;padding:18px 17px 16px}#todayScreen .hero-row strong{font-size:32px}#todayScreen .hero-income{right:18px;top:19px;font-size:23px}#todayScreen .hero-label{right:19px;top:46px}#todayScreen .hero-mini{left:18px;bottom:33px}#todayScreen .progress{left:18px;right:18px}#todayScreen .period-strip b{font-size:21px}#todayScreen .section-head h2{font-size:20px}#todayScreen .job-client,#todayScreen .amount{font-size:17px}}
 @media(min-width:721px){#todayScreen .hero-card{margin-top:12px}}
 @media(prefers-reduced-motion:reduce){#todayScreen .job-card,.bottom-nav .nav{transition:none}}
