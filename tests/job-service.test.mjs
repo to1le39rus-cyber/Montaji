@@ -7,7 +7,7 @@ test('job service routes lifecycle commands through repository',async()=>{
  const repository={
   createJob:async job=>{calls.push(['create',job]);return job;},
   updateJob:async(id,transform)=>{
-   const before={id,date:'2026-09-19',status:'Запланирован',paid:false};
+   const before={id,date:'2026-09-19',status:'Запланировано',paid:false};
    const after=await transform(before);
    calls.push(['update',id,after]);
    return after;
@@ -26,11 +26,11 @@ test('job service routes lifecycle commands through repository',async()=>{
  assert.equal(paid.paid,true);
 
  const moved=await service.reschedule('j1','2026-09-20');
- assert.equal(moved.status,'Перенос');
+ assert.equal(moved.status,'Перенесен');
  assert.equal(moved.date,'2026-09-20');
 
  const cancelled=await service.cancel('j1','Клиент отменил');
- assert.equal(cancelled.status,'Отменён');
+ assert.equal(cancelled.status,'Отменен');
 
  assert.deepEqual(calls.map(x=>x[0]),['create','update','update','update','update']);
 });
@@ -38,12 +38,12 @@ test('job service routes lifecycle commands through repository',async()=>{
 test('job service keeps payment separate from completion',async()=>{
  const repository={
   createJob:async job=>job,
-  updateJob:async(id,transform)=>transform({id,status:'Запланирован',paid:false,date:'2026-09-19'})
+  updateJob:async(id,transform)=>transform({id,status:'Запланировано',paid:false,date:'2026-09-19'})
  };
  const service=createJobService({repository});
  const paid=await service.markPaid('j1');
  assert.equal(paid.paid,true);
- assert.equal(paid.status,'Запланирован');
+ assert.equal(paid.status,'Запланировано');
 });
 
 
@@ -54,7 +54,7 @@ test('editor patch is applied to the fresh repository version without reverting 
    id,
    client:'Клиент',
    address:'Старый адрес',
-   status:'Запланирован',
+   status:'Запланировано',
    paid:true,
    date:'2026-09-19'
   })
@@ -63,7 +63,7 @@ test('editor patch is applied to the fresh repository version without reverting 
  const updated=await service.update('j1',{address:'Новый адрес'});
  assert.equal(updated.address,'Новый адрес');
  assert.equal(updated.paid,true);
- assert.equal(updated.status,'Запланирован');
+ assert.equal(updated.status,'Запланировано');
 });
 
 test('status patch keeps command semantics while preserving unrelated fresh fields',async()=>{
@@ -73,7 +73,7 @@ test('status patch keeps command semantics while preserving unrelated fresh fiel
    id,
    client:'Клиент',
    address:'Свежий адрес',
-   status:'Запланирован',
+   status:'Запланировано',
    paid:true,
    date:'2026-09-19'
   })
