@@ -3,7 +3,7 @@
 .job-card[data-status="planned"]{--status:#657b9c}.job-card[data-status="done"]{--status:#627453}.job-card[data-status="moved"]{--status:#b07b3e}.job-card[data-status="cancelled"]{--status:#a86159}
 .job-card:active{transform:scale(.988);box-shadow:0 4px 16px rgba(23,25,20,.05)}
 .job-card:active::before{opacity:1;transform:translate(10%,8%) scale(1.08)}
-.job-card-main{display:block;width:100%;padding:18px;text-align:left;background:transparent;border:0}
+.job-card-main{display:block;width:100%;min-height:44px;padding:17px 17px 14px;text-align:left;background:transparent;border:0}
 .job-card-top,.job-card-bottom{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .job-card-top>strong{font-size:18px;line-height:1.15;font-weight:780;letter-spacing:-.035em}
 .job-card-status{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid color-mix(in srgb,var(--status) 20%,transparent);border-radius:999px;background:color-mix(in srgb,var(--status) 9%,white);color:color-mix(in srgb,var(--status) 86%,#171914);font-size:11px;font-weight:760}
@@ -16,7 +16,7 @@
 .job-card-bottom strong{font-size:22px;line-height:1;letter-spacing:-.05em}
 .job-payment{font-size:12px;font-weight:750}.job-payment.is-paid{color:var(--success)}.job-payment.is-unpaid{color:var(--danger)}
 .job-card-actions{display:flex;gap:7px;padding:0 14px 14px}.job-card-actions:empty{display:none}
-.job-card-actions button{min-height:40px;padding:0 13px;border:1px solid var(--line);border-radius:12px;background:rgba(251,250,246,.8);font-size:12px;font-weight:720;transition:transform var(--motion-fast) var(--ease-spring),background var(--motion-fast) var(--ease-out)}
+.job-card-actions button{min-height:44px;flex:1;padding:0 13px;border:1px solid var(--line);border-radius:13px;background:rgba(251,250,246,.82);font-size:12px;font-weight:740;transition:transform var(--motion-fast) var(--ease-spring),background var(--motion-fast) var(--ease-out),box-shadow var(--motion-fast) var(--ease-out)} .job-card-actions button:first-child{background:var(--ink);border-color:var(--ink);color:#fff;box-shadow:0 7px 16px rgba(23,25,20,.11)}
 .job-card-actions button:active{transform:scale(.97);background:#f0efe8}
 .job-form,.store-form{display:grid;gap:14px}
 .job-form label,.store-form label{display:grid;gap:7px;color:var(--muted);font-size:12px;font-weight:700}
