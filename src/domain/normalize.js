@@ -9,7 +9,7 @@ export const normalizeJob = (j={}) => ({
   type:j.type || 'Монтаж',
   client:j.client || '',
   price:num(j.price),
-  status:j.status || 'Запланирован',
+  status:j.status || 'Запланировано',
   paid:j.paid !== false,
   completedDate:j.completedDate || '',
   time:j.time || '',
