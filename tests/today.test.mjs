@@ -4,8 +4,8 @@ import { buildTodayModel } from '../src/screens/today.js';
 
 const jobs=[
  {id:'1',date:'2026-09-19',type:'Монтаж',client:'А',price:10000,status:'Выполнен',paid:true},
- {id:'2',date:'2026-09-19',type:'Монтаж',client:'Б',price:12000,status:'Запланирован',paid:true},
- {id:'3',date:'2026-09-19',type:'Монтаж',client:'В',price:9000,status:'Отменён',paid:true},
+ {id:'2',date:'2026-09-19',type:'Монтаж',client:'Б',price:12000,status:'Запланировано',paid:true},
+ {id:'3',date:'2026-09-19',type:'Монтаж',client:'В',price:9000,status:'Отменен',paid:true},
  {id:'4',date:'2026-09-19',type:'Доп. доход',client:'Г',price:5000,status:'Выполнен',paid:true}
 ];
 
