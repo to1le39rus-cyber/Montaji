@@ -10,10 +10,11 @@ jobs:
   regression-tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
+          package-manager-cache: false
       - name: Run regression tests
         run: |
           node --check app.js
@@ -26,7 +27,7 @@ jobs:
   production-wiring:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Check production wiring
         run: |
           grep -E 'boot\.js\?v=' index.html
@@ -39,7 +40,7 @@ jobs:
   russian-maps:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Check Russian map routing
         run: |
           grep -F 'yandex.ru/maps' app.js
@@ -49,7 +50,7 @@ jobs:
   security-rules:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Check security rules
         run: |
           grep -F 'request.auth != null' firestore.rules
@@ -59,7 +60,7 @@ jobs:
   legacy-wiring:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Check legacy production wiring
         run: |
           ! grep -E 'v9.js|v9-compat|app-v[0-9]|firebase-sync|archive.js|enhancement-v8.js' index.html
