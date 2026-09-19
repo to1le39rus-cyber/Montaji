@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Монтажи АА — Canonical Preview</title>
+<link rel="stylesheet" href="./src/styles/base.css">
+<link rel="stylesheet" href="./src/styles/today.css">
+<link rel="stylesheet" href="./src/styles/schedule.css">
+<link rel="stylesheet" href="./src/styles/money.css">
+<link rel="stylesheet" href="./src/styles/clients.css">
+<link rel="stylesheet" href="./src/styles/notes-more.css">
+<link rel="stylesheet" href="./src/styles/job-components.css">
+</head>
+<body>
+<div id="app"></div>
+<script type="module">
+import { createCanonicalShell } from './src/core/canonical-shell.js';
+createCanonicalShell({
+ root:document.querySelector('#app'),
+ initialState:{jobs:[],expenses:[],version:5},
+ initialNotes:[],
+ user:null
+});
+</script>
+</body>
+</html>
