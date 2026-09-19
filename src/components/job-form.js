@@ -1,7 +1,7 @@
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 const value=(job,key)=>esc(job?.[key]??'');
 const types=['Монтаж','Замер','Рекламация','Доставка','Сервис','Доп. доход'];
-const statuses=['Запланирован','В пути','На объекте','Выполнен','Отменён','Перенос'];
+const statuses=['Запланировано','Выполнен','Перенесен','Отменен'];
 
 export const createJobForm=({job={},stores=[],onSubmit=()=>{},onCancel=()=>{}})=>{
  const form=document.createElement('form'); form.className='job-form';
@@ -10,7 +10,7 @@ export const createJobForm=({job={},stores=[],onSubmit=()=>{},onCancel=()=>{}})=
  form.elements.type.addEventListener('change',sync); form.elements.status.addEventListener('change',sync); sync();
  const readValue=()=>{
   const fd=new FormData(form);const n=k=>Number(String(fd.get(k)||'').replace(/\s/g,'').replace(',','.'))||0;const slot=Math.max(1,Number(fd.get('slot')||1));
-  return {type:String(fd.get('type')||'Монтаж'),date:String(fd.get('date')||''),slot:String(slot),client:String(fd.get('client')||'').trim(),phone:String(fd.get('phone')||'').trim(),price:n('price'),address:String(fd.get('address')||'').trim(),source:String(fd.get('source')||'').trim(),measurePrice:n('measurePrice'),measurePaid:form.elements.measurePaid?.checked===true,measureCredit:n('measureCredit'),comment:String(fd.get('comment')||'').trim(),status:String(fd.get('status')||'Запланирован'),completedDate:String(fd.get('completedDate')||''),paid:form.elements.paid.checked};
+  return {type:String(fd.get('type')||'Монтаж'),date:String(fd.get('date')||''),slot:String(slot),client:String(fd.get('client')||'').trim(),phone:String(fd.get('phone')||'').trim(),price:n('price'),address:String(fd.get('address')||'').trim(),source:String(fd.get('source')||'').trim(),measurePrice:n('measurePrice'),measurePaid:form.elements.measurePaid?.checked===true,measureCredit:n('measureCredit'),comment:String(fd.get('comment')||'').trim(),status:String(fd.get('status')||'Запланировано'),completedDate:String(fd.get('completedDate')||''),paid:form.elements.paid.checked};
  };
  const initial=readValue();
  const same=(a,b)=>Object.is(a,b);
