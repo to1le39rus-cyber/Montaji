@@ -5,7 +5,7 @@ import { initialDataState, loaded, failed, DATA_STATES } from '../src/core/data-
 
 test('normalize preserves existing job fields while applying safe defaults',()=>{
   const j=normalizeJob({id:'j1',date:'2026-09-19',type:'Монтаж',price:'12 500',status:'Выполнен',paid:false,address:'A'});
-  assert.equal(j.id,'j1'); assert.equal(j.address,'A'); assert.equal(j.price,0); assert.equal(j.paid,false);
+  assert.equal(j.id,'j1'); assert.equal(j.address,'A'); assert.equal(j.price,12500); assert.equal(j.paid,false);
 });
 test('normalize keeps cancelled expenses out of active semantics',()=>{
   const e=normalizeExpense({id:'e1',amount:'100,50',cancelled:true});
