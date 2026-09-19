@@ -26,14 +26,14 @@
 .job-form-actions button,.job-lifecycle-actions button{min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:13px;background:var(--surface);font-weight:700}
 .job-form-actions button[type="submit"]{border-color:var(--ink);background:var(--ink);color:#fff}
 .job-lifecycle-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
-.canonical-modal{position:fixed;inset:0;z-index:30;display:grid;place-items:end center;padding:12px;background:rgba(20,22,18,.38);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+.canonical-modal{position:fixed;inset:0;z-index:30;display:grid;place-items:end center;padding:0;background:rgba(20,22,18,.38);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
 .canonical-modal[hidden]{display:none}
-.canonical-modal-panel{width:min(680px,100%);max-height:92dvh;overflow:auto;padding:20px;background:var(--surface-strong);color:var(--ink);border-radius:28px;box-shadow:var(--shadow)}
+.canonical-modal-panel{box-sizing:border-box;width:100%;max-width:680px;max-height:92dvh;overflow:auto;padding:20px;background:var(--surface-strong);color:var(--ink);border-radius:28px;box-shadow:var(--shadow)}
 .canonical-modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
 .canonical-modal-head strong{font-size:19px}
 .canonical-modal-head button,.client-modal-close{min-height:38px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-size:12px;font-weight:700}
 .job-edit-modal{display:flex;flex-direction:column;overflow:hidden;max-height:92dvh}
 .job-edit-modal>.canonical-modal-head{flex:0 0 auto}
-.canonical-modal-body{min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-right:2px}
+.canonical-modal-body{min-width:0;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.job-form-completed.is-disabled{opacity:.42}.job-form-completed.is-disabled input{background:rgba(115,119,109,.06);cursor:not-allowed}
 .canonical-modal-body>.job-form{padding-bottom:4px}
-@media(min-width:700px){.canonical-modal{place-items:center}.canonical-modal-panel{border-radius:30px}}
+@media(min-width:700px){.canonical-modal{place-items:center;padding:12px}.canonical-modal-panel{border-radius:30px}}
