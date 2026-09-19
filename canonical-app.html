@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Монтажи АА — Canonical App</title>
+<link rel="stylesheet" href="./src/styles/base.css">
+<link rel="stylesheet" href="./src/styles/today.css">
+<link rel="stylesheet" href="./src/styles/schedule.css">
+<link rel="stylesheet" href="./src/styles/money.css">
+<link rel="stylesheet" href="./src/styles/clients.css">
+<link rel="stylesheet" href="./src/styles/notes-more.css">
+<link rel="stylesheet" href="./src/styles/job-components.css">
+<style>
+body{background:#f6f7f5;color:#171914}.gate{max-width:560px;margin:8vh auto;padding:24px;border:1px solid #ddd;border-radius:24px;background:#fff}.gate label{display:grid;gap:7px;margin:14px 0}.gate input{padding:13px;border:1px solid #ccc;border-radius:12px}.gate button{padding:13px 16px;border:0;border-radius:12px;background:#2f6fed;color:#fff;font-weight:700}.error{margin-top:12px;color:#a33}.status,.warning{max-width:900px;margin:12px auto;padding:10px 12px;font-size:13px}.warning{border-radius:12px;background:#fff4d6;color:#6b5314}
+</style>
+</head>
+<body>
+<section id="gate" class="gate">
+<h1>Montaji — Canonical App</h1>
+<p>Новый runtime. Реальные данные Firestore. Изменения заявок выполняются через transaction.</p>
+<label>Email<input id="email" type="email" autocomplete="username"></label>
+<label>Пароль<input id="password" type="password" autocomplete="current-password"></label>
+<button id="login" type="button">Войти</button><div id="error" class="error"></div>
+</section>
+<div id="status" class="status" hidden></div>
+<div id="warning" class="warning" hidden>Canonical beta: изменения заявок записываются в реальную общую базу.</div>
+<div id="app"></div>
+<script type="module">
+import {createFirebase} from './src/data/firebase.js';
+import {createSharedRepository} from './src/data/shared-repository.js';
+import {createNotesRepository} from './src/data/notes-repository.js';
+import {createJobRepository} from './src/data/job-repository.js';
+import {createJobService} from './src/domain/job-service.js';
+import {normalizeShared,normalizeNotes} from './src/domain/normalize.js';
+import {createCanonicalShell} from './src/core/canonical-shell.js';
+import {loadLocalSnapshot,saveLocalSnapshot,clearLocalCache} from './src/data/local-cache.js';
+import {firebaseConfig} from './firebase-config.js';
+const gate=document.querySelector('#gate'),app=document.querySelector('#app'),status=document.querySelector('#status'),warning=document.querySelector('#warning'),error=document.querySelector('#error'),email=document.querySelector('#email'),password=document.querySelector('#password');
+const fb=createFirebase(firebaseConfig),shared=createSharedRepository({firestore:fb.firestore,...fb.firestoreApi}),notes=createNotesRepository({firestore:fb.firestore,...fb.firestoreApi});
+let shell=null,unsubShared=null,unsubNotes=null,uid='';
+const showError=e=>{error.textContent=e?.message||String(e)};
+const stop=()=>{unsubShared?.();unsubNotes?.();unsubShared=null;unsubNotes=null};
+async function resetCache(){if(!confirm('Очистить только локальные данные и кэш? Firestore не изменится.'))return;await clearLocalCache();location.reload()}
+async function open(user){
+ if(uid===user.uid)return;uid=user.uid;stop();gate.hidden=true;warning.hidden=false;status.hidden=false;
+ const cached=await loadLocalSnapshot();
+ const jobRepository=createJobRepository({firestore:fb.firestore,...fb.firestoreApi,actorId:user.uid});
+ const jobService=createJobService({repository:jobRepository});
+ const actions={clearCache:resetCache,signOut:()=>fb.authApi.signOut(fb.auth)};
+ try{
+  const raw=await shared.load(), state=normalizeShared(raw);
+  let ns=[];try{ns=normalizeNotes({notes:await notes.load()})}catch(e){console.warn(e);ns=cached?.notes?normalizeNotes({notes:cached.notes}):[]}
+  shell=createCanonicalShell({root:app,initialState:state,initialNotes:ns,user,readOnly:false,jobService,actions});
+  shell.state.setDataStatus('ready');shell.setCacheStatus(cached?'cached':'none');
+  await saveLocalSnapshot({shared:state,notes:ns});status.textContent='● Firestore · realtime · актуально';
+ }catch(e){
+  if(cached){
+   shell=createCanonicalShell({root:app,initialState:normalizeShared(cached.shared),initialNotes:normalizeNotes({notes:cached.notes}),user,readOnly:false,jobService,actions});
+   shell.state.setDataStatus('offline');shell.setCacheStatus('cached');status.textContent='⚠️ Локальный снимок · Firestore недоступен';
+  }else{showError(e);gate.hidden=false;warning.hidden=true;status.hidden=true;uid='';return}
+ }
+ unsubShared=shared.subscribe(raw=>{if(!shell)return;const s=normalizeShared(raw);shell.state.setState(s);shell.state.setDataStatus('ready');shell.setCacheStatus('cached');saveLocalSnapshot({shared:s,notes:shell.state.snapshot.notes});shell.router.render(shell.router.current||'today');status.textContent='● Firestore · realtime · актуально'},showError);
+ unsubNotes=notes.subscribe(raw=>{if(!shell)return;const ns=normalizeNotes({notes:raw});shell.state.setNotes(ns);saveLocalSnapshot({shared:shell.state.snapshot.state,notes:ns});if(shell.router.current==='notes')shell.router.render('notes')},e=>console.warn('Notes realtime skipped',e));
+}
+document.querySelector('#login').onclick=async()=>{error.textContent='';try{await fb.authApi.signInWithEmailAndPassword(fb.auth,email.value.trim(),password.value)}catch(e){showError(e)}};
+fb.authApi.onAuthStateChanged(fb.auth,user=>user?open(user):(stop(),uid='',shell=null,app.innerHTML='',gate.hidden=false,warning.hidden=true,status.hidden=true),showError);
+</script>
+</body>
+</html>
