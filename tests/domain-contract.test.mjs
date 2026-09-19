@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { isIncomeEligible, isDebt, effectiveIncome, montageJobsForDate } from '../src/domain/jobs.js';
+import { isIncomeEligible, isDebt, effectiveIncome, montageJobsForDate, JOB_STATUSES } from '../src/domain/jobs.js';
 import { financeTotals } from '../src/domain/finances.js';
 import { canConvertMeasurement, buildConvertedMontage } from '../src/domain/measurements.js';
 import { nextPresetSlot } from '../src/domain/scheduling.js';
@@ -36,4 +36,8 @@ test('finance totals separate income, debt and expenses',()=>{
   const jobs=[{status:'Выполнен',type:'Монтаж',price:100,paid:false},{status:'Отменён',type:'Монтаж',price:900,paid:false}];
   const expenses=[{amount:30,cancelled:false},{amount:20,cancelled:true}];
   assert.deepEqual(financeTotals(jobs,expenses),{income:100,expenses:30,net:70,debt:100});
+});
+
+test('job lifecycle has only the agreed four statuses',()=>{
+  assert.deepEqual(JOB_STATUSES,['Запланирован','Выполнен','Отменён','Перенос']);
 });
