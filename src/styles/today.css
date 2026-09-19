@@ -15,3 +15,4 @@
 .today-jobs{display:grid;gap:11px}.today-empty{display:grid;gap:5px;padding:34px 20px;border:1px dashed rgba(23,25,20,.14);border-radius:24px;text-align:center;color:var(--muted)}.today-empty strong{color:var(--ink);font-size:17px}.today-empty span{font-size:13px}
 .today-hero,.today-jobs>.job-card{animation:card-rise 420ms var(--ease-out) both}.today-jobs>.job-card:nth-child(1){animation-delay:55ms}.today-jobs>.job-card:nth-child(2){animation-delay:90ms}.today-jobs>.job-card:nth-child(3){animation-delay:125ms}@keyframes card-rise{from{opacity:0;transform:translateY(10px) scale(.988)}to{opacity:1;transform:none}}@keyframes hero-breathe{to{transform:translate(-18px,14px) scale(1.1);opacity:.75}}
 @media(max-width:380px){.today-hero{padding:18px}.today-hero-main>div:first-child strong{font-size:43px}.today-income strong{font-size:22px}.today-date{max-width:110px}}
+
