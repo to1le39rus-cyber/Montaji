@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="./src/styles/job-components.css">
 </head>
 <body>
-<div id="app"></div>
+<div id="fixture-picker" style="padding:16px;font:15px system-ui;max-width:720px;margin:auto"><strong>Canonical Preview</strong><p style="margin:8px 0">Выбери локальный JSON-бэкап Montaji. Файл останется в браузере и не загружается в GitHub/Firebase.</p><input id="fixture" type="file" accept=".json,application/json"><span id="fixture-status" style="display:block;margin-top:8px"></span></div><div id="app"></div>
 <script type="module">
 import { createCanonicalShell } from './src/core/canonical-shell.js';
 import { normalizeState, normalizeNotes } from './src/domain/normalize.js';
