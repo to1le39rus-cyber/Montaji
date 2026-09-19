@@ -28,7 +28,7 @@ export const renderClients=({root,model,onOpen=()=>{}})=>{
  root.append(list);
 };
 
-export const renderClientDetail=({root,client,onBack=()=>{}})=>{
+export const renderClientDetail=({root,client,onBack=()=>{},onJobClick=()=>{}})=>{
  if(!root||!client)return;
  root.innerHTML='';
  const head=document.createElement('section');head.className='client-detail-head';
