@@ -1,4 +1,4 @@
-const num=v=>Math.max(0,Number(String(v??'').replace(',','.'))||0);
+const num=v=>Math.max(0,Number(String(v??'').replace(/\s/g,'').replace(',','.').replace(/[^0-9.-]/g,''))||0);
 export const normalizeJob = (j={}) => ({
   ...j,
   id:j.id || '',
