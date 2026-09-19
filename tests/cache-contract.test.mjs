@@ -14,10 +14,12 @@ test('canonical cache is versioned and never a source of truth',()=>{
  assert.match(cache,/indexedDB\.open/);
  assert.match(cache,/runtimeVersion!==CANONICAL_RUNTIME_VERSION/);
  assert.match(cache,/saveLocalSnapshot/);
+ assert.match(cache,/cacheKey\(userId\)/);
+ assert.match(cache,/userId:String\(userId\)/);
  assert.doesNotMatch(cache,/localStorage|sessionStorage/);
 });
 test('canonical live starts from cache and refreshes from Firestore',()=>{
- assert.match(live,/loadLocalSnapshot/); assert.match(live,/shared\.load\(\)/);
+ assert.match(live,/loadLocalSnapshot\(user\.uid\)/); assert.match(live,/shared\.load\(\)/);
  assert.match(live,/saveLocalSnapshot/); assert.match(live,/shared\.subscribe/);
  assert.match(live,/clearLocalCache/); assert.match(live,/Firestore пока недоступен/);
 });
