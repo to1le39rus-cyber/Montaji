@@ -16,12 +16,9 @@
 <div id="app"></div>
 <script type="module">
 import { createCanonicalShell } from './src/core/canonical-shell.js';
-createCanonicalShell({
- root:document.querySelector('#app'),
- initialState:{jobs:[],expenses:[],version:5},
- initialNotes:[],
- user:null
-});
+import { loadFixture } from './src/data/fixture.js';
+const fixture=await loadFixture();
+createCanonicalShell({root:document.querySelector('#app'),initialState:fixture.shared,initialNotes:fixture.notes,user:null});
 </script>
 </body>
 </html>
