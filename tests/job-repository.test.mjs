@@ -21,7 +21,7 @@ const harness=(initial={jobs:[]})=>{
 };
 
 test('transactional update preserves untouched job fields',async()=>{
- const {repository,get}=harness({jobs:[{id:'j1',client:'Клиент',price:12000,address:'Гагарина 7',phone:'+7',source:'Магазин',comment:'важно',status:'Запланирован',paid:false}]});
+ const {repository,get}=harness({jobs:[{id:'j1',client:'Клиент',price:12000,address:'Гагарина 7',phone:'+7',source:'Магазин',comment:'важно',status:'Запланировано',paid:false}]});
  const updated=await repository.updateJob('j1',job=>({...job,status:'Выполнен',completedDate:'2026-09-19',id:'WRONG'}));
  assert.equal(updated.id,'j1');
  assert.equal(updated.status,'Выполнен');
@@ -38,7 +38,7 @@ test('transactional update preserves untouched job fields',async()=>{
 
 test('createJob appends without changing existing history',async()=>{
  const {repository,get}=harness({jobs:[{id:'old',client:'Старый',status:'Выполнен',price:5000}]});
- const created=await repository.createJob({id:'new',client:'Новый',date:'2026-09-20',type:'Монтаж',status:'Запланирован',price:7000});
+ const created=await repository.createJob({id:'new',client:'Новый',date:'2026-09-20',type:'Монтаж',status:'Запланировано',price:7000});
  assert.equal(created.id,'new');
  assert.equal(get().data.jobs.length,2);
  assert.equal(get().data.jobs[0].id,'old');
