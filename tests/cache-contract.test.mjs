@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-
 const root=path.resolve(process.cwd());
 const live=fs.readFileSync(path.join(root,'canonical-live.html'),'utf8');
 const writeTest=fs.readFileSync(path.join(root,'canonical-write-test.html'),'utf8');
@@ -17,25 +16,18 @@ test('canonical cache is versioned and never a source of truth',()=>{
  assert.match(cache,/saveLocalSnapshot/);
  assert.doesNotMatch(cache,/localStorage|sessionStorage/);
 });
-
 test('canonical live starts from cache and refreshes from Firestore',()=>{
- assert.match(live,/loadLocalSnapshot/);
- assert.match(live,/shared\.load\(\)/);
- assert.match(live,/saveLocalSnapshot/);
- assert.match(live,/shared\.subscribe/);
- assert.match(live,/clearLocalCache/);
- assert.match(live,/Firestore пока недоступен/);
+ assert.match(live,/loadLocalSnapshot/); assert.match(live,/shared\.load\(\)/);
+ assert.match(live,/saveLocalSnapshot/); assert.match(live,/shared\.subscribe/);
+ assert.match(live,/clearLocalCache/); assert.match(live,/Firestore пока недоступен/);
 });
-
 test('settings expose an explicit local cache reset',()=>{
  assert.match(more,/Очистить локальные данные \/ кэш/);
  assert.match(more,/data-action="clear-cache"/);
 });
-
-test('write smoke test is isolated from business data',()=>{
- assert.match(writeTest,/appData','canonicalWriteTest/);
- assert.match(writeTest,/runTransaction/);
- assert.match(writeTest,/tx\.delete\(ref\)/);
+test('write smoke test uses one isolated document, never business data',()=>{
+ assert.match(writeTest,/doc\(fb\.firestore,'appData','canonicalWriteTest'\)/);
+ assert.match(writeTest,/runTransaction/); assert.match(writeTest,/tx\.delete\(ref\)/);
  assert.doesNotMatch(writeTest,/createJobRepository|createJobService|appData','shared/);
- assert.match(rules,/match \/appData\/canonicalWriteTest\/\{testId\}/);
+ assert.match(rules,/match \/appData\/canonicalWriteTest\s*\{/);
 });
