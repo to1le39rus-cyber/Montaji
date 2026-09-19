@@ -2,23 +2,21 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() { return request.auth != null; }
-
-    // Production shared data is restricted to the two current operators.
     function isOperator() {
       return signedIn() && request.auth.token.email in [
         'tkrp@bk.ru',
         'titoworld@bk.ru'
       ];
     }
-
     match /appData/shared {
       allow read, write: if signedIn() && isOperator();
     }
-
     match /appData/notes {
       allow read, write: if signedIn() && isOperator();
     }
-
+    match /appData/canonicalWriteTest {
+      allow read, write: if isOperator();
+    }
     function myUser() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
@@ -31,7 +29,6 @@ service cloud.firestore {
     function isTeam() { return myRole() == 'installer' || myRole() == 'manager'; }
     function isStore() { return myRole() == 'store'; }
     function isActiveUser() { return hasUser() && myUser().active == true; }
-
     match /users/{uid} {
       allow read: if signedIn() && (request.auth.uid == uid || isTeam());
       allow create: if signedIn() && request.auth.uid == uid
@@ -39,22 +36,18 @@ service cloud.firestore {
       allow update: if isManager();
       allow delete: if false;
     }
-
     match /stores/{storeId} {
       allow read: if isTeam() || (isStore() && myStoreId() == storeId);
       allow write: if isManager();
     }
-
     match /jobs/{jobId} {
       allow read, create, update: if isActiveUser() && isTeam();
       allow delete: if false;
     }
-
     match /expenses/{expenseId} {
       allow read, create, update: if isActiveUser() && isTeam();
       allow delete: if false;
     }
-
     match /notes/{noteId} {
       allow read: if isActiveUser() && (
         isManager() ||
@@ -73,12 +66,10 @@ service cloud.firestore {
       );
       allow delete: if false;
     }
-
     match /publicSlots/{slotId} {
       allow read: if isActiveUser() && (isTeam() || isStore());
       allow write: if isActiveUser() && isTeam();
     }
-
     match /bookingRequests/{id} {
       allow read: if isActiveUser() && (
         isTeam() || (isStore() && resource.data.storeId == myStoreId())
@@ -89,7 +80,6 @@ service cloud.firestore {
       allow update: if isActiveUser() && isTeam();
       allow delete: if false;
     }
-
     match /controls/{id} {
       allow read, write: if isActiveUser() && isTeam();
     }
