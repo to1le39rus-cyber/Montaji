@@ -10,6 +10,7 @@ import { createJobForm } from '../components/job-form.js';
 import { createStoreForm } from '../components/store-form.js';
 
 const isoToday=()=>new Date().toISOString().slice(0,10);
+const setText=(el,value)=>{el.textContent=String(value??'').trim()||'—';return el};
 export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],stores:[],version:5},initialNotes=[],user=null,readOnly=false,jobService=null,storeService=null,actions={}})=>{
  const state=createAppState(); state.setState(initialState); state.setNotes(initialNotes); state.setUser(user);
  const content=document.createElement('main'); content.className='app-content';
@@ -61,15 +62,10 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],store
   modal.hidden=false; modal.innerHTML='';
   const panel=document.createElement('section'); panel.className='canonical-modal-panel job-card-modal';
   const close=()=>{modal.hidden=true;modal.innerHTML=''};
-  const value=v=>String(v??'').trim()||'—';
-  panel.innerHTML='<div class="canonical-modal-head"><strong>Монтаж</strong><button type="button">Закрыть</button></div>'+
-    '<div class="job-card-detail"><h1>'+value(job.client)+'</h1>'+
-    '<p>'+value(job.date)+' · слот '+value(job.slot)+'</p>'+
-    '<p>'+value(job.address)+'</p>'+
-    '<p>'+value(job.source)+'</p>'+
-    '<p>'+value(job.comment)+'</p>'+
-    '<div class="job-card-detail-stats"><span>'+value(job.status)+'</span><strong>'+new Intl.NumberFormat('ru-RU').format(Number(job.price)||0)+' ₽</strong><span>'+(job.paid===true?'Оплачено':'Не оплачено')+'</span></div></div>';
-  panel.querySelector('.canonical-modal-head button').onclick=close;
+  const head=document.createElement('div');head.className='canonical-modal-head';const headTitle=document.createElement('strong');headTitle.textContent=job.type||'Заявка';const closeButton=document.createElement('button');closeButton.type='button';closeButton.textContent='Закрыть';head.append(headTitle,closeButton);
+  const detail=document.createElement('div');detail.className='job-card-detail';const client=document.createElement('h1');setText(client,job.client);const meta=document.createElement('p');meta.textContent=(String(job.date||'').trim()||'—')+' · слот '+(String(job.slot||'').trim()||'—');const address=document.createElement('p');setText(address,job.address);const source=document.createElement('p');setText(source,job.source);const comment=document.createElement('p');setText(comment,job.comment);const stats=document.createElement('div');stats.className='job-card-detail-stats';const status=document.createElement('span');setText(status,job.status);const price=document.createElement('strong');price.textContent=new Intl.NumberFormat('ru-RU').format(Number(job.price)||0)+' ₽';const paid=document.createElement('span');paid.textContent=job.paid===true?'Оплачено':'Не оплачено';stats.append(status,price,paid);detail.append(client,meta,address,source,comment,stats);panel.append(head,detail);
+  closeButton.onclick=close;
+
   const actions=document.createElement('div'); actions.className='job-card-detail-actions';
   const edit=document.createElement('button'); edit.type='button'; edit.textContent='✏️ Редактировать';
   edit.onclick=()=>{const latest=currentJob();close();openJob(latest)};
