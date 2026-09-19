@@ -51,7 +51,7 @@ async function resetLocalCache(){
 async function open(user){
  if(openedUid===user.uid)return;
  openedUid=user.uid; stopRealtime(); gate.hidden=true; status.hidden=false; error.textContent='';
- const cached=await loadLocalSnapshot();
+ const cached=await loadLocalSnapshot(user.uid);
  if(cached){
   shell=createCanonicalShell({
    root:appRoot,
@@ -91,7 +91,7 @@ async function open(user){
   }
   shell.state.setDataStatus('ready');
   shell.setCacheStatus('cached');
-  await saveLocalSnapshot({shared:normalizedShared,notes:normalizedNotes});
+  await saveLocalSnapshot({userId:user.uid,shared:normalizedShared,notes:normalizedNotes});
   status.textContent='● Firestore · realtime · актуально';
  }catch(e){
   console.error(e);
@@ -108,14 +108,14 @@ async function open(user){
   shell.state.setState(normalized);
   shell.state.setDataStatus('ready');
   shell.setCacheStatus('cached');
-  saveLocalSnapshot({shared:normalized,notes:shell.state.snapshot.notes});
+  saveLocalSnapshot({userId:user.uid,shared:normalized,notes:shell.state.snapshot.notes});
   shell.router.render(shell.router.current||'today');
   status.textContent='● Firestore · realtime · актуально';
  },showError);
  notesUnsub=notes.subscribe(raw=>{
   const normalized=normalizeNotes({notes:raw});
   shell.state.setNotes(normalized);
-  saveLocalSnapshot({shared:shell.state.snapshot.state,notes:normalized});
+  saveLocalSnapshot({userId:user.uid,shared:shell.state.snapshot.state,notes:normalized});
   if(shell.router.current==='notes')shell.router.render('notes');
  },e=>console.warn('Notes realtime skipped',e));
 }
