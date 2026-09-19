@@ -100,7 +100,7 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],versi
    if(job.status!=='Отменён') commands.push(['Отменить',()=>mutateJob(job.id,(id)=>jobService.cancel(id))]);
    for(const [label,fn] of commands){const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',async()=>{const result=await fn();if(result!==null&&result!==false)close()});actionsBox.append(b)}
   }
-  panel.innerHTML='<div class="canonical-modal-head"><strong>'+(job.id?'Заявка':'Новая заявка')+'</strong><button type="button">Закрыть</button></div>';panel.querySelector('button').addEventListener('click',close);panel.append(form);if(job.id)panel.append(actionsBox);modal.append(panel);
+  const header=document.createElement('div');header.className='canonical-modal-head';header.innerHTML='<strong>'+(job.id?'Заявка':'Новая заявка')+'</strong><button type="button">Закрыть</button>';header.querySelector('button').addEventListener('click',close);panel.append(header);const formScroll=document.createElement('div');formScroll.className='canonical-modal-form-scroll';formScroll.append(form);panel.append(formScroll);if(job.id)panel.append(actionsBox);modal.append(panel);
  }
  addButton.addEventListener('click',()=>openJob({date:selectedDate,type:'Монтаж',slot:'1',status:'Запланирован',paid:false}));
  names.forEach(name=>{const button=document.createElement('button');button.type='button';button.textContent=labels[name];button.dataset.route=name;button.addEventListener('click',()=>router.render(name).then(()=>nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.dataset.route===name?'page':'false'))));nav.append(button)});
