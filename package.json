@@ -3,6 +3,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --check app.js && node --check boot.js && node --test tests/final-architecture.test.mjs tests/domain-contract.test.mjs"
+    "test": "node --check app.js && node --check boot.js && node --test tests/final-architecture.test.mjs tests/domain-contract.test.mjs tests/data-normalization.test.mjs tests/read-only-snapshot.test.mjs tests/today.test.mjs tests/job-commands.test.mjs tests/job-repository.test.mjs"
   }
 }
