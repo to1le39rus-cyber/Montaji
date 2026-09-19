@@ -3,7 +3,7 @@ import { createRouter } from './router.js';
 import { buildTodayModel, renderToday } from '../screens/today.js';
 import { buildScheduleModel, renderSchedule } from '../screens/schedule.js';
 import { buildMoneyModel, renderMoney } from '../screens/money.js';
-import { buildClientsModel, renderClients } from '../screens/clients.js';
+import { buildClientsModel, renderClients, renderClientDetail } from '../screens/clients.js';
 import { buildNotesModel, renderNotes } from '../screens/notes.js';
 import { buildMoreModel, renderMore } from '../screens/more.js';
 import { createJobForm } from '../components/job-form.js';
@@ -17,8 +17,8 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],versi
  const modal=document.createElement('div'); modal.className='canonical-modal'; modal.hidden=true;
  root.innerHTML=''; root.className='app-shell'; root.append(nav,addButton,content,modal);
  const names=['today','schedule','money','clients','notes','more']; const labels={today:'Сегодня',schedule:'Расписание',money:'Деньги',clients:'Клиенты',notes:'Заметки',more:'Ещё'};
- let selectedDate=isoToday(), moneyStart=isoToday(), moneyEnd=isoToday(), cacheStatus='none', selectedClient=null;
- const renderRoute=async name=>{if(name==='today')return renderToday({root:content,model:buildTodayModel({state:state.snapshot.state,date:selectedDate}),onJobClick:readOnly?undefined:openJob,onComplete:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.complete(id)),onPaid:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.markPaid(id))});if(name==='schedule')return renderSchedule({root:content,model:buildScheduleModel({state:state.snapshot.state,date:selectedDate}),onJobClick:readOnly?undefined:openJob,onComplete:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.complete(id)),onPaid:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.markPaid(id)),onDateChange:d=>{selectedDate=d;renderRoute('schedule')}});if(name==='money')return renderMoney({root:content,model:buildMoneyModel({state:state.snapshot.state,start:moneyStart,end:moneyEnd}),onPeriodChange:(key,value,endValue)=>{if(key==='range'){moneyStart=value;moneyEnd=endValue||value}else if(key==='start')moneyStart=value;else moneyEnd=value;if(moneyEnd<moneyStart)moneyEnd=moneyStart;renderRoute('money')}});if(name==='clients'){const model=buildClientsModel({state:state.snapshot.state}); if(selectedClient){const fresh=model.clients.find(c=>c.key===selectedClient.key)||selectedClient; return renderClientDetail({root:content,client:fresh,onBack:()=>{selectedClient=null;renderRoute('clients')}})} return renderClients({root:content,model,onOpen:client=>{selectedClient=client;renderRoute('clients')}});}if(name==='notes')return renderNotes({root:content,model:buildNotesModel({notes:state.snapshot.notes})});if(name==='more')return renderMore({root:content,model:buildMoreModel({user:state.snapshot.user,dataStatus:state.snapshot.dataStatus,cacheStatus}),actions});};
+ let selectedDate=isoToday(), moneyStart=isoToday(), moneyEnd=isoToday(), cacheStatus='none';
+ const renderRoute=async name=>{if(name==='today')return renderToday({root:content,model:buildTodayModel({state:state.snapshot.state,date:selectedDate}),onJobClick:readOnly?undefined:openJob,onComplete:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.complete(id)),onPaid:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.markPaid(id))});if(name==='schedule')return renderSchedule({root:content,model:buildScheduleModel({state:state.snapshot.state,date:selectedDate}),onJobClick:readOnly?undefined:openJob,onComplete:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.complete(id)),onPaid:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.markPaid(id)),onDateChange:d=>{selectedDate=d;renderRoute('schedule')}});if(name==='money')return renderMoney({root:content,model:buildMoneyModel({state:state.snapshot.state,start:moneyStart,end:moneyEnd}),onPeriodChange:(key,value,endValue)=>{if(key==='range'){moneyStart=value;moneyEnd=endValue||value}else if(key==='start')moneyStart=value;else moneyEnd=value;if(moneyEnd<moneyStart)moneyEnd=moneyStart;renderRoute('money')}});if(name==='clients'){const model=buildClientsModel({state:state.snapshot.state}); return renderClients({root:content,model,onOpen:openClient})}if(name==='notes')return renderNotes({root:content,model:buildNotesModel({notes:state.snapshot.notes})});if(name==='more')return renderMore({root:content,model:buildMoreModel({user:state.snapshot.user,dataStatus:state.snapshot.dataStatus,cacheStatus}),actions});};
  const router=createRouter({root:content,routes:Object.fromEntries(names.map(name=>[name,()=>renderRoute(name)]))});
  async function mutateJob(id,operation){
  if(readOnly||!jobService)return false;
@@ -36,6 +36,22 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],versi
   alert(error?.message||'Не удалось сохранить заявку');
   return false;
  }
+}
+ function openClient(client){
+  modal.hidden=false;
+  modal.innerHTML='';
+  const panel=document.createElement('section');
+  panel.className='canonical-modal-panel client-modal-panel';
+  const close=()=>{modal.hidden=true;modal.innerHTML=''};
+  renderClientDetail({root:panel,client,onBack:close});
+  const closeButton=document.createElement('button');
+  closeButton.type='button';
+  closeButton.className='client-modal-close';
+  closeButton.textContent='Закрыть';
+  closeButton.addEventListener('click',close);
+  panel.prepend(closeButton);
+  modal.append(panel);
+  modal.addEventListener('click',event=>{if(event.target===modal)close()},{once:true});
 }
  function openReschedule(job){
   modal.hidden=false; modal.innerHTML=''; const panel=document.createElement('section'); panel.className='canonical-modal-panel';
