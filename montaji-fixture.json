@@ -1,0 +1,24 @@
+{
+  "data": {
+    "version": 5,
+    "jobs": [
+      {"id":"demo-1","date":"2026-09-20","slot":"1","type":"Монтаж","client":"Анна Воронова","address":"ул. Примерная, 12","phone":"+7 900 000-00-01","price":18500,"status":"Запланировано","paid":false,"source":"Astera"},
+      {"id":"demo-2","date":"2026-09-20","slot":"2","type":"Монтаж","client":"Михаил Орлов","address":"пр-т Светлый, 8","phone":"+7 900 000-00-02","price":24000,"status":"Выполнен","paid":true,"source":"Astera"},
+      {"id":"demo-3","date":"2026-09-20","slot":"3","type":"Сервис","client":"Елена Миронова","address":"ул. Новая, 4","phone":"+7 900 000-00-03","price":4500,"status":"Перенесен","paid":false,"source":"Партнёр"},
+      {"id":"demo-4","date":"2026-09-21","slot":"1","type":"Монтаж","client":"Игорь Соколов","address":"ул. Полевая, 19","phone":"+7 900 000-00-04","price":32000,"status":"Запланировано","paid":false,"source":"Astera"},
+      {"id":"demo-5","date":"2026-09-18","slot":"2","type":"Доп. доход","client":"Демо заказ","address":"","phone":"","price":7000,"status":"Выполнен","paid":true,"source":"Astera"},
+      {"id":"demo-6","date":"2026-09-19","slot":"1","type":"Монтаж","client":"Ольга Белова","address":"ул. Тихая, 6","phone":"+7 900 000-00-06","price":21500,"status":"Отменен","paid":false,"source":"Astera"}
+    ],
+    "expenses": [
+      {"id":"exp-1","date":"2026-09-20","amount":3200,"category":"Топливо","comment":"Демо расход","cancelled":false},
+      {"id":"exp-2","date":"2026-09-19","amount":1800,"category":"Материалы","comment":"Демо расход","cancelled":false}
+    ],
+    "stores": [
+      {"id":"store-1","name":"Astera","address":"Демо-адрес","phone":"+7 900 000-00-10","contact":"Менеджер"},
+      {"id":"store-2","name":"Партнёр","address":"","phone":"","contact":""}
+    ]
+  },
+  "notes": [
+    {"id":"note-1","text":"Это безопасный DEV-стенд. Все данные вымышлены.","createdAt":"2026-09-20T09:00:00.000Z"}
+  ]
+}
