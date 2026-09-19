@@ -44,7 +44,7 @@ async function open(user){
  gate.hidden=true; status.hidden=false; status.textContent='Подключение к общей базе…';
  try{
   const [rawShared,rawNotes]=await Promise.all([shared.load(),notes.load()]);
-  shell=createCanonicalShell({root:appRoot,initialState:normalizeShared(rawShared),initialNotes:normalizeNotes({notes:rawNotes}),user});
+  shell=createCanonicalShell({root:appRoot,initialState:normalizeShared(rawShared),initialNotes:normalizeNotes({notes:rawNotes}),user,readOnly:true});
   status.textContent='● Firestore · только чтение · realtime';
   sharedUnsub=shared.subscribe(raw=>{shell.state.setState(normalizeShared(raw));shell.router.render(shell.router.current||'today')},showError);
   notesUnsub=notes.subscribe(raw=>{shell.state.setNotes(normalizeNotes({notes:raw}));if(shell.router.current==='notes')shell.router.render('notes')},showError);
