@@ -19,3 +19,12 @@ test('Cancelled jobs do not create client records',()=>{
  ]}});
  assert.equal(model.count,0);
 });
+
+test('Client history keeps older jobs when newer job was processed first',()=>{
+ const model=buildClientsModel({state:{jobs:[
+  {id:'new',client:'Иван П.',phone:'79001112233',date:'2026-09-19',price:7000,status:'Запланирован'},
+  {id:'old',client:'Иван',phone:'+7 (900) 111-22-33',date:'2026-09-18',price:5000,status:'Выполнен'}
+ ]}});
+ assert.equal(model.count,1);
+ assert.equal(model.clients[0].jobs.length,2);
+});
