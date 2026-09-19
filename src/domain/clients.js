@@ -6,7 +6,7 @@ export const clientKey = job => {
 export const projectClients = jobs => {
   const map=new Map();
   for(const job of Array.isArray(jobs)?jobs:[]){
-    if(job?.status==='Отменён') continue;
+    if(job?.status==='Отменен') continue;
     const key=clientKey(job); if(!key) continue;
     const prev=map.get(key);
     const history=[...(prev?.jobs||[]),job].sort((a,b)=>String(a?.date||'').localeCompare(String(b?.date||'')));
