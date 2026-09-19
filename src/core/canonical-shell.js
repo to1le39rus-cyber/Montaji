@@ -20,12 +20,12 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],store
  root.innerHTML=''; root.className='app-shell'; root.append(nav,addButton,content,modal);
  const names=['today','schedule','money','clients','notes','more'];
  const navItems={
-  today:{label:'Сегодня',icon:'⌂'},
-  schedule:{label:'График',icon:'◫'},
-  money:{label:'Деньги',icon:'₽'},
-  clients:{label:'Клиенты',icon:'◎'},
-  notes:{label:'Заметки',icon:'◇'},
-  more:{label:'Ещё',icon:'•••'}
+  today:{label:'Сегодня',icon:'<svg viewBox="0 0 24 24"><path d="M4 11 12 4l8 7v9H5v-9"/><path d="M9 20v-6h6v6"/></svg>'},
+  schedule:{label:'График',icon:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4m8-4v4M3 10h18"/><path d="M8 14h3m2 0h3m-8 3h3"/></svg>'},
+  money:{label:'Деньги',icon:'<svg viewBox="0 0 24 24"><path d="M7 4h6a5 5 0 0 1 0 10H7m0-5h7M7 14v7m0-3h8"/></svg>'},
+  clients:{label:'Клиенты',icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c.8-4.2 3.5-6 8-6s7.2 1.8 8 6"/></svg>'},
+  notes:{label:'Заметки',icon:'<svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8 8h8m-8 4h8m-8 4h5"/></svg>'},
+  more:{label:'Ещё',icon:'<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>'}
  };
  let selectedDate=isoToday(), moneyStart=isoToday(), moneyEnd=isoToday(), cacheStatus='none';
  const renderRoute=async name=>{if(name==='today')return renderToday({root:content,model:buildTodayModel({state:state.snapshot.state,date:selectedDate}),onJobClick:readOnly?undefined:openJob,onComplete:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.complete(id)),onPaid:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.markPaid(id))});if(name==='schedule')return renderSchedule({root:content,model:buildScheduleModel({state:state.snapshot.state,date:selectedDate}),onJobClick:readOnly?undefined:openJob,onComplete:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.complete(id)),onPaid:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.markPaid(id)),onDateChange:d=>{selectedDate=d;renderRoute('schedule')}});if(name==='money')return renderMoney({root:content,model:buildMoneyModel({state:state.snapshot.state,start:moneyStart,end:moneyEnd}),onJobClick:openJobCard,onPeriodChange:(key,value,endValue)=>{if(key==='range'){moneyStart=value;moneyEnd=endValue||value}else if(key==='start')moneyStart=value;else moneyEnd=value;if(moneyEnd<moneyStart)moneyEnd=moneyStart;renderRoute('money')}});if(name==='clients'){const model=buildClientsModel({state:state.snapshot.state}); return renderClients({root:content,model,onOpen:openClient})}if(name==='notes')return renderNotes({root:content,model:buildNotesModel({notes:state.snapshot.notes})});if(name==='more')return renderMore({root:content,model:buildMoreModel({user:state.snapshot.user,dataStatus:state.snapshot.dataStatus,cacheStatus,stores:state.snapshot.state.stores||[]}),actions:{...actions,openStores}});};
@@ -164,7 +164,7 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],store
  addButton.addEventListener('click',()=>openJob({date:selectedDate,type:'Монтаж',slot:'1',status:'Запланировано',paid:false}));
  names.forEach(name=>{
   const item=navItems[name],button=document.createElement('button');button.type='button';button.dataset.route=name;button.setAttribute('aria-label',item.label);
-  const icon=document.createElement('span');icon.className='app-nav-icon';icon.setAttribute('aria-hidden','true');icon.textContent=item.icon;
+  const icon=document.createElement('span');icon.className='app-nav-icon';icon.setAttribute('aria-hidden','true');icon.innerHTML=item.icon;
   const label=document.createElement('span');label.className='app-nav-label';label.textContent=item.label;button.append(icon,label);
   button.addEventListener('click',()=>router.render(name).then(()=>nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.dataset.route===name?'page':'false'))));nav.append(button)
  });
