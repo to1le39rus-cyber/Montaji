@@ -18,10 +18,13 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .app-nav button{min-width:0;min-height:52px;padding:5px 3px;border:0;border-radius:18px;background:transparent;color:var(--muted);font-weight:650;white-space:nowrap;display:grid;place-items:center;align-content:center;gap:2px;transition:background var(--motion-fast) var(--ease-out),color var(--motion-fast) var(--ease-out),transform var(--motion-fast) var(--ease-spring)}
 .app-nav button:active{transform:scale(.96)}
 .app-nav button[aria-current="page"]{background:var(--ink);color:#fff;box-shadow:0 7px 16px rgba(23,25,20,.16)}
-.app-nav-icon{height:20px;display:grid;place-items:center;font-size:18px;line-height:1;transition:transform var(--motion-base) var(--ease-spring)}
+.app-nav-icon{width:22px;height:22px;display:grid;place-items:center;transition:transform var(--motion-base) var(--ease-spring),filter var(--motion-base) var(--ease-out)}
+.app-nav-icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.app-nav button[aria-current="page"] .app-nav-icon{filter:drop-shadow(0 0 8px rgba(209,225,174,.48))}
 .app-nav-label{font-size:9.5px;line-height:1.05;letter-spacing:-.01em}
 .app-nav button[aria-current="page"] .app-nav-icon{transform:translateY(-1px) scale(1.06)}
-.canonical-add{width:100%;min-height:54px;margin:0 0 22px;padding:0 18px;border:0;border-radius:18px;background:var(--ink);color:#fff;font-weight:750;font-size:16px;box-shadow:0 12px 26px rgba(23,25,20,.12)}
+.canonical-add{width:100%;min-height:54px;margin:0 0 22px;padding:0 18px;border:1px solid rgba(255,255,255,.12);border-radius:18px;background:linear-gradient(135deg,#171914,#252a20);color:#fff;font-weight:750;font-size:16px;box-shadow:0 12px 30px rgba(23,25,20,.14),inset 0 1px 0 rgba(255,255,255,.10);transition:transform var(--motion-fast) var(--ease-spring),box-shadow var(--motion-base) var(--ease-out)}
+.canonical-add:active{transform:scale(.985);box-shadow:0 7px 18px rgba(23,25,20,.13)}
 .reschedule-field{display:grid;gap:8px;font-size:14px;font-weight:650}
 .reschedule-field input{min-height:48px;padding:0 14px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface)}
 h1,h2,h3,p{letter-spacing:-.025em}
