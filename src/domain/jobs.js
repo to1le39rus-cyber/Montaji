@@ -1,7 +1,7 @@
 export const JOB_TYPES = Object.freeze(['Монтаж','Замер','Рекламация','Доставка','Сервис','Доп. доход']);
-export const JOB_STATUSES = Object.freeze(['Запланирован','Выполнен','Отменён','Перенос']);
+export const JOB_STATUSES = Object.freeze(['Запланировано','Выполнен','Перенесен','Отменен']);
 export const isCompleted = job => job?.status === 'Выполнен';
-export const isCancelled = job => job?.status === 'Отменён';
+export const isCancelled = job => job?.status === 'Отменен';
 export const isMeasurement = job => job?.type === 'Замер';
 export const isAdditionalIncome = job => job?.type === 'Доп. доход';
 export const isIncomeEligible = job => isCompleted(job) && !isCancelled(job);
@@ -18,6 +18,6 @@ export const createJob = (input, id) => ({
   id,
   date: input?.date || '',
   type: input?.type || 'Монтаж',
-  status: input?.status || 'Запланирован',
+  status: input?.status || 'Запланировано',
   paid: input?.paid !== false
 });
