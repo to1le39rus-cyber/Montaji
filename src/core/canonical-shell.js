@@ -7,9 +7,10 @@ import { buildClientsModel, renderClients, renderClientDetail } from '../screens
 import { buildNotesModel, renderNotes } from '../screens/notes.js';
 import { buildMoreModel, renderMore } from '../screens/more.js';
 import { createJobForm } from '../components/job-form.js';
+import { createStoreForm } from '../components/store-form.js';
 
 const isoToday=()=>new Date().toISOString().slice(0,10);
-export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],version:5},initialNotes=[],user=null,readOnly=false,jobService=null,actions={}})=>{
+export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],stores:[],version:5},initialNotes=[],user=null,readOnly=false,jobService=null,storeService=null,actions={}})=>{
  const state=createAppState(); state.setState(initialState); state.setNotes(initialNotes); state.setUser(user);
  const content=document.createElement('main'); content.className='app-content';
  const addButton=document.createElement('button'); addButton.type='button'; addButton.className='canonical-add'; addButton.textContent='+ Новая заявка'; addButton.hidden=readOnly;
@@ -18,7 +19,7 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],versi
  root.innerHTML=''; root.className='app-shell'; root.append(nav,addButton,content,modal);
  const names=['today','schedule','money','clients','notes','more']; const labels={today:'Сегодня',schedule:'Расписание',money:'Деньги',clients:'Клиенты',notes:'Заметки',more:'Ещё'};
  let selectedDate=isoToday(), moneyStart=isoToday(), moneyEnd=isoToday(), cacheStatus='none';
- const renderRoute=async name=>{if(name==='today')return renderToday({root:content,model:buildTodayModel({state:state.snapshot.state,date:selectedDate}),onJobClick:readOnly?undefined:openJob,onComplete:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.complete(id)),onPaid:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.markPaid(id))});if(name==='schedule')return renderSchedule({root:content,model:buildScheduleModel({state:state.snapshot.state,date:selectedDate}),onJobClick:readOnly?undefined:openJob,onComplete:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.complete(id)),onPaid:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.markPaid(id)),onDateChange:d=>{selectedDate=d;renderRoute('schedule')}});if(name==='money')return renderMoney({root:content,model:buildMoneyModel({state:state.snapshot.state,start:moneyStart,end:moneyEnd}),onPeriodChange:(key,value,endValue)=>{if(key==='range'){moneyStart=value;moneyEnd=endValue||value}else if(key==='start')moneyStart=value;else moneyEnd=value;if(moneyEnd<moneyStart)moneyEnd=moneyStart;renderRoute('money')}});if(name==='clients'){const model=buildClientsModel({state:state.snapshot.state}); return renderClients({root:content,model,onOpen:openClient})}if(name==='notes')return renderNotes({root:content,model:buildNotesModel({notes:state.snapshot.notes})});if(name==='more')return renderMore({root:content,model:buildMoreModel({user:state.snapshot.user,dataStatus:state.snapshot.dataStatus,cacheStatus}),actions});};
+ const renderRoute=async name=>{if(name==='today')return renderToday({root:content,model:buildTodayModel({state:state.snapshot.state,date:selectedDate}),onJobClick:readOnly?undefined:openJob,onComplete:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.complete(id)),onPaid:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.markPaid(id))});if(name==='schedule')return renderSchedule({root:content,model:buildScheduleModel({state:state.snapshot.state,date:selectedDate}),onJobClick:readOnly?undefined:openJob,onComplete:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.complete(id)),onPaid:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.markPaid(id)),onDateChange:d=>{selectedDate=d;renderRoute('schedule')}});if(name==='money')return renderMoney({root:content,model:buildMoneyModel({state:state.snapshot.state,start:moneyStart,end:moneyEnd}),onPeriodChange:(key,value,endValue)=>{if(key==='range'){moneyStart=value;moneyEnd=endValue||value}else if(key==='start')moneyStart=value;else moneyEnd=value;if(moneyEnd<moneyStart)moneyEnd=moneyStart;renderRoute('money')}});if(name==='clients'){const model=buildClientsModel({state:state.snapshot.state}); return renderClients({root:content,model,onOpen:openClient})}if(name==='notes')return renderNotes({root:content,model:buildNotesModel({notes:state.snapshot.notes})});if(name==='more')return renderMore({root:content,model:buildMoreModel({user:state.snapshot.user,dataStatus:state.snapshot.dataStatus,cacheStatus,stores:state.snapshot.state.stores||[]}),actions:{...actions,openStores}});};
  const router=createRouter({root:content,routes:Object.fromEntries(names.map(name=>[name,()=>renderRoute(name)]))});
  async function mutateJob(id,operation){
  if(readOnly||!jobService)return false;
@@ -77,11 +78,22 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],versi
   const close=()=>{modal.hidden=true;modal.innerHTML=''}; panel.querySelector('.canonical-modal-head button').onclick=close; panel.querySelector('[data-cancel]').onclick=close;
   panel.querySelector('[data-save]').onclick=async()=>{const date=panel.querySelector('input').value;if(!date)return;const ok=await mutateJob(job.id,(id)=>jobService.reschedule(id,date));if(ok)close()}; modal.append(panel);
  }
+ function openStores(){
+  modal.hidden=false;modal.innerHTML='';const panel=document.createElement('section');panel.className='canonical-modal-panel';const close=()=>{modal.hidden=true;modal.innerHTML=''};
+  const draw=()=>{panel.innerHTML='<div class="canonical-modal-head"><strong>Магазины</strong><button type="button">Закрыть</button></div><button type="button" class="store-add">+ Добавить магазин</button><div class="store-list"></div>';panel.querySelector('.canonical-modal-head button').onclick=close;panel.querySelector('.store-add').onclick=()=>openStoreEditor(null,draw);const list=panel.querySelector('.store-list');const stores=state.snapshot.state.stores||[];if(!stores.length)list.innerHTML='<p>Магазины пока не добавлены.</p>';for(const store of stores){const row=document.createElement('button');row.type='button';row.className='store-row';row.innerHTML='<strong>'+String(store.name||'')+'</strong><span>'+String(store.address||store.phone||'')+'</span>';row.onclick=()=>openStoreEditor(store,draw);list.append(row)}};
+  draw();modal.append(panel);
+ }
+ function openStoreEditor(store,onBack){
+  if(!storeService)return;modal.innerHTML='';const panel=document.createElement('section');panel.className='canonical-modal-panel';const back=()=>{modal.innerHTML='';openStores()};
+  panel.innerHTML='<div class="canonical-modal-head"><strong>'+(store?'Редактировать магазин':'Новый магазин')+'</strong><button type="button">Назад</button></div>';panel.querySelector('button').onclick=back;
+  const form=createStoreForm({store:store||{},onCancel:back,onSubmit:async patch=>{try{if(store)await storeService.update(store,patch);else await storeService.create(patch);back()}catch(e){console.error(e);alert(e?.message||'Не удалось сохранить магазин')}}});panel.append(form);
+  if(store){const del=document.createElement('button');del.type='button';del.className='store-delete';del.textContent='Удалить из справочника';del.onclick=async()=>{if(!confirm('Удалить магазин из справочника? Старые заявки останутся без изменений.'))return;try{await storeService.remove(store.id);back()}catch(e){alert(e?.message||'Не удалось удалить магазин')}};panel.append(del)}modal.append(panel);
+ }
  function openJob(job={}){
   if(readOnly)return;
   modal.hidden=false;modal.innerHTML='';const panel=document.createElement('section');panel.className='canonical-modal-panel job-edit-modal';
   const close=()=>{modal.hidden=true;modal.innerHTML=''};
-  const form=createJobForm({job,onCancel:close,onSubmit:async next=>{if(job.id){const ok=await mutateJob(job.id,(id)=>jobService.update(id,next));if(ok)close();}else if(jobService){
+  const form=createJobForm({job,stores:state.snapshot.state.stores||[],onCancel:close,onSubmit:async next=>{if(job.id){const ok=await mutateJob(job.id,(id)=>jobService.update(id,next));if(ok)close();}else if(jobService){
  try{
   const created=await jobService.create(next);
   const current=state.snapshot.state;
