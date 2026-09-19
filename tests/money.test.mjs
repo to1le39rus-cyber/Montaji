@@ -6,8 +6,8 @@ test('Money keeps income, debt, expenses and net separate',()=>{
  const state={
   jobs:[
    {id:'1',date:'2026-09-19',type:'Монтаж',price:10000,status:'Выполнен',paid:false,completedDate:'2026-09-19'},
-   {id:'2',date:'2026-09-19',type:'Монтаж',price:5000,status:'Запланирован',paid:false},
-   {id:'3',date:'2026-09-19',type:'Монтаж',price:7000,status:'Отменён',paid:false},
+   {id:'2',date:'2026-09-19',type:'Монтаж',price:5000,status:'Запланировано',paid:false},
+   {id:'3',date:'2026-09-19',type:'Монтаж',price:7000,status:'Отменен',paid:false},
    {id:'4',date:'2026-09-19',type:'Доп. доход',price:3000,status:'Выполнен',paid:true,completedDate:'2026-09-19'}
   ],
   expenses:[
@@ -28,7 +28,7 @@ test('Money builds lifetime totals and store drilldown from eligible jobs only',
   jobs:[
    {id:'m1',date:'2026-09-18',type:'Монтаж',source:'Store A',price:1000,status:'Выполнен',paid:true,completedDate:'2026-09-18'},
    {id:'m2',date:'2026-09-19',type:'Монтаж',source:'Store A',price:2000,status:'Выполнен',paid:true,completedDate:'2026-09-19'},
-   {id:'m3',date:'2026-09-19',type:'Монтаж',source:'Store B',price:4000,status:'Отменён',paid:false},
+   {id:'m3',date:'2026-09-19',type:'Монтаж',source:'Store B',price:4000,status:'Отменен',paid:false},
    {id:'a1',date:'2026-09-19',type:'Доп. доход',price:500,status:'Выполнен',paid:true,completedDate:'2026-09-19'}
   ],
   expenses:[{id:'e1',date:'2026-09-18',amount:300,cancelled:false}]
