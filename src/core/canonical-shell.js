@@ -53,6 +53,24 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],versi
   modal.append(panel);
   modal.addEventListener('click',event=>{if(event.target===modal)close()},{once:true});
 }
+ function openJobCard(job){
+  modal.hidden=false; modal.innerHTML='';
+  const panel=document.createElement('section'); panel.className='canonical-modal-panel job-card-modal';
+  const close=()=>{modal.hidden=true;modal.innerHTML=''};
+  const value=v=>String(v??'').trim()||'—';
+  panel.innerHTML='<div class="canonical-modal-head"><strong>Монтаж</strong><button type="button">Закрыть</button></div>'+
+    '<div class="job-card-detail"><h1>'+value(job.client)+'</h1>'+
+    '<p>'+value(job.date)+' · слот '+value(job.slot)+'</p>'+
+    '<p>'+value(job.address)+'</p>'+
+    '<p>'+value(job.source)+'</p>'+
+    '<p>'+value(job.comment)+'</p>'+
+    '<div class="job-card-detail-stats"><span>'+value(job.status)+'</span><strong>'+new Intl.NumberFormat('ru-RU').format(Number(job.price)||0)+' ₽</strong><span>'+(job.paid===true?'Оплачено':'Не оплачено')+'</span></div></div>';
+  panel.querySelector('.canonical-modal-head button').onclick=close;
+  const actions=document.createElement('div'); actions.className='job-card-detail-actions';
+  const edit=document.createElement('button'); edit.type='button'; edit.textContent='✏️ Редактировать';
+  edit.onclick=()=>{close();openJob(job)};
+  actions.append(edit); panel.append(actions); modal.append(panel);
+}
  function openReschedule(job){
   modal.hidden=false; modal.innerHTML=''; const panel=document.createElement('section'); panel.className='canonical-modal-panel';
   panel.innerHTML='<div class="canonical-modal-head"><strong>Перенести заявку</strong><button type="button">Закрыть</button></div><label class="reschedule-field">Новая дата<input type="date" value="'+job.date+'" /></label><div class="job-form-actions"><button type="button" data-cancel>Отмена</button><button type="button" data-save>Перенести</button></div>';
