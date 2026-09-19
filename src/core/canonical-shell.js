@@ -7,30 +7,27 @@ import { buildClientsModel, renderClients } from '../screens/clients.js';
 import { buildNotesModel, renderNotes } from '../screens/notes.js';
 import { buildMoreModel, renderMore } from '../screens/more.js';
 
+const isoToday=()=>new Date().toISOString().slice(0,10);
+
 export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],version:5},initialNotes=[],user=null})=>{
- const state=createAppState();
- state.setState(initialState); state.setNotes(initialNotes); state.setUser(user);
+ const state=createAppState(); state.setState(initialState); state.setNotes(initialNotes); state.setUser(user);
  const content=document.createElement('main'); content.className='app-content';
  const nav=document.createElement('nav'); nav.className='app-nav';
  root.innerHTML=''; root.className='app-shell'; root.append(nav,content);
  const names=['today','schedule','money','clients','notes','more'];
  const labels={today:'Сегодня',schedule:'Расписание',money:'Деньги',clients:'Клиенты',notes:'Заметки',more:'Ещё'};
- const router=createRouter({
-  root:content,
-  routes:{
-   today:async()=>renderToday({root:content,model:buildTodayModel({state:state.snapshot.state,date:new Date().toISOString().slice(0,10)})}),
-   schedule:async()=>renderSchedule({root:content,model:buildScheduleModel({state:state.snapshot.state,date:new Date().toISOString().slice(0,10)})}),
-   money:async()=>renderMoney({root:content,model:buildMoneyModel({state:state.snapshot.state,start:new Date().toISOString().slice(0,10),end:new Date().toISOString().slice(0,10)})}),
-   clients:async()=>renderClients({root:content,model:buildClientsModel({state:state.snapshot.state})}),
-   notes:async()=>renderNotes({root:content,model:buildNotesModel({notes:state.snapshot.notes})}),
-   more:async()=>renderMore({root:content,model:buildMoreModel({user:state.snapshot.user,dataStatus:state.snapshot.dataStatus})})
-  }
- });
- for(const name of names){
-  const button=document.createElement('button'); button.type='button'; button.textContent=labels[name]; button.dataset.route=name;
-  button.addEventListener('click',()=>router.render(name).then(()=>nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.dataset.route===name?'page':'false'))));
-  nav.append(button);
- }
+ let selectedDate=isoToday();
+ let moneyStart=isoToday(),moneyEnd=isoToday();
+ const renderRoute=async name=>{
+  if(name==='today') return renderToday({root:content,model:buildTodayModel({state:state.snapshot.state,date:selectedDate})});
+  if(name==='schedule') return renderSchedule({root:content,model:buildScheduleModel({state:state.snapshot.state,date:selectedDate}),onDateChange:d=>{selectedDate=d;renderRoute('schedule')}});
+  if(name==='money') return renderMoney({root:content,model:buildMoneyModel({state:state.snapshot.state,start:moneyStart,end:moneyEnd}),onPeriodChange:(key,value)=>{if(key==='start')moneyStart=value;else moneyEnd=value;if(moneyEnd<moneyStart)moneyEnd=moneyStart;renderRoute('money')}});
+  if(name==='clients') return renderClients({root:content,model:buildClientsModel({state:state.snapshot.state})});
+  if(name==='notes') return renderNotes({root:content,model:buildNotesModel({notes:state.snapshot.notes})});
+  if(name==='more') return renderMore({root:content,model:buildMoreModel({user:state.snapshot.user,dataStatus:state.snapshot.dataStatus})});
+ };
+ const router=createRouter({root:content,routes:Object.fromEntries(names.map(name=>[name,()=>renderRoute(name)]))});
+ for(const name of names){const button=document.createElement('button');button.type='button';button.textContent=labels[name];button.dataset.route=name;button.addEventListener('click',()=>router.render(name).then(()=>nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.dataset.route===name?'page':'false'))));nav.append(button);}
  router.render('today').then(()=>nav.querySelector('[data-route="today"]')?.setAttribute('aria-current','page'));
  return {state,router,root};
 };
