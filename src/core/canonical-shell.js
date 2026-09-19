@@ -78,16 +78,55 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],store
   const close=()=>{modal.hidden=true;modal.innerHTML=''}; panel.querySelector('.canonical-modal-head button').onclick=close; panel.querySelector('[data-cancel]').onclick=close;
   panel.querySelector('[data-save]').onclick=async()=>{const date=panel.querySelector('input').value;if(!date)return;const ok=await mutateJob(job.id,(id)=>jobService.reschedule(id,date));if(ok)close()}; modal.append(panel);
  }
+ function setStores(stores){
+  state.setState({...state.snapshot.state,stores});
+ }
  function openStores(){
   modal.hidden=false;modal.innerHTML='';const panel=document.createElement('section');panel.className='canonical-modal-panel';const close=()=>{modal.hidden=true;modal.innerHTML=''};
-  const draw=()=>{panel.innerHTML='<div class="canonical-modal-head"><strong>Магазины</strong><button type="button">Закрыть</button></div><button type="button" class="store-add">+ Добавить магазин</button><div class="store-list"></div>';panel.querySelector('.canonical-modal-head button').onclick=close;panel.querySelector('.store-add').onclick=()=>openStoreEditor(null,draw);const list=panel.querySelector('.store-list');const stores=state.snapshot.state.stores||[];if(!stores.length)list.innerHTML='<p>Магазины пока не добавлены.</p>';for(const store of stores){const row=document.createElement('button');row.type='button';row.className='store-row';row.innerHTML='<strong>'+String(store.name||'')+'</strong><span>'+String(store.address||store.phone||'')+'</span>';row.onclick=()=>openStoreEditor(store,draw);list.append(row)}};
+  const draw=()=>{
+   panel.innerHTML='<div class="canonical-modal-head"><strong>Магазины</strong><button type="button">Закрыть</button></div><button type="button" class="store-add">+ Добавить магазин</button><div class="store-list"></div>';
+   panel.querySelector('.canonical-modal-head button').onclick=close;
+   panel.querySelector('.store-add').onclick=()=>openStoreEditor(null);
+   const list=panel.querySelector('.store-list'),stores=state.snapshot.state.stores||[];
+   if(!stores.length){const empty=document.createElement('p');empty.textContent='Магазины пока не добавлены.';list.append(empty)}
+   for(const store of stores){
+    const row=document.createElement('button');row.type='button';row.className='store-row';
+    const title=document.createElement('strong');title.textContent=String(store.name||'');
+    const meta=document.createElement('span');meta.textContent=String(store.address||store.phone||'');
+    row.append(title,meta);row.onclick=()=>openStoreEditor(store);list.append(row);
+   }
+  };
   draw();modal.append(panel);
  }
- function openStoreEditor(store,onBack){
+ function openStoreEditor(store){
   if(!storeService)return;modal.innerHTML='';const panel=document.createElement('section');panel.className='canonical-modal-panel';const back=()=>{modal.innerHTML='';openStores()};
   panel.innerHTML='<div class="canonical-modal-head"><strong>'+(store?'Редактировать магазин':'Новый магазин')+'</strong><button type="button">Назад</button></div>';panel.querySelector('button').onclick=back;
-  const form=createStoreForm({store:store||{},onCancel:back,onSubmit:async patch=>{try{if(store)await storeService.update(store,patch);else await storeService.create(patch);back()}catch(e){console.error(e);alert(e?.message||'Не удалось сохранить магазин')}}});panel.append(form);
-  if(store){const del=document.createElement('button');del.type='button';del.className='store-delete';del.textContent='Удалить из справочника';del.onclick=async()=>{if(!confirm('Удалить магазин из справочника? Старые заявки останутся без изменений.'))return;try{await storeService.remove(store.id);back()}catch(e){alert(e?.message||'Не удалось удалить магазин')}};panel.append(del)}modal.append(panel);
+  const form=createStoreForm({store:store||{},onCancel:back,onSubmit:async patch=>{
+   try{
+    const stores=state.snapshot.state.stores||[];
+    if(store){
+     const updated=await storeService.update(store,patch);
+     setStores(stores.map(item=>item.id===updated.id?updated:item));
+    }else{
+     const created=await storeService.create(patch);
+     setStores([...stores,created]);
+    }
+    back();
+   }catch(e){console.error(e);alert(e?.message||'Не удалось сохранить магазин')}
+  }});panel.append(form);
+  if(store){
+   const del=document.createElement('button');del.type='button';del.className='store-delete';del.textContent='Удалить из справочника';
+   del.onclick=async()=>{
+    if(!confirm('Удалить магазин из справочника? Старые заявки останутся без изменений.'))return;
+    try{
+     await storeService.remove(store.id);
+     setStores((state.snapshot.state.stores||[]).filter(item=>item.id!==store.id));
+     back();
+    }catch(e){alert(e?.message||'Не удалось удалить магазин')}
+   };
+   panel.append(del);
+  }
+  modal.append(panel);
  }
  function openJob(job={}){
   if(readOnly)return;
