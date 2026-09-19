@@ -96,19 +96,19 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],store
     const row=document.createElement('button');row.type='button';row.className='store-row';
     const title=document.createElement('strong');title.textContent=String(store.name||'');
     const meta=document.createElement('span');meta.textContent=String(store.address||store.phone||'');
-    row.append(title,meta);row.onclick=()=>openStoreEditor(store);list.append(row);
+    row.append(title,meta);row.onclick=()=>openStoreEditor(store.id);list.append(row);
    }
   };
   draw();modal.append(panel);
  }
- function openStoreEditor(store){
-  if(!storeService)return;modal.innerHTML='';const panel=document.createElement('section');panel.className='canonical-modal-panel';const back=()=>{modal.innerHTML='';openStores()};
+ function openStoreEditor(storeId){
+  if(!storeService)return;const store=storeId?(state.snapshot.state.stores||[]).find(item=>item.id===storeId):null;if(storeId&&!store){alert('Магазин уже удалён или недоступен');openStores();return}modal.innerHTML='';const panel=document.createElement('section');panel.className='canonical-modal-panel';const back=()=>{modal.innerHTML='';openStores()};
   panel.innerHTML='<div class="canonical-modal-head"><strong>'+(store?'Редактировать магазин':'Новый магазин')+'</strong><button type="button">Назад</button></div>';panel.querySelector('button').onclick=back;
   const form=createStoreForm({store:store||{},onCancel:back,onSubmit:async patch=>{
    try{
     const stores=state.snapshot.state.stores||[];
     if(store){
-     const updated=await storeService.update(store,patch);
+     const updated=await storeService.update(store.id,patch);
      setStores(stores.map(item=>item.id===updated.id?updated:item));
     }else{
      const created=await storeService.create(patch);
