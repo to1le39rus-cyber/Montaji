@@ -48,17 +48,31 @@ async function open(user){
  const jobRepository=createJobRepository({firestore:fb.firestore,...fb.firestoreApi,actorId:user.uid});
  const jobService=createJobService({repository:jobRepository});
  const actions={clearCache:resetCache,signOut:()=>fb.authApi.signOut(fb.auth)};
+ if(cached){
+  shell=createCanonicalShell({root:app,initialState:normalizeShared(cached.shared),initialNotes:normalizeNotes({notes:cached.notes}),user,readOnly:false,jobService,actions});
+  shell.state.setDataStatus('cache');shell.setCacheStatus('cached');
+  status.textContent='● Локальный снимок · проверяем Firestore…';
+ }else{
+  status.textContent='● Подключение к Firestore…';
+ }
  try{
-  const raw=await shared.load(), state=normalizeShared(raw);
+  const raw=await Promise.race([shared.load(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('Firestore connection timeout')),8000))]);
+  const state=normalizeShared(raw);
   let ns=[];try{ns=normalizeNotes({notes:await notes.load()})}catch(e){console.warn(e);ns=cached?.notes?normalizeNotes({notes:cached.notes}):[]}
-  shell=createCanonicalShell({root:app,initialState:state,initialNotes:ns,user,readOnly:false,jobService,actions});
+  if(!shell){
+   shell=createCanonicalShell({root:app,initialState:state,initialNotes:ns,user,readOnly:false,jobService,actions});
+  }else{
+   shell.state.setState(state);shell.state.setNotes(ns);
+  }
   shell.state.setDataStatus('ready');shell.setCacheStatus(cached?'cached':'none');
   await saveLocalSnapshot({shared:state,notes:ns});status.textContent='● Firestore · realtime · актуально';
  }catch(e){
-  if(cached){
-   shell=createCanonicalShell({root:app,initialState:normalizeShared(cached.shared),initialNotes:normalizeNotes({notes:cached.notes}),user,readOnly:false,jobService,actions});
-   shell.state.setDataStatus('offline');shell.setCacheStatus('cached');status.textContent='⚠️ Локальный снимок · Firestore недоступен';
-  }else{showError(e);gate.hidden=false;warning.hidden=true;status.hidden=true;uid='';return}
+  console.warn('Firestore startup fallback',e);
+  if(shell){
+   shell.state.setDataStatus('offline');status.textContent='⚠️ Локальные данные · Firestore пока недоступен';
+  }else{
+   showError(e);gate.hidden=false;warning.hidden=true;status.hidden=true;uid='';return;
+  }
  }
  unsubShared=shared.subscribe(raw=>{if(!shell)return;const s=normalizeShared(raw);shell.state.setState(s);shell.state.setDataStatus('ready');shell.setCacheStatus('cached');saveLocalSnapshot({shared:s,notes:shell.state.snapshot.notes});shell.router.render(shell.router.current||'today');status.textContent='● Firestore · realtime · актуально'},showError);
  unsubNotes=notes.subscribe(raw=>{if(!shell)return;const ns=normalizeNotes({notes:raw});shell.state.setNotes(ns);saveLocalSnapshot({shared:shell.state.snapshot.state,notes:ns});if(shell.router.current==='notes')shell.router.render('notes')},e=>console.warn('Notes realtime skipped',e));
