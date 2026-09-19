@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Монтажи АА — DEV</title>
+<link rel="stylesheet" href="./src/styles/base.css">
+<link rel="stylesheet" href="./src/styles/today.css">
+<link rel="stylesheet" href="./src/styles/schedule.css">
+<link rel="stylesheet" href="./src/styles/money.css">
+<link rel="stylesheet" href="./src/styles/clients.css">
+<link rel="stylesheet" href="./src/styles/notes-more.css">
+<link rel="stylesheet" href="./src/styles/job-components.css">
+<style>.dev-gate{max-width:720px;margin:20px auto;padding:16px;font:15px system-ui}.dev-gate p{line-height:1.45}.dev-badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#e8f0e5;font-weight:700}.dev-gate input{display:block;margin-top:12px}.dev-status{margin-top:10px}</style>
+</head>
+<body>
+<section id="gate" class="dev-gate"><span class="dev-badge">DEV · Firebase отключён</span><h1>Montaji AA — функциональный стенд</h1><p>Выбери JSON-бэкап. Он читается только этим браузером. Изменения живут только до перезагрузки страницы и никогда не отправляются в Firestore.</p><input id="fixture" type="file" accept=".json,application/json"><div id="status" class="dev-status"></div></section>
+<div id="app"></div>
+<script type="module">
+import {createCanonicalShell} from './src/core/canonical-shell.js';
+import {normalizeShared,normalizeNotes} from './src/domain/normalize.js';
+import {createJobService} from './src/domain/job-service.js';
+import {createStoreService} from './src/domain/store-service.js';
+import {createDevJobRepository,createDevStoreRepository} from './src/data/dev-repository.js';
+const gate=document.querySelector('#gate'),input=document.querySelector('#fixture'),status=document.querySelector('#status'),root=document.querySelector('#app');
+async function open(file){
+ try{
+  status.textContent='Читаю локальный бэкап…';
+  const json=JSON.parse(await file.text());
+  const shared=normalizeShared(json?.data);
+  const notes=normalizeNotes({notes:json?.notes});
+  const devState={jobs:[...shared.jobs],expenses:[...shared.expenses],stores:[...(shared.stores||[])],version:shared.version};
+  const jobService=createJobService({repository:createDevJobRepository({state:devState})});
+  const storeService=createStoreService({repository:createDevStoreRepository({state:devState})});
+  gate.innerHTML='<span class="dev-badge">DEV · Firebase отключён</span><strong style="display:block;margin-top:10px">Локальный бэкап: '+file.name.replace(/[<>]/g,'')+'</strong><p>Изменения тестовые и исчезнут после перезагрузки. Firestore не подключён.</p>';
+  createCanonicalShell({root,initialState:devState,initialNotes:notes,user:{email:'dev@local',uid:'pages-dev'},readOnly:false,jobService,storeService,actions:{}});
+ }catch(e){status.textContent='Ошибка: '+(e?.message||String(e))}
+}
+input.addEventListener('change',e=>e.target.files?.[0]&&open(e.target.files[0]));
+</script>
+</body>
+</html>
