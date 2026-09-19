@@ -23,12 +23,12 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],store
  const router=createRouter({root:content,routes:Object.fromEntries(names.map(name=>[name,()=>renderRoute(name)]))});
  async function mutateJob(id,operation){
  if(readOnly||!jobService)return false;
- const before=state.snapshot.state;
  try{
   const updated=await operation(id);
   if(updated?.id){
-   const nextJobs=before.jobs.map(job=>job.id===id?updated:job);
-   state.setState({...before,jobs:nextJobs});
+   const current=state.snapshot.state;
+   const nextJobs=(current.jobs||[]).map(job=>job.id===id?updated:job);
+   state.setState({...current,jobs:nextJobs});
    await renderRoute(router.current||'today');
   }
   return true;
@@ -55,6 +55,9 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],store
   modal.addEventListener('click',event=>{if(event.target===modal)close()},{once:true});
 }
  function openJobCard(job){
+  const jobId=job?.id;
+  const currentJob=()=>state.snapshot.state.jobs?.find(item=>item.id===jobId)||job;
+  job=currentJob();
   modal.hidden=false; modal.innerHTML='';
   const panel=document.createElement('section'); panel.className='canonical-modal-panel job-card-modal';
   const close=()=>{modal.hidden=true;modal.innerHTML=''};
@@ -69,7 +72,7 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],store
   panel.querySelector('.canonical-modal-head button').onclick=close;
   const actions=document.createElement('div'); actions.className='job-card-detail-actions';
   const edit=document.createElement('button'); edit.type='button'; edit.textContent='✏️ Редактировать';
-  edit.onclick=()=>{close();openJob(job)};
+  edit.onclick=()=>{const latest=currentJob();close();openJob(latest)};
   actions.append(edit); panel.append(actions); modal.append(panel);
 }
  function openReschedule(job){
@@ -130,6 +133,7 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],store
  }
  function openJob(job={}){
   if(readOnly)return;
+  if(job.id)job=state.snapshot.state.jobs?.find(item=>item.id===job.id)||job;
   modal.hidden=false;modal.innerHTML='';const panel=document.createElement('section');panel.className='canonical-modal-panel job-edit-modal';
   const close=()=>{modal.hidden=true;modal.innerHTML=''};
   const form=createJobForm({job,stores:state.snapshot.state.stores||[],onCancel:close,onSubmit:async next=>{if(job.id){if(!Object.keys(next).length){close();return}const ok=await mutateJob(job.id,(id)=>jobService.update(id,next));if(ok)close();}else if(jobService){
