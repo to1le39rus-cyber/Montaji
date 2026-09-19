@@ -132,7 +132,7 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],store
   if(readOnly)return;
   modal.hidden=false;modal.innerHTML='';const panel=document.createElement('section');panel.className='canonical-modal-panel job-edit-modal';
   const close=()=>{modal.hidden=true;modal.innerHTML=''};
-  const form=createJobForm({job,stores:state.snapshot.state.stores||[],onCancel:close,onSubmit:async next=>{if(job.id){const ok=await mutateJob(job.id,(id)=>jobService.update(id,next));if(ok)close();}else if(jobService){
+  const form=createJobForm({job,stores:state.snapshot.state.stores||[],onCancel:close,onSubmit:async next=>{if(job.id){if(!Object.keys(next).length){close();return}const ok=await mutateJob(job.id,(id)=>jobService.update(id,next));if(ok)close();}else if(jobService){
  try{
   const created=await jobService.create(next);
   const current=state.snapshot.state;
