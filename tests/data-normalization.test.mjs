@@ -25,3 +25,9 @@ test('data failure retains last loaded data',()=>{
   assert.deepEqual(failedState.data,ready.data);
   assert.equal(failedState.status,DATA_STATES.error);
 });
+
+
+test('shared normalization uses canonical store shape',()=>{
+ const state=normalizeShared({stores:[{id:' s1 ',name:'  Магазин  ',address:'  Гагарина 7 ',phone:' +7 ',contact:' Иван '}]});
+ assert.deepEqual(state.stores,[{id:'s1',name:'Магазин',address:'Гагарина 7',phone:'+7',contact:'Иван'}]);
+});
