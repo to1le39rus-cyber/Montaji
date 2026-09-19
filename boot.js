@@ -7,9 +7,8 @@ async function boot(){
   const response = await fetch(APP_URL, {cache:'no-store'});
   if(!response.ok) throw new Error(`APP_LOAD_${response.status}`);
   let source = await response.text();
-  // app.js is imported from a Blob below, so relative imports inside it (notably firebase-config.js) cannot resolve. Rewrite them to absolute URLs first.
-  const firebaseConfigUrl = new URL('firebase-config.js', APP_URL).href;
-  source = source.replace(/from ['"]\.\/firebase-config\.js['"]/g, `from '${firebaseConfigUrl}'`);
+  // TEMP production compatibility: app.js is imported from a Blob, so keep Firebase config inline here.
+  source = source.replace(/import\s+\{\s*firebaseConfig\s*\}\s+from\s+['"]\.\/firebase-config\.js['"];?/, "const firebaseConfig = {\n  apiKey: \"AIzaSyARuz40aEnYf9A0X8v5_5AN9pK58lfx0es\",\n  authDomain: \"montaj-39.firebaseapp.com\",\n  projectId: \"montaj-39\",\n  storageBucket: \"montaj-39.firebasestorage.app\",\n  messagingSenderId: \"1078766399423\",\n  appId: \"1:1078766399423:web:9de0fabf89a5b1aeda3b0a\",\n  measurementId: \"G-LJG1HV95BV\"\n};");
   source = source.replace('.slice(0,40).map(e=>', '.slice(0,1000).map(e=>');
   source = source.replace("if(t.unpaid)advice.push(`💰 ${money(t.unpaid)} ещё не оплачено`);", "const allUnpaid=state.jobs.filter(j=>!isCancelled(j)&&isDone(j)&&j.paid===false).reduce((s,j)=>s+effectiveIncome(j),0);if(allUnpaid)advice.push(`💰 ${money(allUnpaid)} ещё не оплачено`);");
   const calendarStart = source.indexOf('function renderCalendar(){');
