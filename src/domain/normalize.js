@@ -27,9 +27,13 @@ export const normalizeExpense = (e={}) => ({
   comment:e.comment || '',
   cancelled:e.cancelled === true
 });
+export const normalizeStore = (s={}) => ({
+  id:String(s.id||''), name:String(s.name||'').trim(), address:String(s.address||'').trim(), phone:String(s.phone||'').trim(), contact:String(s.contact||'').trim()
+});
 export const normalizeShared = d => ({
   jobs:Array.isArray(d?.jobs)?d.jobs.map(normalizeJob):[],
   expenses:Array.isArray(d?.expenses)?d.expenses.map(normalizeExpense):[],
+  stores:Array.isArray(d?.stores)?d.stores.map(normalizeStore):[],
   version:5
 });
 export const normalizeNotes = d => Array.isArray(d?.notes)?d.notes:[];
