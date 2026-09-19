@@ -14,7 +14,7 @@ service cloud.firestore {
     match /appData/notes {
       allow read, write: if signedIn() && isOperator();
     }
-    match /appData/canonicalWriteTest {
+    match /appData/canonicalWriteTest/{testId} {
       allow read, write: if isOperator();
     }
     function myUser() {
