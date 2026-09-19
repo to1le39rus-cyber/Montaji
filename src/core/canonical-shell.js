@@ -79,7 +79,7 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],versi
  }
  function openJob(job={}){
   if(readOnly)return;
-  modal.hidden=false;modal.innerHTML='';const panel=document.createElement('section');panel.className='canonical-modal-panel';
+  modal.hidden=false;modal.innerHTML='';const panel=document.createElement('section');panel.className='canonical-modal-panel job-edit-modal';
   const close=()=>{modal.hidden=true;modal.innerHTML=''};
   const form=createJobForm({job,onCancel:close,onSubmit:async next=>{if(job.id){const ok=await mutateJob(job.id,(id)=>jobService.update(id,next));if(ok)close();}else if(jobService){
  try{
@@ -100,7 +100,7 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],versi
    if(job.status!=='Отменён') commands.push(['Отменить',()=>mutateJob(job.id,(id)=>jobService.cancel(id))]);
    for(const [label,fn] of commands){const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',async()=>{const result=await fn();if(result!==null&&result!==false)close()});actionsBox.append(b)}
   }
-  panel.innerHTML='<div class="canonical-modal-head"><strong>'+(job.id?'Заявка':'Новая заявка')+'</strong><button type="button">Закрыть</button></div>';panel.querySelector('button').addEventListener('click',close);panel.append(form);if(job.id)panel.append(actionsBox);modal.append(panel);panel.scrollTop=0;requestAnimationFrame(()=>{panel.scrollTop=0;modal.scrollTop=0});
+  panel.innerHTML='<div class="canonical-modal-head"><strong>'+(job.id?'Заявка':'Новая заявка')+'</strong><button type="button">Закрыть</button></div>';panel.querySelector('button').addEventListener('click',close);const body=document.createElement('div');body.className='canonical-modal-body';body.append(form);if(job.id)body.append(actionsBox);panel.append(body);modal.append(panel);body.scrollTop=0;requestAnimationFrame(()=>{body.scrollTop=0});
  }
  addButton.addEventListener('click',()=>openJob({date:selectedDate,type:'Монтаж',slot:'1',status:'Запланирован',paid:false}));
  names.forEach(name=>{const button=document.createElement('button');button.type='button';button.textContent=labels[name];button.dataset.route=name;button.addEventListener('click',()=>router.render(name).then(()=>nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.dataset.route===name?'page':'false'))));nav.append(button)});
