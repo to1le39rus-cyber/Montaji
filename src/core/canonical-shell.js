@@ -43,7 +43,7 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],versi
   const panel=document.createElement('section');
   panel.className='canonical-modal-panel client-modal-panel';
   const close=()=>{modal.hidden=true;modal.innerHTML=''};
-  renderClientDetail({root:panel,client,onBack:close});
+  renderClientDetail({root:panel,client,onBack:close,onJobClick:job=>{close();openJobCard(job)}});
   const closeButton=document.createElement('button');
   closeButton.type='button';
   closeButton.className='client-modal-close';
