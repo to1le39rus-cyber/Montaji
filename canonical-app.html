@@ -78,7 +78,7 @@ async function open(user){
    showError(e);gate.hidden=false;warning.hidden=true;status.hidden=true;uid='';return;
   }
  }
- unsubShared=shared.subscribe(raw=>{if(!shell)return;const s=normalizeShared(raw);shell.state.setState(s);shell.state.setDataStatus('ready');shell.setCacheStatus('cached');saveLocalSnapshot({userId:user.uid,shared:s,notes:shell.state.snapshot.notes});shell.router.render(shell.router.current||'today');status.textContent='● Firestore · realtime · актуально'},showError);
+ unsubShared=shared.subscribe((raw,meta={})=>{if(!shell)return;const s=normalizeShared(raw);shell.state.setState(s);const freshness=meta.hasPendingWrites?'pending':meta.fromCache?'cache':'ready';shell.state.setDataStatus(freshness);shell.setCacheStatus('cached');saveLocalSnapshot({userId:user.uid,shared:s,notes:shell.state.snapshot.notes});shell.router.render(shell.router.current||'today');status.textContent=meta.hasPendingWrites?'◌ Изменения отправляются в Firestore…':meta.fromCache?'◌ Firestore · локальный snapshot · ждём сервер…':'● Firestore · realtime · сервер подтверждён'},showError);
  unsubNotes=notes.subscribe(raw=>{if(!shell)return;const ns=normalizeNotes({notes:raw});shell.state.setNotes(ns);saveLocalSnapshot({userId:user.uid,shared:shell.state.snapshot.state,notes:ns});if(shell.router.current==='notes')shell.router.render('notes')},e=>console.warn('Notes realtime skipped',e));
 }
 document.querySelector('#login').onclick=async()=>{error.textContent='';try{await fb.authApi.signInWithEmailAndPassword(fb.auth,email.value.trim(),password.value)}catch(e){showError(e)}};
