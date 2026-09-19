@@ -103,14 +103,15 @@ async function open(user){
   status.textContent='⚠️ Локальные данные · Firestore пока недоступен';
   showError(e);
  }
- sharedUnsub=shared.subscribe(raw=>{
+ sharedUnsub=shared.subscribe((raw,meta={})=>{
   const normalized=normalizeShared(raw);
   shell.state.setState(normalized);
-  shell.state.setDataStatus('ready');
+  const freshness=meta.hasPendingWrites?'pending':meta.fromCache?'cache':'ready';
+  shell.state.setDataStatus(freshness);
   shell.setCacheStatus('cached');
   saveLocalSnapshot({userId:user.uid,shared:normalized,notes:shell.state.snapshot.notes});
   shell.router.render(shell.router.current||'today');
-  status.textContent='● Firestore · realtime · актуально';
+  status.textContent=meta.hasPendingWrites?'◌ Изменения отправляются в Firestore…':meta.fromCache?'◌ Firestore · локальный snapshot · ждём сервер…':'● Firestore · realtime · сервер подтверждён';
  },showError);
  notesUnsub=notes.subscribe(raw=>{
   const normalized=normalizeNotes({notes:raw});
