@@ -1,7 +1,7 @@
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 const value=(job,key)=>esc(job?.[key]??'');
 const types=['Монтаж','Замер','Рекламация','Доставка','Сервис','Доп. доход'];
-const statuses=['Запланирован','Выполнен','Отменён','Перенос'];
+const statuses=['Запланирован','В пути','На объекте','Выполнен','Отменён','Перенос'];
 
 export const createJobForm=({job={},stores=[],onSubmit=()=>{},onCancel=()=>{}})=>{
  const form=document.createElement('form'); form.className='job-form';
