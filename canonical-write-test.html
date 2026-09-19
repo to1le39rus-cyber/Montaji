@@ -3,62 +3,80 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Монтажи АА — Canonical Write Test</title>
-<link rel="stylesheet" href="./src/styles/base.css">
-<link rel="stylesheet" href="./src/styles/today.css">
-<link rel="stylesheet" href="./src/styles/schedule.css">
-<link rel="stylesheet" href="./src/styles/money.css">
-<link rel="stylesheet" href="./src/styles/clients.css">
-<link rel="stylesheet" href="./src/styles/notes-more.css">
-<link rel="stylesheet" href="./src/styles/job-components.css">
+<title>Монтажи АА — Canonical Write Smoke Test</title>
 <style>
-body{background:#f6f7f5;color:#171914}.live-gate{max-width:560px;margin:8vh auto;padding:24px;border:1px solid #ddd;border-radius:24px;background:#fff}.live-gate h1{margin:0 0 8px}.live-gate p{color:#666}.live-gate label{display:grid;gap:7px;margin:14px 0}.live-gate input{padding:13px;border:1px solid #ccc;border-radius:12px}.live-gate button{padding:13px 16px;border:0;border-radius:12px;background:#2f6fed;color:#fff;font-weight:700}.live-error{margin-top:12px;color:#a33}.live-badge{max-width:900px;margin:12px auto;padding:8px 12px;color:#555;font-size:13px}
+body{margin:0;background:#f6f7f5;color:#171914;font-family:system-ui,sans-serif}.box{max-width:620px;margin:8vh auto;padding:24px;border:1px solid #ddd;border-radius:24px;background:#fff}.box h1{margin:0 0 8px}.box p{color:#666;line-height:1.5}.box label{display:grid;gap:7px;margin:14px 0}.box input{padding:13px;border:1px solid #ccc;border-radius:12px}.box button{padding:13px 16px;border:0;border-radius:12px;background:#2f6fed;color:#fff;font-weight:700}.box button:disabled{opacity:.5}.status{margin-top:16px;padding:12px;border-radius:12px;background:#f0f1ef}.error{margin-top:12px;color:#a33}
 </style>
 </head>
 <body>
-<section id="gate" class="live-gate">
-<h1>Canonical Write Test</h1>
-<p>Canonical Live. Здесь новый runtime читает текущую общую базу Montaji. Отдельный тестовый стенд. Запись идёт в реальную базу через Firestore transaction. Не использовать для обычной работы.</p>
+<section id="gate" class="box">
+<h1>Canonical Write Smoke Test</h1>
+<p><strong>Изолированный тест.</strong> Он не создаёт и не изменяет заявки, деньги, расходы или заметки. Тест использует только временный документ в <code>appData/canonicalWriteTest/{id}</code>, после чего удаляет его.</p>
 <label>Email<input id="email" type="email" autocomplete="username"></label>
 <label>Пароль<input id="password" type="password" autocomplete="current-password"></label>
 <button id="login" type="button">Войти</button>
-<div id="error" class="live-error"></div>
+<div id="error" class="error"></div>
 </section>
-<div id="status" class="live-badge" hidden></div>
-<div id="app"></div>
+<section id="test" class="box" hidden>
+<h1>Transaction smoke test</h1>
+<p>Проверяет реальную авторизацию, Firestore transaction write/update/delete и серверное чтение. Боевые данные не используются.</p>
+<button id="run" type="button">Запустить тест</button>
+<div id="status" class="status">Готово</div>
+<div id="testError" class="error"></div>
+</section>
 <script type="module">
 import { createFirebase } from './src/data/firebase.js';
-import { createSharedRepository } from './src/data/shared-repository.js';
-import { createNotesRepository } from './src/data/notes-repository.js';
-import { normalizeShared, normalizeNotes } from './src/domain/normalize.js';
-import { createCanonicalShell } from './src/core/canonical-shell.js';
-import { createJobRepository } from './src/data/job-repository.js';
-import { createJobService } from './src/domain/job-service.js';
 import { firebaseConfig } from './firebase-config.js';
-const gate=document.querySelector('#gate'), appRoot=document.querySelector('#app'), status=document.querySelector('#status'), error=document.querySelector('#error');
-const email=document.querySelector('#email'), password=document.querySelector('#password');
+const gate=document.querySelector('#gate'), test=document.querySelector('#test'), status=document.querySelector('#status'), error=document.querySelector('#error'), testError=document.querySelector('#testError');
+const email=document.querySelector('#email'), password=document.querySelector('#password'), run=document.querySelector('#run');
 const fb=createFirebase(firebaseConfig);
-const shared=createSharedRepository({firestore:fb.firestore,...fb.firestoreApi});
-const notes=createNotesRepository({firestore:fb.firestore,...fb.firestoreApi});
-let shell=null, sharedUnsub=null, notesUnsub=null;
-function showError(e){error.textContent=e?.message||String(e)}
-async function open(user){
- gate.hidden=true; status.hidden=false; status.textContent='Подключение к общей базе…';
+let user=null;
+const showError=e=>{testError.textContent=e?.message||String(e)};
+const runSmokeTest=async()=>{
+ run.disabled=true; testError.textContent='';
+ const id=user.uid+'-'+Date.now();
+ const ref=fb.firestoreApi.doc(fb.firestore,'appData','canonicalWriteTest',id);
  try{
-  const [rawShared,rawNotes]=await Promise.all([shared.load(),notes.load()]);
-  const jobRepository=createJobRepository({firestore:fb.firestore,...fb.firestoreApi,actorId:user.uid});
-  const jobService=createJobService({repository:jobRepository});
-  shell=createCanonicalShell({root:appRoot,initialState:normalizeShared(rawShared),initialNotes:normalizeNotes({notes:rawNotes}),user,readOnly:false,jobService});
-  status.textContent='● Firestore · transaction · realtime';
-  sharedUnsub=shared.subscribe(raw=>{shell.state.setState(normalizeShared(raw));shell.router.render(shell.router.current||'today')},showError);
-  notesUnsub=notes.subscribe(raw=>{shell.state.setNotes(normalizeNotes({notes:raw}));if(shell.router.current==='notes')shell.router.render('notes')},showError);
- }catch(e){showError(e);gate.hidden=false;status.hidden=true}
-}
+  status.textContent='1/4 · Создаём изолированный тестовый документ…';
+  await fb.firestoreApi.runTransaction(fb.firestore,async tx=>{
+   const snap=await tx.get(ref);
+   if(snap.exists())throw new Error('Коллизия test id');
+   tx.set(ref,{kind:'canonical-smoke-test',uid:user.uid,phase:'created',createdAt:fb.firestoreApi.serverTimestamp()});
+  });
+  status.textContent='2/4 · Проверяем transaction update…';
+  await fb.firestoreApi.runTransaction(fb.firestore,async tx=>{
+   const snap=await tx.get(ref);
+   if(!snap.exists())throw new Error('Тестовый документ не найден');
+   if(snap.data()?.uid!==user.uid)throw new Error('Неверный владелец тестового документа');
+   tx.update(ref,{phase:'updated',updatedAt:fb.firestoreApi.serverTimestamp()});
+  });
+  status.textContent='3/4 · Проверяем transaction delete…';
+  await fb.firestoreApi.runTransaction(fb.firestore,async tx=>{
+   const snap=await tx.get(ref);
+   if(!snap.exists())throw new Error('Тестовый документ не найден перед удалением');
+   tx.delete(ref);
+  });
+  status.textContent='4/4 · Проверяем, что тестовый документ удалён…';
+  const finalSnap=await fb.firestoreApi.getDocFromServer(ref);
+  if(finalSnap.exists())throw new Error('Тестовый документ остался в базе');
+  status.textContent='✅ Transaction smoke test пройден. Боевые данные не изменялись.';
+ }catch(e){
+  console.error(e);
+  status.textContent='❌ Smoke test завершился ошибкой';
+  showError(e);
+  try{await fb.firestoreApi.runTransaction(fb.firestore,async tx=>{const snap=await tx.get(ref);if(snap.exists())tx.delete(ref)})}catch(cleanupError){console.error('Smoke cleanup failed',cleanupError)}
+ }finally{run.disabled=false}
+};
 document.querySelector('#login').addEventListener('click',async()=>{
  error.textContent='';
- try{await fb.authApi.signInWithEmailAndPassword(fb.auth,email.value.trim(),password.value)}catch(e){showError(e)}
+ try{await fb.authApi.signInWithEmailAndPassword(fb.auth,email.value.trim(),password.value)}catch(e){error.textContent=e?.message||String(e)}
 });
-fb.authApi.onAuthStateChanged(fb.auth,user=>{if(user)open(user)},showError);
+fb.authApi.onAuthStateChanged(fb.auth,next=>{
+ user=next;
+ if(user){gate.hidden=true;test.hidden=false;status.textContent='Авторизован: '+(user.email||user.uid)}
+ else{gate.hidden=false;test.hidden=true;}
+},error=>{document.querySelector('#error').textContent=error?.message||String(error)});
+run.addEventListener('click',runSmokeTest);
 </script>
 </body>
 </html>
