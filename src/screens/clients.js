@@ -39,8 +39,9 @@ export const renderClientDetail=({root,client,onBack=()=>{},onJobClick=()=>{}})=
  root.append(stats);
  const history=document.createElement('section');history.className='client-history';history.innerHTML='<h2>История</h2>';
  [...client.jobs].reverse().forEach(j=>{
-  const row=document.createElement('article');row.className='client-job';
+  const row=document.createElement('button');row.type='button';row.className='client-job';
   row.innerHTML='<div><strong>'+esc(j.type||'Заявка')+'</strong><span>'+date(j.date)+' · '+esc(j.status||'')+'</span></div><strong>'+money(effectiveIncome(j))+'</strong>';
+  row.addEventListener('click',()=>onJobClick(j));
   history.append(row);
  });
  root.append(history);
