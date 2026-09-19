@@ -26,7 +26,15 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],versi
   const close=()=>{modal.hidden=true;modal.innerHTML=''};
   const form=createJobForm({job,onCancel:close,onSubmit:next=>{const jobs=state.snapshot.state.jobs||[];const value=job.id?updateJob(job,next):createJob({job:next});state.setState({...state.snapshot.state,jobs:job.id?jobs.map(j=>j.id===job.id?value:j):[...jobs,value]});close();renderRoute(router.current||'today')}});
   const actions=document.createElement('div');actions.className='job-lifecycle-actions';
-  if(job.id){for(const [label,fn] of [['Выполнить',()=>completeJob(job)],['Оплатить',()=>markPaid(job)],['Не оплачено',()=>markUnpaid(job)],['Перенести',()=>rescheduleJob(job,prompt('Новая дата',job.date)||job.date)],['Отменить',()=>cancelJob(job)]] ){const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',()=>{const next=fn();if(next){const jobs=state.snapshot.state.jobs||[];state.setState({...state.snapshot.state,jobs:jobs.map(j=>j.id===job.id?next:j)});close();renderRoute(router.current||'today')}});actions.append(b)}}
+  if(job.id){
+ const commands=[];
+ if(job.status!=='Выполнен'&&job.status!=='Отменён') commands.push(['Выполнить',()=>completeJob(job)]);
+ if(job.status!=='Отменён'&&job.paid!==true) commands.push(['Оплатить',()=>markPaid(job)]);
+ if(job.status!=='Отменён'&&job.paid===true) commands.push(['Не оплачено',()=>markUnpaid(job)]);
+ if(job.status!=='Отменён') commands.push(['Перенести',()=>rescheduleJob(job,prompt('Новая дата',job.date)||job.date)]);
+ if(job.status!=='Отменён') commands.push(['Отменить',()=>cancelJob(job)]);
+ for(const [label,fn] of commands){const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',()=>{const next=fn();if(next){const jobs=state.snapshot.state.jobs||[];state.setState({...state.snapshot.state,jobs:jobs.map(j=>j.id===job.id?next:j)});close();renderRoute(router.current||'today')}});actions.append(b)}
+}
   panel.innerHTML='<div class="canonical-modal-head"><strong>'+(job.id?'Заявка':'Новая заявка')+'</strong><button type="button">Закрыть</button></div>';panel.querySelector('button').addEventListener('click',close);panel.append(form);if(job.id)panel.append(actions);modal.append(panel);
  }
  names.forEach(name=>{const button=document.createElement('button');button.type='button';button.textContent=labels[name];button.dataset.route=name;button.addEventListener('click',()=>router.render(name).then(()=>nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.dataset.route===name?'page':'false'))));nav.append(button)});
