@@ -144,16 +144,16 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],store
   const actionsBox=document.createElement('div');actionsBox.className='job-lifecycle-actions';
   if(job.id){
    const commands=[];
-   if(job.status!=='Выполнен'&&job.status!=='Отменён') commands.push(['Выполнить',()=>mutateJob(job.id,(id)=>jobService.complete(id))]);
-   if(job.status!=='Отменён'&&job.paid!==true) commands.push(['Оплатить',()=>mutateJob(job.id,(id)=>jobService.markPaid(id))]);
-   if(job.status!=='Отменён'&&job.paid===true) commands.push(['Не оплачено',()=>mutateJob(job.id,(id)=>jobService.markUnpaid(id))]);
-   if(job.status!=='Отменён') commands.push(['Перенести',()=>{openReschedule(job);return null}]);
-   if(job.status!=='Отменён') commands.push(['Отменить',()=>mutateJob(job.id,(id)=>jobService.cancel(id))]);
+   if(job.status!=='Выполнен'&&job.status!=='Отменен') commands.push(['Выполнить',()=>mutateJob(job.id,(id)=>jobService.complete(id))]);
+   if(job.status!=='Отменен'&&job.paid!==true) commands.push(['Оплатить',()=>mutateJob(job.id,(id)=>jobService.markPaid(id))]);
+   if(job.status!=='Отменен'&&job.paid===true) commands.push(['Не оплачено',()=>mutateJob(job.id,(id)=>jobService.markUnpaid(id))]);
+   if(job.status!=='Отменен') commands.push(['Перенести',()=>{openReschedule(job);return null}]);
+   if(job.status!=='Отменен') commands.push(['Отменить',()=>mutateJob(job.id,(id)=>jobService.cancel(id))]);
    for(const [label,fn] of commands){const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',async()=>{const result=await fn();if(result!==null&&result!==false)close()});actionsBox.append(b)}
   }
   panel.innerHTML='<div class="canonical-modal-head"><strong>'+(job.id?'Заявка':'Новая заявка')+'</strong><button type="button">Закрыть</button></div>';panel.querySelector('button').addEventListener('click',close);const body=document.createElement('div');body.className='canonical-modal-body';body.append(form);if(job.id)body.append(actionsBox);panel.append(body);modal.append(panel);body.scrollTop=0;requestAnimationFrame(()=>{body.scrollTop=0});
  }
- addButton.addEventListener('click',()=>openJob({date:selectedDate,type:'Монтаж',slot:'1',status:'Запланирован',paid:false}));
+ addButton.addEventListener('click',()=>openJob({date:selectedDate,type:'Монтаж',slot:'1',status:'Запланировано',paid:false}));
  names.forEach(name=>{const button=document.createElement('button');button.type='button';button.textContent=labels[name];button.dataset.route=name;button.addEventListener('click',()=>router.render(name).then(()=>nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.dataset.route===name?'page':'false'))));nav.append(button)});
  router.render('today').then(()=>nav.querySelector('[data-route="today"]')?.setAttribute('aria-current','page'));
  return {state,router,root,openJob,setCacheStatus(value){cacheStatus=value;if(router.current==='more')renderRoute('more')}};
