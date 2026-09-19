@@ -1,5 +1,5 @@
 :root{
- --bg:#f3f1e9;--surface:#fbfaf6;--surface-strong:#fff;--ink:#171914;--muted:#73776d;--line:rgba(23,25,20,.10);
+ --bg:#f2f0e7;--surface:#faf9f4;--surface-strong:#fffefb;--ink:#171914;--muted:#73776d;--line:rgba(23,25,20,.10);
  --accent:#586247;--accent-ink:#f8f8f2;--success:#49684e;--warning:#a56f2b;--danger:#9a5148;
  --r-sm:14px;--r-md:20px;--r-lg:28px;--shadow:0 14px 40px rgba(29,31,24,.08);
  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;
@@ -7,7 +7,7 @@
 }
 *{box-sizing:border-box}
 html{background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%}
-body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",sans-serif;background:var(--bg);color:var(--ink);letter-spacing:-.01em}
+body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",sans-serif;background:radial-gradient(circle at 82% 2%,rgba(108,122,82,.08),transparent 28rem),var(--bg);color:var(--ink);letter-spacing:-.01em}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(88,98,71,.22);outline-offset:2px}
