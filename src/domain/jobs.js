@@ -1,5 +1,5 @@
 export const JOB_TYPES = Object.freeze(['Монтаж','Замер','Рекламация','Доставка','Сервис','Доп. доход']);
-export const JOB_STATUSES = Object.freeze(['Запланирован','В пути','На объекте','Выполнен','Отменён','Перенос']);
+export const JOB_STATUSES = Object.freeze(['Запланирован','Выполнен','Отменён','Перенос']);
 export const isCompleted = job => job?.status === 'Выполнен';
 export const isCancelled = job => job?.status === 'Отменён';
 export const isMeasurement = job => job?.type === 'Замер';
