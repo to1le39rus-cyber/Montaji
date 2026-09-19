@@ -1,13 +1,8 @@
-export const buildMoreModel=({user=null,dataStatus='idle',cacheStatus='none'})=>({
- email:user?.email||'',
- dataStatus,
- cacheStatus
-});
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+export const buildMoreModel=({user=null,dataStatus='idle',cacheStatus='none',stores=[]})=>({email:user?.email||'',dataStatus,cacheStatus,stores:Array.isArray(stores)?stores:[]});
 export const renderMore=({root,model,actions={}})=>{
- if(!root)return;
- const cacheText=model.cacheStatus==='cached'?'Локальный снимок загружен':'Локального снимка нет';
- root.innerHTML='<section class="more-screen"><h1>Ещё</h1><p>Аккаунт: '+(model.email||'—')+'</p><p>База: '+model.dataStatus+'</p><p>'+cacheText+'</p><div class="more-actions"><button type="button" data-action="clear-cache">Очистить локальные данные / кэш</button><button type="button" data-action="export">Экспорт</button><button type="button" data-action="signout">Выйти</button></div></section>';
- root.querySelector('[data-action="clear-cache"]')?.addEventListener('click',()=>actions.clearCache?.());
- root.querySelector('[data-action="export"]')?.addEventListener('click',()=>actions.export?.());
- root.querySelector('[data-action="signout"]')?.addEventListener('click',()=>actions.signOut?.());
+ if(!root)return;const cacheText=model.cacheStatus==='cached'?'Локальный снимок загружен':'Локального снимка нет';
+ root.innerHTML='<section class="more-screen"><h1>Ещё</h1><section class="settings-section"><h2>Настройки</h2><button type="button" class="settings-row" data-action="stores"><span><strong>Магазины</strong><small>Адреса и контакты</small></span><b>'+model.stores.length+' ›</b></button></section><section class="technical-section"><p>Аккаунт: '+esc(model.email||'—')+'</p><p>База: '+esc(model.dataStatus)+'</p><p>'+cacheText+'</p><div class="more-actions"><button type="button" data-action="clear-cache">Очистить локальные данные / кэш</button><button type="button" data-action="export">Экспорт</button><button type="button" data-action="signout">Выйти</button></div></section></section>';
+ root.querySelector('[data-action="stores"]')?.addEventListener('click',()=>actions.openStores?.());
+ root.querySelector('[data-action="clear-cache"]')?.addEventListener('click',()=>actions.clearCache?.());root.querySelector('[data-action="export"]')?.addEventListener('click',()=>actions.export?.());root.querySelector('[data-action="signout"]')?.addEventListener('click',()=>actions.signOut?.());
 };
