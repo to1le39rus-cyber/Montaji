@@ -1,7 +1,7 @@
 const CACHE_DB_NAME='montaji-canonical-cache';
 const CACHE_DB_VERSION=1;
 const CACHE_STORE='snapshots';
-const CACHE_KEY='current';
+const cacheKey=userId=>'user:'+String(userId||'').trim();
 export const CANONICAL_RUNTIME_VERSION='2026-09-19-canonical-v2';
 
 const hasIndexedDB=()=>typeof indexedDB!=='undefined';
@@ -14,12 +14,13 @@ const openDb=()=>new Promise((resolve,reject)=>{
   request.onerror=()=>reject(request.error||new Error('IndexedDB unavailable'));
 });
 
-export const loadLocalSnapshot=async()=>{
+export const loadLocalSnapshot=async(userId)=>{
+  if(!String(userId||'').trim())return null;
   try{
     const db=await openDb();
     if(!db)return null;
     const value=await new Promise((resolve,reject)=>{
-      const request=db.transaction(CACHE_STORE,'readonly').objectStore(CACHE_STORE).get(CACHE_KEY);
+      const request=db.transaction(CACHE_STORE,'readonly').objectStore(CACHE_STORE).get(cacheKey(userId));
       request.onsuccess=()=>resolve(request.result||null);
       request.onerror=()=>reject(request.error);
     });
@@ -33,14 +34,16 @@ export const loadLocalSnapshot=async()=>{
   }
 };
 
-export const saveLocalSnapshot=async({shared,notes=[]}={})=>{
+export const saveLocalSnapshot=async({userId,shared,notes=[]}={})=>{
+  if(!String(userId||'').trim())return false;
   try{
     const db=await openDb();
     if(!db)return false;
     await new Promise((resolve,reject)=>{
       const tx=db.transaction(CACHE_STORE,'readwrite');
       tx.objectStore(CACHE_STORE).put({
-        key:CACHE_KEY,
+        key:cacheKey(userId),
+        userId:String(userId),
         runtimeVersion:CANONICAL_RUNTIME_VERSION,
         savedAt:new Date().toISOString(),
         shared,
