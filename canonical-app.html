@@ -46,7 +46,7 @@ const stop=()=>{unsubShared?.();unsubNotes?.();unsubShared=null;unsubNotes=null}
 async function resetCache(){if(!confirm('Очистить только локальные данные и кэш? Firestore не изменится.'))return;await clearLocalCache();location.reload()}
 async function open(user){
  if(uid===user.uid)return;uid=user.uid;stop();gate.hidden=true;warning.hidden=false;status.hidden=false;
- const cached=await loadLocalSnapshot();
+ const cached=await loadLocalSnapshot(user.uid);
  const jobRepository=createJobRepository({firestore:fb.firestore,...fb.firestoreApi,actorId:user.uid});
  const jobService=createJobService({repository:jobRepository});
  const storeRepository=createStoreRepository({firestore:fb.firestore,...fb.firestoreApi,actorId:user.uid});
@@ -69,7 +69,7 @@ async function open(user){
    shell.state.setState(state);shell.state.setNotes(ns);
   }
   shell.state.setDataStatus('ready');shell.setCacheStatus(cached?'cached':'none');
-  await saveLocalSnapshot({shared:state,notes:ns});status.textContent='● Firestore · realtime · актуально';
+  await saveLocalSnapshot({userId:user.uid,shared:state,notes:ns});status.textContent='● Firestore · realtime · актуально';
  }catch(e){
   console.warn('Firestore startup fallback',e);
   if(shell){
@@ -78,8 +78,8 @@ async function open(user){
    showError(e);gate.hidden=false;warning.hidden=true;status.hidden=true;uid='';return;
   }
  }
- unsubShared=shared.subscribe(raw=>{if(!shell)return;const s=normalizeShared(raw);shell.state.setState(s);shell.state.setDataStatus('ready');shell.setCacheStatus('cached');saveLocalSnapshot({shared:s,notes:shell.state.snapshot.notes});shell.router.render(shell.router.current||'today');status.textContent='● Firestore · realtime · актуально'},showError);
- unsubNotes=notes.subscribe(raw=>{if(!shell)return;const ns=normalizeNotes({notes:raw});shell.state.setNotes(ns);saveLocalSnapshot({shared:shell.state.snapshot.state,notes:ns});if(shell.router.current==='notes')shell.router.render('notes')},e=>console.warn('Notes realtime skipped',e));
+ unsubShared=shared.subscribe(raw=>{if(!shell)return;const s=normalizeShared(raw);shell.state.setState(s);shell.state.setDataStatus('ready');shell.setCacheStatus('cached');saveLocalSnapshot({userId:user.uid,shared:s,notes:shell.state.snapshot.notes});shell.router.render(shell.router.current||'today');status.textContent='● Firestore · realtime · актуально'},showError);
+ unsubNotes=notes.subscribe(raw=>{if(!shell)return;const ns=normalizeNotes({notes:raw});shell.state.setNotes(ns);saveLocalSnapshot({userId:user.uid,shared:shell.state.snapshot.state,notes:ns});if(shell.router.current==='notes')shell.router.render('notes')},e=>console.warn('Notes realtime skipped',e));
 }
 document.querySelector('#login').onclick=async()=>{error.textContent='';try{await fb.authApi.signInWithEmailAndPassword(fb.auth,email.value.trim(),password.value)}catch(e){showError(e)}};
 fb.authApi.onAuthStateChanged(fb.auth,user=>user?open(user):(stop(),uid='',shell=null,app.innerHTML='',gate.hidden=false,warning.hidden=true,status.hidden=true),showError);
