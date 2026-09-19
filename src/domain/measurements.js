@@ -1,5 +1,5 @@
 import { isMeasurement } from './jobs.js';
-export const canConvertMeasurement = job => isMeasurement(job) && !job?.convertedToJobId && job?.status !== 'Отменён';
+export const canConvertMeasurement = job => isMeasurement(job) && !job?.convertedToJobId && job?.status !== 'Отменен';
 export const buildConvertedMontage = (measure, input, montageId) => ({
   ...input,
   id:montageId,
