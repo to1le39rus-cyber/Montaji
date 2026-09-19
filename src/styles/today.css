@@ -1,11 +1,17 @@
-.today-header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin:4px 0 22px}
-.today-header h1{margin:0;font-size:clamp(34px,10vw,46px);line-height:.96;font-weight:800;letter-spacing:-.055em}
-.today-date{color:var(--muted);font-size:13px;font-weight:650}
-.today-summary{display:grid;grid-template-columns:.8fr 1.2fr;gap:10px;margin-bottom:18px}
-.today-summary>div{min-height:112px;padding:17px;border:1px solid var(--line);border-radius:var(--r-md);display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(145deg,rgba(255,255,255,.76),rgba(251,250,246,.48));backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:inset 0 1px 0 rgba(255,255,255,.75)}
-.today-summary span{color:var(--muted);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.055em}
-.today-summary strong{font-size:26px;line-height:1;font-weight:780;letter-spacing:-.045em}
-.today-jobs{display:grid;gap:10px}
-.today-empty{padding:28px 18px;margin:0;border:1px dashed var(--line);border-radius:var(--r-md);color:var(--muted);text-align:center}
-@media(max-width:600px){.today-header{align-items:flex-start}.today-summary{grid-template-columns:.8fr 1.2fr}}
-.today-summary>div,.today-jobs>.job-card{animation:card-rise 420ms var(--ease-out) both}.today-summary>div:nth-child(2){animation-delay:45ms}.today-jobs>.job-card:nth-child(1){animation-delay:70ms}.today-jobs>.job-card:nth-child(2){animation-delay:105ms}.today-jobs>.job-card:nth-child(3){animation-delay:140ms}@keyframes card-rise{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+.today-header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin:5px 2px 20px}
+.today-eyebrow{display:block;margin-bottom:7px;color:var(--muted);font-size:11px;font-weight:760;text-transform:uppercase;letter-spacing:.11em}
+.today-header h1{margin:0;font-size:clamp(39px,11vw,52px);line-height:.88;font-weight:820;letter-spacing:-.065em}
+.today-date{max-width:132px;color:var(--muted);font-size:12px;line-height:1.25;font-weight:680;text-align:right}
+.today-hero{position:relative;isolation:isolate;overflow:hidden;margin-bottom:24px;padding:20px;border:1px solid rgba(255,255,255,.72);border-radius:28px;background:linear-gradient(145deg,rgba(255,255,255,.82),rgba(242,241,232,.72));box-shadow:0 16px 45px rgba(33,36,27,.075),inset 0 1px 0 rgba(255,255,255,.92);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.today-hero-glow{position:absolute;z-index:-1;width:220px;height:220px;right:-95px;top:-115px;border-radius:50%;background:radial-gradient(circle,rgba(112,129,83,.2),rgba(112,129,83,0) 70%);filter:blur(2px);animation:hero-breathe 8s ease-in-out infinite alternate}
+.today-hero-top,.today-hero-foot,.today-hero-main{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.today-hero-top{color:var(--muted);font-size:11px;font-weight:760;text-transform:uppercase;letter-spacing:.08em}
+.today-live{display:flex;align-items:center;gap:7px;text-transform:none;letter-spacing:0}.today-live i{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(88,98,71,.1),0 0 14px rgba(88,98,71,.3)}
+.today-hero-main{align-items:flex-end;margin-top:25px}.today-hero-main>div:first-child{display:flex;align-items:baseline;gap:8px}.today-hero-main>div:first-child strong{font-size:49px;line-height:.8;font-weight:820;letter-spacing:-.075em}.today-hero-main>div:first-child span{color:var(--muted);font-size:14px;font-weight:680}
+.today-income{text-align:right}.today-income small{display:block;margin-bottom:5px;color:var(--muted);font-size:11px;font-weight:700}.today-income strong{font-size:25px;line-height:1;font-weight:790;letter-spacing:-.05em}
+.today-progress{height:4px;margin:23px 0 11px;overflow:hidden;border-radius:99px;background:rgba(23,25,20,.07)}.today-progress span{display:block;width:var(--progress);height:100%;border-radius:inherit;background:linear-gradient(90deg,#697653,#89976d);transition:width 520ms var(--ease-out)}
+.today-hero-foot{color:var(--muted);font-size:11px;font-weight:680}
+.today-section-head{display:flex;align-items:end;justify-content:space-between;margin:0 3px 10px}.today-section-head>div{display:flex;align-items:center;gap:8px}.today-section-head span{font-size:17px;font-weight:790}.today-section-head strong{display:grid;place-items:center;min-width:24px;height:24px;padding:0 7px;border-radius:99px;background:rgba(23,25,20,.07);font-size:11px}.today-section-head small{color:var(--muted);font-size:11px;font-weight:680}
+.today-jobs{display:grid;gap:11px}.today-empty{display:grid;gap:5px;padding:34px 20px;border:1px dashed rgba(23,25,20,.14);border-radius:24px;text-align:center;color:var(--muted)}.today-empty strong{color:var(--ink);font-size:17px}.today-empty span{font-size:13px}
+.today-hero,.today-jobs>.job-card{animation:card-rise 420ms var(--ease-out) both}.today-jobs>.job-card:nth-child(1){animation-delay:55ms}.today-jobs>.job-card:nth-child(2){animation-delay:90ms}.today-jobs>.job-card:nth-child(3){animation-delay:125ms}@keyframes card-rise{from{opacity:0;transform:translateY(10px) scale(.988)}to{opacity:1;transform:none}}@keyframes hero-breathe{to{transform:translate(-18px,14px) scale(1.1);opacity:.75}}
+@media(max-width:380px){.today-hero{padding:18px}.today-hero-main>div:first-child strong{font-size:43px}.today-income strong{font-size:22px}.today-date{max-width:110px}}
