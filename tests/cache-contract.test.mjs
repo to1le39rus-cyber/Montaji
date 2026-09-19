@@ -8,6 +8,8 @@ const writeTest=fs.readFileSync(path.join(root,'canonical-write-test.html'),'utf
 const more=fs.readFileSync(path.join(root,'src/screens/more.js'),'utf8');
 const cache=fs.readFileSync(path.join(root,'src/data/local-cache.js'),'utf8');
 const rules=fs.readFileSync(path.join(root,'firestore.rules'),'utf8');
+const sharedRepository=fs.readFileSync(path.join(root,'src/data/shared-repository.js'),'utf8');
+const app=fs.readFileSync(path.join(root,'canonical-app.html'),'utf8');
 
 test('canonical cache is versioned and never a source of truth',()=>{
  assert.match(cache,/CANONICAL_RUNTIME_VERSION/);
@@ -32,4 +34,13 @@ test('write smoke test uses one isolated document, never business data',()=>{
  assert.match(writeTest,/runTransaction/); assert.match(writeTest,/tx\.delete\(ref\)/);
  assert.doesNotMatch(writeTest,/createJobRepository|createJobService|appData','shared/);
  assert.match(rules,/match \/appData\/canonicalWriteTest\s*\{/);
+});
+
+test('realtime freshness distinguishes server cache and pending writes',()=>{
+ assert.match(sharedRepository,/includeMetadataChanges:true/);
+ assert.match(sharedRepository,/fromCache:snap\.metadata\.fromCache/);
+ assert.match(sharedRepository,/hasPendingWrites:snap\.metadata\.hasPendingWrites/);
+ assert.match(app,/meta\.hasPendingWrites/);
+ assert.match(app,/meta\.fromCache/);
+ assert.match(app,/сервер подтверждён/);
 });
