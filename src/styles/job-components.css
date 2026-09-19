@@ -1,16 +1,23 @@
-.job-card{border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;background:var(--surface-strong);box-shadow:0 3px 14px rgba(23,25,20,.035)}
-.job-card-main{display:block;width:100%;padding:17px;text-align:left;background:transparent;border:0}
+.job-card{--status:#7d8278;position:relative;border:1px solid color-mix(in srgb,var(--status) 25%,transparent);border-radius:22px;overflow:hidden;background:rgba(255,255,255,.82);box-shadow:0 8px 28px rgba(23,25,20,.055);isolation:isolate;transition:transform var(--motion-base) var(--ease-spring),box-shadow var(--motion-base) var(--ease-out),border-color var(--motion-base) var(--ease-out)}
+.job-card::before{content:"";position:absolute;z-index:-1;inset:-45% 45% 45% -35%;background:radial-gradient(circle,color-mix(in srgb,var(--status) 16%,transparent),transparent 68%);opacity:.65;transition:opacity var(--motion-base) var(--ease-out),transform 700ms var(--ease-out)}
+.job-card[data-status="planned"]{--status:#657b9c}.job-card[data-status="done"]{--status:#627453}.job-card[data-status="moved"]{--status:#b07b3e}.job-card[data-status="cancelled"]{--status:#a86159}
+.job-card:active{transform:scale(.988);box-shadow:0 4px 16px rgba(23,25,20,.05)}
+.job-card:active::before{opacity:1;transform:translate(10%,8%) scale(1.08)}
+.job-card-main{display:block;width:100%;padding:18px;text-align:left;background:transparent;border:0}
 .job-card-top,.job-card-bottom{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.job-card-top>strong{font-size:17px;line-height:1.15;font-weight:760}
-.job-card-top>span{flex:0 0 auto;padding:5px 8px;border-radius:999px;background:#eeeee7;color:#5e6258;font-size:11px;font-weight:750}
-.job-card-meta{margin-top:7px;color:var(--muted);font-size:13px;font-weight:600}
-.job-card-address{margin-top:5px;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.job-card-bottom{align-items:flex-end;margin-top:17px;padding-top:13px;border-top:1px solid var(--line)}
-.job-card-bottom strong{font-size:20px;letter-spacing:-.04em}
-.job-card-bottom span{color:var(--success);font-size:12px;font-weight:700}
-.job-card-actions{display:flex;gap:7px;padding:0 12px 12px}
-.job-card-actions:empty{display:none}
-.job-card-actions button{min-height:38px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-size:12px;font-weight:700}
+.job-card-top>strong{font-size:18px;line-height:1.15;font-weight:780;letter-spacing:-.035em}
+.job-card-status{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid color-mix(in srgb,var(--status) 20%,transparent);border-radius:999px;background:color-mix(in srgb,var(--status) 9%,white);color:color-mix(in srgb,var(--status) 86%,#171914);font-size:11px;font-weight:760}
+.job-card-status i{width:6px;height:6px;border-radius:50%;background:var(--status);box-shadow:0 0 0 3px color-mix(in srgb,var(--status) 12%,transparent),0 0 10px color-mix(in srgb,var(--status) 45%,transparent)}
+.job-card-meta{display:flex;flex-wrap:wrap;gap:8px 13px;margin-top:10px;color:var(--muted);font-size:12px;font-weight:650}
+.job-card-meta span,.job-card-address{display:flex;align-items:center;gap:6px}
+.job-card-meta svg,.job-card-address svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.job-card-address{margin-top:8px;color:var(--muted);font-size:12px;min-width:0}.job-card-address span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.job-card-bottom{align-items:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+.job-card-bottom strong{font-size:22px;line-height:1;letter-spacing:-.05em}
+.job-payment{font-size:12px;font-weight:750}.job-payment.is-paid{color:var(--success)}.job-payment.is-unpaid{color:var(--danger)}
+.job-card-actions{display:flex;gap:7px;padding:0 14px 14px}.job-card-actions:empty{display:none}
+.job-card-actions button{min-height:40px;padding:0 13px;border:1px solid var(--line);border-radius:12px;background:rgba(251,250,246,.8);font-size:12px;font-weight:720;transition:transform var(--motion-fast) var(--ease-spring),background var(--motion-fast) var(--ease-out)}
+.job-card-actions button:active{transform:scale(.97);background:#f0efe8}
 .job-form,.store-form{display:grid;gap:14px}
 .job-form label,.store-form label{display:grid;gap:7px;color:var(--muted);font-size:12px;font-weight:700}
 .job-form input,.job-form select,.job-form textarea,.store-form input{width:100%;min-height:49px;padding:0 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface);font-size:16px;color:var(--ink)}
