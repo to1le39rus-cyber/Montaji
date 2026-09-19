@@ -45,3 +45,43 @@ test('job service keeps payment separate from completion',async()=>{
  assert.equal(paid.paid,true);
  assert.equal(paid.status,'Запланирован');
 });
+
+
+test('editor patch is applied to the fresh repository version without reverting remote fields',async()=>{
+ const repository={
+  createJob:async job=>job,
+  updateJob:async(id,transform)=>transform({
+   id,
+   client:'Клиент',
+   address:'Старый адрес',
+   status:'Запланирован',
+   paid:true,
+   date:'2026-09-19'
+  })
+ };
+ const service=createJobService({repository});
+ const updated=await service.update('j1',{address:'Новый адрес'});
+ assert.equal(updated.address,'Новый адрес');
+ assert.equal(updated.paid,true);
+ assert.equal(updated.status,'Запланирован');
+});
+
+test('status patch keeps command semantics while preserving unrelated fresh fields',async()=>{
+ const repository={
+  createJob:async job=>job,
+  updateJob:async(id,transform)=>transform({
+   id,
+   client:'Клиент',
+   address:'Свежий адрес',
+   status:'Запланирован',
+   paid:true,
+   date:'2026-09-19'
+  })
+ };
+ const service=createJobService({repository});
+ const updated=await service.update('j1',{status:'Выполнен'});
+ assert.equal(updated.status,'Выполнен');
+ assert.equal(updated.completedDate,'2026-09-19');
+ assert.equal(updated.address,'Свежий адрес');
+ assert.equal(updated.paid,true);
+});
