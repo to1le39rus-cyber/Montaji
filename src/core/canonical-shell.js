@@ -47,7 +47,15 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],versi
   if(readOnly)return;
   modal.hidden=false;modal.innerHTML='';const panel=document.createElement('section');panel.className='canonical-modal-panel';
   const close=()=>{modal.hidden=true;modal.innerHTML=''};
-  const form=createJobForm({job,onCancel:close,onSubmit:async next=>{if(job.id){const ok=await mutateJob(job.id,(id)=>jobService.update(id,next));if(ok)close();}else if(jobService){try{await jobService.create(next);close();}catch(error){console.error(error);alert(error?.message||'Не удалось создать заявку');}}}});
+  const form=createJobForm({job,onCancel:close,onSubmit:async next=>{if(job.id){const ok=await mutateJob(job.id,(id)=>jobService.update(id,next));if(ok)close();}else if(jobService){
+ try{
+  const created=await jobService.create(next);
+  const current=state.snapshot.state;
+  state.setState({...current,jobs:[...(current.jobs||[]),created]});
+  await renderRoute(router.current||'today');
+  close();
+ }catch(error){console.error(error);alert(error?.message||'Не удалось создать заявку');}
+}}});
   const actionsBox=document.createElement('div');actionsBox.className='job-lifecycle-actions';
   if(job.id){
    const commands=[];
