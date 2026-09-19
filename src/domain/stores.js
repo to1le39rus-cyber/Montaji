@@ -1,5 +1,6 @@
 const clean=v=>String(v??'').trim();
 export const normalizeStore=(store={})=>({
+ ...store,
  id:clean(store.id),
  name:clean(store.name),
  address:clean(store.address),
