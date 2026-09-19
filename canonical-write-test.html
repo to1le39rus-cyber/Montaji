@@ -34,14 +34,13 @@ let user=null;
 const showError=e=>{testError.textContent=e?.message||String(e)};
 const runSmokeTest=async()=>{
  run.disabled=true; testError.textContent='';
- const id=user.uid+'-'+Date.now();
- const ref=fb.firestoreApi.doc(fb.firestore,'appData','canonicalWriteTest',id);
+ const ref=fb.firestoreApi.doc(fb.firestore,'appData','canonicalWriteTest');
  try{
   status.textContent='1/4 · Создаём изолированный тестовый документ…';
   await fb.firestoreApi.runTransaction(fb.firestore,async tx=>{
    const snap=await tx.get(ref);
    if(snap.exists())throw new Error('Коллизия test id');
-   tx.set(ref,{kind:'canonical-smoke-test',uid:user.uid,phase:'created',createdAt:fb.firestoreApi.serverTimestamp()});
+   tx.set(ref,{kind:'canonical-smoke-test',uid:user.uid,phase:'created',runId:Date.now(),createdAt:fb.firestoreApi.serverTimestamp()});
   });
   status.textContent='2/4 · Проверяем transaction update…';
   await fb.firestoreApi.runTransaction(fb.firestore,async tx=>{
