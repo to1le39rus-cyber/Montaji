@@ -7,22 +7,26 @@ on:
     branches: ["Astera-smart"]
 
 jobs:
-  syntax-and-architecture:
+  regression-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Run production regression suite
+      - name: Run regression tests
         run: |
           node --check app.js
           node --check boot.js
-          for test_file in             tests/final-architecture.test.mjs             tests/domain-contract.test.mjs             tests/data-normalization.test.mjs             tests/read-only-snapshot.test.mjs             tests/today.test.mjs             tests/job-commands.test.mjs             tests/job-repository.test.mjs             tests/job-service.test.mjs             tests/normalize-money.test.mjs             tests/schedule.test.mjs             tests/money.test.mjs             tests/clients.test.mjs             tests/notes.test.mjs
-          do
+          for test_file in tests/final-architecture.test.mjs tests/domain-contract.test.mjs tests/data-normalization.test.mjs tests/read-only-snapshot.test.mjs tests/today.test.mjs tests/job-commands.test.mjs tests/job-repository.test.mjs tests/job-service.test.mjs tests/normalize-money.test.mjs tests/schedule.test.mjs tests/money.test.mjs tests/clients.test.mjs tests/notes.test.mjs; do
             echo "=== RUNNING $test_file ==="
             node --test "$test_file" || exit 1
           done
+
+  production-wiring:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
       - name: Check production wiring
         run: |
           grep -E 'boot\.js\?v=' index.html
@@ -31,16 +35,31 @@ jobs:
           test -f firestore.rules
           test -f firebase.json
           test -f .firebaserc
+
+  russian-maps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
       - name: Check Russian map routing
         run: |
           grep -F 'yandex.ru/maps' app.js
           grep -F '2gis.ru/search' app.js
           ! grep -F 'google.com/maps' app.js
+
+  security-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
       - name: Check security rules
         run: |
           grep -F 'request.auth != null' firestore.rules
           grep -F 'match /appData/shared' firestore.rules
           grep -F 'match /appData/notes' firestore.rules
+
+  legacy-wiring:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
       - name: Check legacy production wiring
         run: |
           ! grep -E 'v9.js|v9-compat|app-v[0-9]|firebase-sync|archive.js|enhancement-v8.js' index.html
