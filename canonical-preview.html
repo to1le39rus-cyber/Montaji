@@ -16,14 +16,14 @@
 <div id="fixture-picker" style="padding:16px;font:15px system-ui;max-width:720px;margin:auto"><strong>Canonical Preview</strong><p style="margin:8px 0">Выбери локальный JSON-бэкап Montaji. Файл останется в браузере и не загружается в GitHub/Firebase.</p><input id="fixture" type="file" accept=".json,application/json"><span id="fixture-status" style="display:block;margin-top:8px"></span></div><div id="app"></div>
 <script type="module">
 import { createCanonicalShell } from './src/core/canonical-shell.js';
-import { normalizeState, normalizeNotes } from './src/domain/normalize.js';
+import { normalizeShared, normalizeNotes } from './src/domain/normalize.js';
 const input=document.querySelector('#fixture'), status=document.querySelector('#fixture-status'), picker=document.querySelector('#fixture-picker'), root=document.querySelector('#app');
 async function renderFile(file){
  try {
   status.textContent='Читаю JSON…';
   const json=JSON.parse(await file.text());
-  const shared=normalizeState(json?.data);
-  const notes=normalizeNotes(json?.notes);
+  const shared=normalizeShared(json?.data);
+  const notes=normalizeNotes({notes:json?.notes});
   picker.innerHTML='<strong>Canonical Preview</strong><p style="margin:8px 0">Загружен локальный бэкап: '+file.name+' · заявок: '+shared.jobs.length+' · расходов: '+shared.expenses.length+' · заметок: '+notes.length+'</p><input id="fixture" type="file" accept=".json,application/json"><span id="fixture-status" style="display:block;margin-top:8px"></span>';
   picker.querySelector('#fixture').addEventListener('change',e=>e.target.files[0]&&renderFile(e.target.files[0]));
   root.replaceChildren();
