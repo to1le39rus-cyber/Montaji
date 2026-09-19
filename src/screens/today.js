@@ -1,5 +1,5 @@
-import { jobsForDate } from '../domain/scheduling.js';
-import { effectiveIncome, isCompleted } from '../domain/finances.js';
+import { jobsForDate, isCompleted } from '../domain/jobs.js';
+import { effectiveIncome } from '../domain/jobs.js';
 
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
 const money=n=>new Intl.NumberFormat('ru-RU').format(Math.round(Number(n)||0))+' ₽';
