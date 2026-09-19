@@ -3,8 +3,9 @@ import { createSharedRepository } from './data/shared-repository.js';
 import { createNotesRepository } from './data/notes-repository.js';
 import { normalizeShared } from './domain/normalize.js';
 import { createAuthController } from './auth/auth-controller.js';
+import { firebaseConfig as defaultFirebaseConfig } from '../firebase-config.js';
 
-export const createApp = ({firebaseConfig,ui={}}) => {
+export const createApp = ({firebaseConfig=defaultFirebaseConfig,ui={}}) => {
   const fb=createFirebase(firebaseConfig);
   const shared=createSharedRepository({
     firestore:fb.firestore,
