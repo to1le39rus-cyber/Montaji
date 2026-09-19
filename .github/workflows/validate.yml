@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  syntax-and-architecture:
+  regression-tests:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
@@ -21,36 +21,67 @@ jobs:
           git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
           git -c http.extraheader="AUTHORIZATION: bearer ${GITHUB_TOKEN}" fetch --depth=1 origin "${GITHUB_REF}"
           git checkout --detach FETCH_HEAD
+      - run: node --version
+      - run: npm --version
+      - run: npm test
 
-      - name: Show runtime
+  production-wiring:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
-          node --version
-          npm --version
+          git init .
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git -c http.extraheader="AUTHORIZATION: bearer ${GITHUB_TOKEN}" fetch --depth=1 origin "${GITHUB_REF}"
+          git checkout --detach FETCH_HEAD
+      - run: grep -E 'boot\.js\?v=' index.html
+      - run: test "$(grep -o 'type=\"module\"' index.html | wc -l)" -eq 1
+      - run: test -f firebase-config.js
+      - run: test -f firestore.rules
+      - run: test -f firebase.json
+      - run: test -f .firebaserc
 
-      - name: Run production regression suite
-        run: npm test
-
-      - name: Check production wiring
+  russian-maps:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
-          grep -E 'boot\.js\?v=' index.html
-          test "$(grep -o 'type=\"module\"' index.html | wc -l)" -eq 1
-          test -f firebase-config.js
-          test -f firestore.rules
-          test -f firebase.json
-          test -f .firebaserc
+          git init .
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git -c http.extraheader="AUTHORIZATION: bearer ${GITHUB_TOKEN}" fetch --depth=1 origin "${GITHUB_REF}"
+          git checkout --detach FETCH_HEAD
+      - run: grep -F 'yandex.ru/maps' app.js
+      - run: grep -F '2gis.ru/search' app.js
+      - run: "! grep -F 'google.com/maps' app.js"
 
-      - name: Check Russian map routing
+  security-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
-          grep -F 'yandex.ru/maps' app.js
-          grep -F '2gis.ru/search' app.js
-          ! grep -F 'google.com/maps' app.js
+          git init .
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git -c http.extraheader="AUTHORIZATION: bearer ${GITHUB_TOKEN}" fetch --depth=1 origin "${GITHUB_REF}"
+          git checkout --detach FETCH_HEAD
+      - run: grep -F 'request.auth != null' firestore.rules
+      - run: grep -F 'match /appData/shared' firestore.rules
+      - run: grep -F 'match /appData/notes' firestore.rules
 
-      - name: Check security rules
+  legacy-wiring:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
-          grep -F 'request.auth != null' firestore.rules
-          grep -F 'match /appData/shared' firestore.rules
-          grep -F 'match /appData/notes' firestore.rules
-
-      - name: Check legacy production wiring
-        run: |
-          ! grep -E 'v9.js|v9-compat|app-v[0-9]|firebase-sync|archive.js|enhancement-v8.js' index.html
+          git init .
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git -c http.extraheader="AUTHORIZATION: bearer ${GITHUB_TOKEN}" fetch --depth=1 origin "${GITHUB_REF}"
+          git checkout --detach FETCH_HEAD
+      - run: "! grep -E 'v9.js|v9-compat|app-v[0-9]|firebase-sync|archive.js|enhancement-v8.js' index.html"
