@@ -2122,6 +2122,68 @@
         "convertedFromMeasureId": "",
         "price": 17000,
         "address": "ул. Новая, 57"
+      },
+      {
+        "id": "dev-today-01",
+        "date": "2026-09-20",
+        "completedDate": "2026-09-20",
+        "type": "Монтаж",
+        "status": "Выполнен",
+        "slot": "1",
+        "client": "Дмитрий К.",
+        "phone": "+7 900 321-45-67",
+        "address": "ул. Белинского, 40, кв. 2",
+        "comment": "Купить выносные пластины. Позвонить за час.",
+        "price": 25000,
+        "paid": true,
+        "source": "Astera",
+        "store": "Astera",
+        "measurePrice": 0,
+        "measurePaid": false,
+        "measureCredit": 0,
+        "convertedToJobId": ""
+      },
+      {
+        "id": "dev-today-02",
+        "date": "2026-09-20",
+        "completedDate": "",
+        "type": "Замер",
+        "status": "Запланировано",
+        "slot": "2",
+        "client": "Светлана М.",
+        "phone": "+7 900 882-10-14",
+        "address": "ул. Гагарина, 18",
+        "comment": "Домофон не работает — набрать по приезде.",
+        "price": 2500,
+        "paid": false,
+        "source": "Наш клиент",
+        "store": "",
+        "measurePrice": 2500,
+        "measurePaid": false,
+        "measureCredit": 0,
+        "convertedToJobId": "",
+        "time": "15:30"
+      },
+      {
+        "id": "dev-today-03",
+        "date": "2026-09-20",
+        "completedDate": "",
+        "type": "Монтаж",
+        "status": "Запланировано",
+        "slot": "4",
+        "client": "Александр Р.",
+        "phone": "+7 900 517-20-08",
+        "address": "пр-т Мира, 74",
+        "comment": "Парковка со двора. Две двери и доборы.",
+        "price": 13800,
+        "paid": false,
+        "source": "Лаветра",
+        "store": "Лаветра",
+        "measurePrice": 0,
+        "measurePaid": false,
+        "measureCredit": 0,
+        "convertedToJobId": "",
+        "time": "17:00"
       }
     ],
     "expenses": [
@@ -2836,6 +2898,14 @@
         "id": "4d9915ca-1716-40a0-a646-238be1334d59",
         "comment": "Дт",
         "category": "Топливо"
+      },
+      {
+        "id": "dev-expense-today",
+        "date": "2026-09-20",
+        "category": "Материалы",
+        "comment": "Пена и крепёж",
+        "amount": 1200,
+        "cancelled": false
       }
     ],
     "version": 5
@@ -2941,16 +3011,44 @@
     {
       "authorEmail": "dev@local",
       "authorUid": "pages-dev",
-      "title": "Заметка 8",
+      "title": "Позвонить клиенту до выезда",
       "authorName": "DEV",
       "urgent": true,
       "done": false,
       "id": "a39c5865-8658-4d96-9521-cd0afd6fa6aa",
       "createdAt": "2026-09-17T10:27:11.870Z",
-      "text": "Безопасная демонстрационная заметка",
+      "text": "Уточнить доступ к подъезду и время 15:30",
       "archived": false,
-      "dueDate": "2026-09-24",
+      "dueDate": "2026-09-20",
       "updatedAt": "2026-09-17T10:27:11.870Z"
+    },
+    {
+      "id": "dev-note-home-01",
+      "title": "Инструмент",
+      "text": "Забрать лазерный уровень из мастерской",
+      "urgent": false,
+      "done": false,
+      "archived": false,
+      "dueDate": "",
+      "createdAt": "2026-09-20T08:00:00.000Z",
+      "updatedAt": "2026-09-20T08:00:00.000Z",
+      "authorUid": "pages-dev",
+      "authorName": "DEV",
+      "authorEmail": "dev@local"
+    },
+    {
+      "id": "dev-note-home-02",
+      "title": "Заказать расходники",
+      "text": "Пена, анкеры 10×100 и белый герметик",
+      "urgent": false,
+      "done": false,
+      "archived": false,
+      "dueDate": "2026-09-22",
+      "createdAt": "2026-09-20T08:05:00.000Z",
+      "updatedAt": "2026-09-20T08:05:00.000Z",
+      "authorUid": "pages-dev",
+      "authorName": "DEV",
+      "authorEmail": "dev@local"
     }
   ]
 }
