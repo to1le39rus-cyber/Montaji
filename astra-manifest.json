@@ -1,0 +1,10 @@
+{
+  "name": "Montaji AA · Astra DEV",
+  "short_name": "Montaji DEV",
+  "start_url": "./canonical-app.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f4ef",
+  "theme_color": "#f5f4ef",
+  "icons": [{"src":"./icon.svg","sizes":"192x192","type":"image/svg+xml","purpose":"any maskable"}]
+}

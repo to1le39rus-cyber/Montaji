@@ -13,11 +13,12 @@ test('Clients groups jobs by normalized phone',()=>{
  assert.equal(ivan.jobs.length,2);
  assert.equal(ivan.client,'Иван П.');
 });
-test('Cancelled jobs do not create client records',()=>{
+test('Cancelled jobs remain in client history',()=>{
  const model=buildClientsModel({state:{jobs:[
   {id:'1',client:'Удалённый',phone:'+79990000000',date:'2026-09-19',status:'Отменён'}
  ]}});
- assert.equal(model.count,0);
+ assert.equal(model.count,1);
+ assert.equal(model.clients[0].jobs[0].status,"Отменён");
 });
 
 test('Client history keeps older jobs when newer job was processed first',()=>{

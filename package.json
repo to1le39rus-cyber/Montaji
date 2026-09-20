@@ -3,6 +3,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --check app.js && node --check boot.js && node --test tests/final-architecture.test.mjs tests/domain-contract.test.mjs tests/data-normalization.test.mjs tests/read-only-snapshot.test.mjs tests/today.test.mjs tests/job-commands.test.mjs tests/job-repository.test.mjs tests/job-service.test.mjs tests/normalize-money.test.mjs tests/schedule.test.mjs tests/money.test.mjs tests/clients.test.mjs tests/notes.test.mjs tests/cache-contract.test.mjs"
+    "test": "node --check app.js && node --check boot.js && node --check src/astra/astra.js && node --test tests/*.test.mjs tests/astra/*.test.mjs"
   }
 }
