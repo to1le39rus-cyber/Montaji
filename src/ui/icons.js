@@ -13,6 +13,9 @@ const paths={
  phone:'<path d="M7.5 4.5 10 8 8.4 9.8c1.2 2.5 3.3 4.6 5.8 5.8L16 14l3.5 2.5-.8 3c-.2.8-1 1.4-1.9 1.3C9.4 20 4 14.6 3.2 7.2c-.1-.9.5-1.7 1.3-1.9l3-.8Z"/>',
  chevron:'<path d="m9 6 6 6-6 6"/>',
  note:'<path d="M5 4h14v16H5z"/><path d="M8 8h8m-8 4h8m-8 4h5"/>',
- store:'<path d="M4 9h16l-1.2-5H5.2L4 9Z"/><path d="M5 9v11h14V9M9 20v-6h6v6"/>'
+ store:'<path d="M4 9h16l-1.2-5H5.2L4 9Z"/><path d="M5 9v11h14V9M9 20v-6h6v6"/>',
+ check:'<path d="m6 12 4 4 8-9"/>',
+ route:'<path d="M5 19c2.5 0 3.5-2 3.5-4S7.5 11 10 9s4 .5 5.5-1S16 4 19 4"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="4" r="2"/>',
+ share:'<path d="M12 16V4m0 0L8 8m4-4 4 4"/><path d="M6 11v8h12v-8"/>'
 };
 export const icon=name=>`<svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true">${paths[name]||''}</svg>`;
