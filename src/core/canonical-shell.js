@@ -8,28 +8,25 @@ import { buildNotesModel, renderNotes } from '../screens/notes.js';
 import { buildMoreModel, renderMore } from '../screens/more.js';
 import { createJobForm } from '../components/job-form.js';
 import { createStoreForm } from '../components/store-form.js';
+import { icon } from '../ui/icons.js';
 
 const isoToday=()=>new Date().toISOString().slice(0,10);
 const setText=(el,value)=>{el.textContent=String(value??'').trim()||'—';return el};
 export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],stores:[],version:5},initialNotes=[],user=null,readOnly=false,jobService=null,storeService=null,actions={}})=>{
  const state=createAppState(); state.setState(initialState); state.setNotes(initialNotes); state.setUser(user);
  const content=document.createElement('main'); content.className='app-content';
- const addButton=document.createElement('button'); addButton.type='button'; addButton.className='canonical-add'; addButton.textContent='+ Новая заявка'; addButton.hidden=readOnly;
+ const addButton=document.createElement('button'); addButton.type='button'; addButton.className='canonical-add'; addButton.innerHTML=icon('plus')+'<span class="canonical-add-label">Новая заявка</span>'; addButton.setAttribute('aria-label','Новая заявка'); addButton.hidden=readOnly;
  const nav=document.createElement('nav'); nav.className='app-nav';
  const modal=document.createElement('div'); modal.className='canonical-modal'; modal.hidden=true;
  root.innerHTML=''; root.className='app-shell'; root.append(nav,addButton,content,modal);
- const names=['today','schedule','money','clients','notes','more'];
+ const routes=['today','schedule','money','clients','notes','more'];
+ const names=['today','schedule','money','clients','more'];
  const navItems={
-  today:{label:'Сегодня',icon:'<svg viewBox="0 0 24 24"><path d="M4 11 12 4l8 7v9H5v-9"/><path d="M9 20v-6h6v6"/></svg>'},
-  schedule:{label:'График',icon:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4m8-4v4M3 10h18"/><path d="M8 14h3m2 0h3m-8 3h3"/></svg>'},
-  money:{label:'Деньги',icon:'<svg viewBox="0 0 24 24"><path d="M7 4h6a5 5 0 0 1 0 10H7m0-5h7M7 14v7m0-3h8"/></svg>'},
-  clients:{label:'Клиенты',icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c.8-4.2 3.5-6 8-6s7.2 1.8 8 6"/></svg>'},
-  notes:{label:'Заметки',icon:'<svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8 8h8m-8 4h8m-8 4h5"/></svg>'},
-  more:{label:'Ещё',icon:'<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>'}
+  today:{label:'Сегодня',icon:icon('home')},schedule:{label:'График',icon:icon('calendar')},money:{label:'Деньги',icon:icon('money')},clients:{label:'Клиенты',icon:icon('user')},more:{label:'Ещё',icon:icon('more')}
  };
  let selectedDate=isoToday(), moneyStart=isoToday(), moneyEnd=isoToday(), cacheStatus='none';
- const renderRoute=async name=>{if(name==='today')return renderToday({root:content,model:buildTodayModel({state:state.snapshot.state,date:selectedDate}),onJobClick:readOnly?undefined:openJob,onComplete:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.complete(id)),onPaid:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.markPaid(id))});if(name==='schedule')return renderSchedule({root:content,model:buildScheduleModel({state:state.snapshot.state,date:selectedDate}),onJobClick:readOnly?undefined:openJob,onComplete:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.complete(id)),onPaid:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.markPaid(id)),onDateChange:d=>{selectedDate=d;renderRoute('schedule')}});if(name==='money')return renderMoney({root:content,model:buildMoneyModel({state:state.snapshot.state,start:moneyStart,end:moneyEnd}),onJobClick:openJobCard,onPeriodChange:(key,value,endValue)=>{if(key==='range'){moneyStart=value;moneyEnd=endValue||value}else if(key==='start')moneyStart=value;else moneyEnd=value;if(moneyEnd<moneyStart)moneyEnd=moneyStart;renderRoute('money')}});if(name==='clients'){const model=buildClientsModel({state:state.snapshot.state}); return renderClients({root:content,model,onOpen:openClient})}if(name==='notes')return renderNotes({root:content,model:buildNotesModel({notes:state.snapshot.notes})});if(name==='more')return renderMore({root:content,model:buildMoreModel({user:state.snapshot.user,dataStatus:state.snapshot.dataStatus,cacheStatus,stores:state.snapshot.state.stores||[]}),actions:{...actions,openStores}});};
- const router=createRouter({root:content,routes:Object.fromEntries(names.map(name=>[name,()=>renderRoute(name)]))});
+ const renderRoute=async name=>{if(name==='today')return renderToday({root:content,model:buildTodayModel({state:state.snapshot.state,date:selectedDate}),onJobClick:readOnly?undefined:openJob,onComplete:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.complete(id)),onPaid:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.markPaid(id))});if(name==='schedule')return renderSchedule({root:content,model:buildScheduleModel({state:state.snapshot.state,date:selectedDate}),onJobClick:readOnly?undefined:openJob,onComplete:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.complete(id)),onPaid:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.markPaid(id)),onDateChange:d=>{selectedDate=d;renderRoute('schedule')}});if(name==='money')return renderMoney({root:content,model:buildMoneyModel({state:state.snapshot.state,start:moneyStart,end:moneyEnd}),onJobClick:openJobCard,onPeriodChange:(key,value,endValue)=>{if(key==='range'){moneyStart=value;moneyEnd=endValue||value}else if(key==='start')moneyStart=value;else moneyEnd=value;if(moneyEnd<moneyStart)moneyEnd=moneyStart;renderRoute('money')}});if(name==='clients'){const model=buildClientsModel({state:state.snapshot.state}); return renderClients({root:content,model,onOpen:openClient})}if(name==='notes')return renderNotes({root:content,model:buildNotesModel({notes:state.snapshot.notes})});if(name==='more')return renderMore({root:content,model:buildMoreModel({user:state.snapshot.user,dataStatus:state.snapshot.dataStatus,cacheStatus,stores:state.snapshot.state.stores||[],notes:state.snapshot.notes}),actions:{...actions,openStores,openNotes:()=>router.render('notes')}});};
+ const router=createRouter({root:content,routes:Object.fromEntries(routes.map(name=>[name,()=>renderRoute(name)]))});
  async function mutateJob(id,operation){
  if(readOnly||!jobService)return false;
  try{
@@ -53,7 +50,7 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],store
   const panel=document.createElement('section');
   panel.className='canonical-modal-panel client-modal-panel';
   const close=()=>{modal.hidden=true;modal.innerHTML=''};
-  renderClientDetail({root:panel,client,onBack:close,onJobClick:job=>{close();openJobCard(job)}});
+  renderClientDetail({root:panel,client,onBack:close,onJobClick:job=>{modal.innerHTML='';openJobCard(job,()=>openClient(client))}});
   const closeButton=document.createElement('button');
   closeButton.type='button';
   closeButton.className='client-modal-close';
@@ -63,14 +60,14 @@ export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],store
   modal.append(panel);
   modal.addEventListener('click',event=>{if(event.target===modal)close()},{once:true});
 }
- function openJobCard(job){
+ function openJobCard(job,onBack=null){
   const jobId=job?.id;
   const currentJob=()=>state.snapshot.state.jobs?.find(item=>item.id===jobId)||job;
   job=currentJob();
   modal.hidden=false; modal.innerHTML='';
   const panel=document.createElement('section'); panel.className='canonical-modal-panel job-card-modal';
-  const close=()=>{modal.hidden=true;modal.innerHTML=''};
-  const head=document.createElement('div');head.className='canonical-modal-head';const headTitle=document.createElement('strong');headTitle.textContent=job.type||'Заявка';const closeButton=document.createElement('button');closeButton.type='button';closeButton.textContent='Закрыть';head.append(headTitle,closeButton);
+  const close=()=>{modal.hidden=true;modal.innerHTML='';if(onBack)onBack()};
+  const head=document.createElement('div');head.className='canonical-modal-head';const headTitle=document.createElement('strong');headTitle.textContent=job.type||'Заявка';const closeButton=document.createElement('button');closeButton.type='button';closeButton.textContent=onBack?'Назад':'Закрыть';head.append(headTitle,closeButton);
   const detail=document.createElement('div');detail.className='job-card-detail';const client=document.createElement('h1');setText(client,job.client);const meta=document.createElement('p');meta.textContent=(String(job.date||'').trim()||'—')+' · слот '+(String(job.slot||'').trim()||'—');const address=document.createElement('p');setText(address,job.address);const source=document.createElement('p');setText(source,job.source);const comment=document.createElement('p');setText(comment,job.comment);const stats=document.createElement('div');stats.className='job-card-detail-stats';const status=document.createElement('span');setText(status,job.status);const price=document.createElement('strong');price.textContent=new Intl.NumberFormat('ru-RU').format(Number(job.price)||0)+' ₽';const paid=document.createElement('span');paid.textContent=job.paid===true?'Оплачено':'Не оплачено';stats.append(status,price,paid);detail.append(client,meta,address,source,comment,stats);panel.append(head,detail);
   closeButton.onclick=close;
 
