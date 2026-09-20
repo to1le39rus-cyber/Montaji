@@ -5,7 +5,7 @@
 .job-card:active::before{opacity:1;transform:translate(10%,8%) scale(1.08)}
 .job-card-main{display:block;width:100%;min-height:44px;padding:17px 17px 14px;text-align:left;background:transparent;border:0}
 .job-card-top,.job-card-bottom{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.job-card-top>strong{font-size:18px;line-height:1.15;font-weight:780;letter-spacing:-.035em}
+.job-card-identity{display:grid;gap:5px;min-width:0}.job-card-identity>span{color:var(--muted);font-size:11px;font-weight:720;text-transform:uppercase;letter-spacing:.06em}.job-card-identity>strong{font-size:20px;line-height:1.08;font-weight:790;letter-spacing:-.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .job-card-status{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid color-mix(in srgb,var(--status) 20%,transparent);border-radius:999px;background:color-mix(in srgb,var(--status) 9%,white);color:color-mix(in srgb,var(--status) 86%,#171914);font-size:11px;font-weight:760}
 .job-card-status i{width:6px;height:6px;border-radius:50%;background:var(--status);box-shadow:0 0 0 3px color-mix(in srgb,var(--status) 12%,transparent),0 0 10px color-mix(in srgb,var(--status) 45%,transparent)}
 .job-card-meta{display:flex;flex-wrap:wrap;gap:8px 13px;margin-top:10px;color:var(--muted);font-size:12px;font-weight:650}
@@ -16,25 +16,27 @@
 .job-card-bottom strong{font-size:22px;line-height:1;letter-spacing:-.05em}
 .job-payment{font-size:12px;font-weight:750}.job-payment.is-paid{color:var(--success)}.job-payment.is-unpaid{color:var(--danger)}
 .job-card-actions{display:flex;gap:7px;padding:0 14px 14px}.job-card-actions:empty{display:none}
-.job-card-actions button{min-height:44px;flex:1;padding:0 13px;border:1px solid var(--line);border-radius:13px;background:rgba(251,250,246,.82);font-size:12px;font-weight:740;transition:transform var(--motion-fast) var(--ease-spring),background var(--motion-fast) var(--ease-out),box-shadow var(--motion-fast) var(--ease-out)} .job-card-actions button:first-child{background:var(--ink);border-color:var(--ink);color:#fff;box-shadow:0 7px 16px rgba(23,25,20,.11)}
+.job-card-actions button,.job-card-action{min-height:44px;flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 11px;border:1px solid var(--line);border-radius:13px;background:rgba(251,250,246,.82);color:var(--ink);text-decoration:none;font-size:12px;font-weight:740;transition:transform var(--motion-fast) var(--ease-spring),background var(--motion-fast) var(--ease-out),box-shadow var(--motion-fast) var(--ease-out)}.job-card-actions .app-icon{width:16px;height:16px}.job-card-actions button[data-action="complete"]{background:var(--ink);border-color:var(--ink);color:#fff;box-shadow:0 7px 16px rgba(23,25,20,.11)}
 .job-card-actions button:active{transform:scale(.97);background:#f0efe8}
-.job-form,.store-form{display:grid;gap:14px}
+.job-form,.store-form{display:grid;gap:16px}.job-form-section{display:grid;gap:13px;padding:16px;border:1px solid var(--line);border-radius:var(--r-md);background:rgba(250,248,241,.68)}.job-form-section>header{display:flex;align-items:center;gap:10px}.job-form-section>header>span{display:grid;place-items:center;width:30px;height:30px;border-radius:10px;background:var(--accent-soft);color:var(--accent-deep);font-size:10px;font-weight:800}.job-form-section>header>div{display:grid;gap:2px}.job-form-section>header strong{font-size:15px}.job-form-section>header small{color:var(--muted);font-size:11px}.job-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.job-form-wide{grid-column:1/-1}.job-form-more{border-top:1px solid var(--line);padding-top:4px}.job-form-more summary{min-height:44px;display:flex;align-items:center;font-weight:750;cursor:pointer}
 .job-form label,.store-form label{display:grid;gap:7px;color:var(--muted);font-size:12px;font-weight:700}
 .job-form input,.job-form select,.job-form textarea,.store-form input{width:100%;min-height:49px;padding:0 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface);font-size:16px;color:var(--ink)}
 .job-form textarea{min-height:92px;padding-top:13px;resize:vertical}
 .job-form-paid{margin:2px 0 0;padding:0;border:0}.job-form-paid legend{margin-bottom:7px;color:var(--muted);font-size:12px;font-weight:700}.payment-toggle{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border:1px solid var(--line);border-radius:16px;background:rgba(115,119,109,.07)}.payment-toggle button{min-height:44px;border:0;border-radius:12px;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:720;transition:background var(--motion-fast) var(--ease-out),color var(--motion-fast) var(--ease-out),transform var(--motion-fast) var(--ease-spring),box-shadow var(--motion-fast) var(--ease-out)}.payment-toggle button:active{transform:scale(.98)}.payment-toggle button.is-active{background:var(--surface-strong);color:var(--ink);box-shadow:0 2px 10px rgba(23,25,20,.08),inset 0 0 0 1px rgba(23,25,20,.05)}.payment-toggle button[data-paid-value="true"].is-active{color:var(--success)}
-.job-form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
+.job-form-actions{position:sticky;z-index:2;bottom:calc(-20px - env(safe-area-inset-bottom));display:flex;justify-content:flex-end;gap:8px;margin:2px -20px calc(-20px - env(safe-area-inset-bottom));padding:12px 20px calc(12px + env(safe-area-inset-bottom));border-top:1px solid rgba(23,25,20,.08);background:rgba(255,253,248,.92);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
 .job-form-actions button,.job-lifecycle-actions button{min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:13px;background:var(--surface);font-weight:700}
 .job-form-actions button[type="submit"]{border-color:var(--ink);background:var(--ink);color:#fff}
 .job-lifecycle-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
 .canonical-modal{position:fixed;inset:0;z-index:30;display:grid;place-items:end center;padding:0;background:rgba(20,22,18,.38);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
 .canonical-modal[hidden]{display:none}
-.canonical-modal-panel{box-sizing:border-box;width:100%;max-width:680px;max-height:92dvh;overflow:auto;padding:20px;background:var(--surface-strong);color:var(--ink);border-radius:28px;box-shadow:var(--shadow)}
+.canonical-modal-panel{box-sizing:border-box;width:100%;max-width:680px;max-height:94dvh;overflow:auto;padding:20px max(18px,env(safe-area-inset-left)) calc(20px + env(safe-area-inset-bottom));background:var(--surface-strong);color:var(--ink);border-radius:30px 30px 0 0;box-shadow:var(--shadow-float);animation:sheet-in var(--motion-spatial) var(--ease-out) both}
 .canonical-modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
 .canonical-modal-head strong{font-size:19px}
-.canonical-modal-head button,.client-modal-close{min-height:38px;padding:0 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-size:12px;font-weight:700}
+.canonical-modal-head button,.client-modal-close{min-width:44px;min-height:44px;padding:0 13px;border:1px solid var(--line);border-radius:14px;background:var(--surface);font-size:12px;font-weight:700}
 .job-edit-modal{display:flex;flex-direction:column;overflow:hidden;max-height:92dvh}
 .job-edit-modal>.canonical-modal-head{flex:0 0 auto}
 .canonical-modal-body{min-width:0;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.job-form-completed.is-disabled{opacity:.42}.job-form-completed.is-disabled input{background:rgba(115,119,109,.06);cursor:not-allowed}
 .canonical-modal-body>.job-form{padding-bottom:4px}
+@media(max-width:560px){.job-form-grid{grid-template-columns:1fr}.job-form-wide{grid-column:auto}.job-form-section{padding:14px}.job-form-actions button[type="submit"]{flex:1}}
+@keyframes sheet-in{from{opacity:0;transform:translateY(28px) scale(.985)}to{opacity:1;transform:none}}
 @media(min-width:700px){.canonical-modal{place-items:center;padding:12px}.canonical-modal-panel{border-radius:30px}}
