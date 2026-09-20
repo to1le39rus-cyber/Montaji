@@ -1,0 +1,18 @@
+const paths={
+ home:'<path d="M4 11.5 12 4l8 7.5V20H5v-8.5"/><path d="M9 20v-6h6v6"/>',
+ calendar:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4m8-4v4M3 10h18M8 14h3m2 0h3m-8 3h3"/>',
+ money:'<path d="M7 4h6a5 5 0 0 1 0 10H7m0-5h7M7 14v7m0-3h8"/>',
+ user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c.8-4.2 3.5-6 8-6s7.2 1.8 8 6"/>',
+ more:'<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',
+ close:'<path d="m7 7 10 10M17 7 7 17"/>',
+ back:'<path d="m15 18-6-6 6-6"/>',
+ pin:'<path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>',
+ briefcase:'<path d="M9 7V5h6v2"/><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M3 12h18M9 12v2m6-2v2"/>',
+ clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+ phone:'<path d="M7.5 4.5 10 8 8.4 9.8c1.2 2.5 3.3 4.6 5.8 5.8L16 14l3.5 2.5-.8 3c-.2.8-1 1.4-1.9 1.3C9.4 20 4 14.6 3.2 7.2c-.1-.9.5-1.7 1.3-1.9l3-.8Z"/>',
+ chevron:'<path d="m9 6 6 6-6 6"/>',
+ note:'<path d="M5 4h14v16H5z"/><path d="M8 8h8m-8 4h8m-8 4h5"/>',
+ store:'<path d="M4 9h16l-1.2-5H5.2L4 9Z"/><path d="M5 9v11h14V9M9 20v-6h6v6"/>'
+};
+export const icon=name=>`<svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true">${paths[name]||''}</svg>`;
