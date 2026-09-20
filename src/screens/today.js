@@ -1,91 +1,87 @@
-import { jobsForDate, isCompleted, effectiveIncome } from '../domain/jobs.js';
+import { jobsForDate, isCompleted, isCancelled, isDebt, activityDate } from '../domain/jobs.js';
+import { financeTotals, periodFilter } from '../domain/finances.js';
+import { sortBySchedule } from '../domain/scheduling.js';
 import { createJobCard } from '../components/job-card.js';
 import { icon } from '../ui/icons.js';
+import { esc, money, jobsLabel, plural, formatDate, capitalize, weekStart, monthStart } from '../ui/format.js';
 
-const money=n=>new Intl.NumberFormat('ru-RU').format(Math.round(Number(n)||0))+' ₽';
-const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-const dateAtNoon=value=>new Date(value+'T12:00:00');
-const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-const shift=(value,days)=>{const d=dateAtNoon(value);d.setDate(d.getDate()+days);return iso(d)};
-const formatDate=value=>new Intl.DateTimeFormat('ru-RU',{weekday:'long',day:'numeric',month:'long'}).format(dateAtNoon(value)).replace(/^./,x=>x.toUpperCase());
-const shortWeekday=value=>new Intl.DateTimeFormat('ru-RU',{weekday:'short'}).format(dateAtNoon(value)).replace('.','');
-const countLabel=(n,one,few,many)=>n+' '+(n%10===1&&n%100!==11?one:[2,3,4].includes(n%10)&&![12,13,14].includes(n%100)?few:many);
-const activeExpenses=(items,date)=>items.filter(e=>!e?.cancelled&&e?.date===date);
-const expenseTotal=items=>items.reduce((sum,e)=>sum+(Number(e?.amount)||0),0);
-
-export const buildTodayModel=({state,date,notes=[]})=>{
- const allJobs=Array.isArray(state?.jobs)?state.jobs:[];
- const expenses=Array.isArray(state?.expenses)?state.expenses:[];
- const jobs=jobsForDate(allJobs,date);
- const montages=jobs.filter(j=>j.type==='Монтаж');
- const completed=jobs.filter(isCompleted);
- const income=completed.reduce((sum,j)=>sum+effectiveIncome(j),0);
- const unpaid=completed.filter(j=>j.paid===false);
- const todayExpenses=activeExpenses(expenses,date);
- const expense=expenseTotal(todayExpenses);
- const d=dateAtNoon(date),day=d.getDay()||7;
- const weekStart=shift(date,1-day),monthStart=date.slice(0,7)+'-01';
- const incomeFor=(start,end)=>allJobs.filter(j=>j.date>=start&&j.date<=end).reduce((sum,j)=>sum+effectiveIncome(j),0);
- const expensesFor=(start,end)=>expenseTotal(expenses.filter(e=>!e?.cancelled&&e.date>=start&&e.date<=end));
- const future=[];
- for(let i=1;i<=14&&future.length<5;i++){
-  const next=shift(date,i),list=jobsForDate(allJobs,next);
-  if(list.length)future.push({date:next,jobs:list,total:list.reduce((sum,j)=>sum+(Number(j.price)||0),0)});
- }
- const activeNotes=(Array.isArray(notes)?notes:[]).filter(n=>!n?.done&&!n?.archived);
- return {
-  date,jobs,montages,completed,income,unpaid,todayExpenses,expense,net:income-expense,
-  weekNet:incomeFor(weekStart,date)-expensesFor(weekStart,date),
-  monthNet:incomeFor(monthStart,date)-expensesFor(monthStart,date),
-  urgent:activeNotes.filter(n=>n?.urgent===true),
-  notes:activeNotes.filter(n=>n?.urgent!==true),future
- };
+export const buildTodayModel = ({state,date,notes=[]}) => {
+  const allJobs=state?.jobs||[], expenses=state?.expenses||[];
+  const jobs=sortBySchedule(jobsForDate(allJobs,date));
+  const period=(start,end)=>financeTotals(periodFilter(allJobs,start,end,activityDate),periodFilter(expenses,start,end));
+  const day=period(date,date),week=period(weekStart(date),date),month=period(monthStart(date),date);
+  const activeNotes=(Array.isArray(notes)?notes:[]).filter(n=>!n?.done&&!n?.archived);
+  const completed=jobs.filter(isCompleted),unpaid=jobs.filter(isDebt);
+  const futureDates=[...new Set(allJobs.filter(j=>j.date>date&&!isCancelled(j)).map(j=>j.date))].sort().slice(0,5);
+  return {
+    date,jobs,montages:jobs.filter(j=>j.type==='Монтаж'),completed,unpaid,income:day.income,expense:day.expenses,net:day.net,debt:day.debt,
+    weekNet:week.net,monthNet:month.net,weekStart:weekStart(date),monthStart:monthStart(date),
+    todayExpenses:periodFilter(expenses,date,date).filter(e=>!e.cancelled),
+    urgent:activeNotes.filter(n=>n.urgent===true).sort((a,b)=>(a.dueDate||'9999').localeCompare(b.dueDate||'9999')),
+    notes:activeNotes.filter(n=>n.urgent!==true),
+    future:futureDates.map(day=>({date:day,jobs:sortBySchedule(jobsForDate(allJobs,day))})),
+    remaining:jobs.filter(j=>!isCompleted(j)).length
+  };
 };
+const section=(className,html='')=>{const el=document.createElement('section');el.className=className;el.innerHTML=html;return el};
+const heading=(title,count,action='')=>'<div class="section-head"><h2>'+title+(count===undefined?'':' <small>'+count+'</small>')+'</h2>'+action+'</div>';
 
-const sectionHead=(title,action='')=>'<div class="today-section-head"><h2>'+title+'</h2>'+action+'</div>';
-
-export const renderToday=({root,model,onJobClick=()=>{},onComplete=()=>{},onPaid=()=>{},onOpenNotes=()=>{}})=>{
- if(!root)return;
- root.innerHTML='';
- const header=document.createElement('header');header.className='today-header';
- header.innerHTML='<div><span class="today-eyebrow">Рабочий день</span><h1>Сегодня</h1></div><div class="today-date">'+formatDate(model.date)+'</div>';
- root.append(header);
-
- if(model.urgent.length){
-  const urgent=document.createElement('section');urgent.className='today-attention';
-  urgent.innerHTML='<div class="today-attention-head"><span class="attention-pulse"></span><strong>Требует внимания</strong><span>'+model.urgent.length+'</span></div>';
-  model.urgent.slice(0,3).forEach(note=>{
-   const row=document.createElement('button');row.type='button';row.className='today-task';
-   row.innerHTML='<span class="task-check">'+icon('check')+'</span><span><strong>'+esc(note.title||'Срочная задача')+'</strong><small>'+esc(note.text||'Открыть заметку')+'</small></span>'+icon('chevron');
-   row.onclick=onOpenNotes;urgent.append(row);
-  });root.append(urgent);
- }
-
- const hero=document.createElement('section');hero.className='today-hero';
- hero.innerHTML='<div class="today-hero-orbit" aria-hidden="true"></div><div class="today-hero-top"><span>Результат дня</span><span class="today-live"><i></i>'+countLabel(model.jobs.length,'заявка','заявки','заявок')+'</span></div><div class="today-net"><strong>'+money(model.net)+'</strong><span>чистыми</span></div><div class="today-ledger"><div><small>Доход</small><b>'+money(model.income)+'</b></div><div><small>Расход</small><b>'+money(model.expense)+'</b></div><div><small>Готово</small><b>'+model.completed.length+' / '+model.jobs.length+'</b></div></div><div class="today-progress"><span style="--progress:'+(model.jobs.length?Math.round(model.completed.length/model.jobs.length*100):0)+'%"></span></div>';
- root.append(hero);
-
- const periods=document.createElement('section');periods.className='today-periods';
- periods.innerHTML='<div><span>Неделя</span><strong>'+money(model.weekNet)+'</strong></div><div><span>Месяц</span><strong>'+money(model.monthNet)+'</strong></div>';
- root.append(periods);
-
- const jobsHead=document.createElement('div');jobsHead.innerHTML=sectionHead('Заявки','<span class="section-meta">'+countLabel(model.montages.length,'монтаж','монтажа','монтажей')+'</span>');root.append(jobsHead.firstElementChild);
- const list=document.createElement('section');list.className='today-jobs';
- if(!model.jobs.length)list.innerHTML='<div class="today-empty"><span>'+icon('briefcase')+'</span><strong>День свободен</strong><small>Можно принять новый выезд или оставить день без работы.</small></div>';
- else model.jobs.forEach(job=>list.append(createJobCard({job,onOpen:onJobClick,onComplete,onPaid})));
- root.append(list);
-
- const expenseSection=document.createElement('section');expenseSection.className='today-support-card';
- expenseSection.innerHTML=sectionHead('Расходы сегодня','<strong class="support-total">'+money(model.expense)+'</strong>')+(model.todayExpenses.length?'<div class="today-expenses">'+model.todayExpenses.map(e=>'<div><span>'+esc(e.category||'Расход')+(e.comment?' · '+esc(e.comment):'')+'</span><strong>− '+money(e.amount)+'</strong></div>').join('')+'</div>':'<p>Сегодня расходов нет</p>');
- root.append(expenseSection);
-
- if(model.future.length){
-  const upcoming=document.createElement('section');upcoming.className='today-upcoming';upcoming.innerHTML=sectionHead('Ближайшие дни');
-  model.future.forEach(day=>{const row=document.createElement('button');row.type='button';row.className='upcoming-row';row.innerHTML='<span class="upcoming-date"><b>'+dateAtNoon(day.date).getDate()+'</b><small>'+shortWeekday(day.date)+'</small></span><span class="upcoming-clients"><strong>'+esc(day.jobs.map(j=>j.client).join(', '))+'</strong><small>'+countLabel(day.jobs.length,'выезд','выезда','выездов')+' · '+money(day.total)+'</small></span>'+icon('chevron');row.onclick=()=>onJobClick(day.jobs[0]);upcoming.append(row)});root.append(upcoming);
- }
-
- const notes=document.createElement('section');notes.className='today-notes';notes.innerHTML=sectionHead('Заметки','<button type="button" class="text-action">Все заметки '+icon('chevron')+'</button>');
- notes.querySelector('.text-action').onclick=onOpenNotes;
- if(model.notes.length)model.notes.slice(0,3).forEach(note=>{const row=document.createElement('button');row.type='button';row.className='today-note';row.innerHTML='<span>'+icon('note')+'</span><span><strong>'+esc(note.title||'Заметка')+'</strong><small>'+esc(note.text||'')+'</small></span>';row.onclick=onOpenNotes;notes.append(row)});
- else notes.insertAdjacentHTML('beforeend','<p>Активных заметок нет</p>');root.append(notes);
+export const renderToday = ({
+  root,model,onJobClick,onComplete,onPaid,onRoute,onMore,
+  onOpenNote=()=>{},onOpenNotes=()=>{},onCompleteNote,onAddNote,onAddJob,onAddExpense,onOpenDay=()=>{},onMoney=()=>{}
+}) => {
+  if(!root)return;
+  root.replaceChildren();root.dataset.screen='today';
+  const header=section('screen-heading','<div><h1>Сегодня</h1><p>'+capitalize(formatDate(model.date,{weekday:'long',day:'numeric',month:'long'}))+'</p></div><span class="screen-heading-icon" aria-hidden="true">'+icon('sun')+'</span>');
+  root.append(header);
+  if(model.urgent.length){
+    const attention=section('today-attention','<div class="attention-heading"><span class="attention-dot"></span><h2>На первом месте</h2><span>'+model.urgent.length+'</span></div>');
+    model.urgent.slice(0,2).forEach(note=>{
+      const due=note.dueDate?note.dueDate<model.date?'Просрочено':note.dueDate===model.date?'Сегодня':formatDate(note.dueDate,{day:'numeric',month:'short'}):'Срочная задача';
+      const row=document.createElement('div');row.className='task-row';
+      if(onCompleteNote){const complete=document.createElement('button');complete.type='button';complete.className='task-complete';complete.setAttribute('aria-label','Выполнить задачу: '+(note.title||note.text));complete.innerHTML='<span>'+icon('check')+'</span>';complete.onclick=async()=>{complete.disabled=true;try{await onCompleteNote(note)}finally{complete.disabled=false}};row.append(complete)}
+      const open=document.createElement('button');open.type='button';open.className='task-open';open.innerHTML='<span><strong>'+esc(note.title||note.text)+'</strong><small>'+due+(note.text&&note.title?' · '+esc(note.text):'')+'</small></span>'+icon('chevron');open.onclick=()=>onOpenNote(note);row.append(open);attention.append(row);
+    });
+    if(model.urgent.length>2){const all=document.createElement('button');all.className='text-action';all.textContent='Все срочные задачи';all.onclick=onOpenNotes;attention.append(all)}
+    root.append(attention);
+  }
+  const hero=section('today-hero');
+  const ratio=model.jobs.length?model.completed.length/model.jobs.length:0;
+  hero.innerHTML='<div class="hero-heading"><span>Чистыми за день</span><span class="hero-date">'+formatDate(model.date,{day:'2-digit',month:'2-digit'})+'</span></div><div class="hero-focus"><button class="hero-amount" type="button" aria-label="Открыть деньги за сегодня">'+money(model.net)+icon('arrow')+'</button><div class="day-completion" aria-label="Выполнено '+model.completed.length+' из '+model.jobs.length+' заявок"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="27"/><circle class="completion-ring" cx="32" cy="32" r="27" pathLength="100" stroke-dasharray="'+Math.round(ratio*100)+' 100"/></svg><span>'+model.completed.length+'<small>/'+model.jobs.length+'</small></span></div></div><div class="hero-ledger"><div><span>Доход</span><strong>'+money(model.income)+'</strong></div><div><span>Расход</span><strong>'+money(model.expense)+'</strong></div><div><span>Ещё '+plural(model.remaining,'заявка','заявки','заявок')+'</span><small>'+(model.remaining?'по плану дня':'Всё выполнено')+'</small></div></div>';
+  hero.querySelector('.hero-amount').onclick=()=>onMoney(model.date,model.date);
+  root.append(hero);
+  const periods=section('today-periods','<button type="button" data-period="week"><span>Эта неделя</span><strong>'+money(model.weekNet)+'</strong>'+icon('chevron')+'</button><button type="button" data-period="month"><span>Этот месяц</span><strong>'+money(model.monthNet)+'</strong>'+icon('chevron')+'</button>');
+  periods.querySelector('[data-period="week"]').onclick=()=>onMoney(model.weekStart,model.date);periods.querySelector('[data-period="month"]').onclick=()=>onMoney(model.monthStart,model.date);
+  root.append(periods);
+  const work=section('today-work',heading('Заявки на сегодня',model.jobs.length,onAddJob?'<button type="button" class="text-action" data-add-job>'+icon('plus')+'Заявка</button>':''));
+  work.querySelector('[data-add-job]')?.addEventListener('click',onAddJob);
+  const list=section('today-jobs');
+  if(!model.jobs.length){list.innerHTML='<div class="empty-state">'+icon('sun')+'<h3>Сегодня без выездов</h3><p>Хороший момент разобраться с заметками или спланировать ближайшие дни.</p>'+(onAddJob?'<button type="button" class="button subtle">Добавить заявку</button>':'')+'</div>';list.querySelector('button')?.addEventListener('click',onAddJob)}
+  else model.jobs.forEach(job=>list.append(createJobCard({job,onOpen:onJobClick,onComplete,onPaid,onRoute,onMore})));
+  work.append(list);root.append(work);
+  const expenses=section('today-expenses',heading('Расходы сегодня',undefined,onAddExpense?'<button type="button" class="text-action">'+icon('plus')+'Расход</button>':''));
+  expenses.querySelector('button')?.addEventListener('click',onAddExpense);
+  if(model.todayExpenses.length){
+    const rows=section('expense-receipt');
+    model.todayExpenses.forEach(e=>{const row=document.createElement('div');row.className='expense-line';row.innerHTML='<span class="expense-icon">'+icon('receipt')+'</span><div><strong>'+esc(e.category)+'</strong><small>'+esc(e.comment||'Без комментария')+'</small></div><b>−'+money(e.amount)+'</b>';rows.append(row)});
+    expenses.append(rows);
+  }else expenses.insertAdjacentHTML('beforeend','<p class="quiet-empty">Расходов пока нет</p>');
+  root.append(expenses);
+  const future=section('today-upcoming',heading('Ближайшие дни',undefined,'<button type="button" class="text-action">График '+icon('arrow')+'</button>'));
+  future.querySelector('button').onclick=()=>onOpenDay(model.date);
+  if(!model.future.length)future.insertAdjacentHTML('beforeend','<p class="quiet-empty">Будущих заявок пока нет</p>');
+  model.future.forEach(day=>{
+    const row=document.createElement('button');row.type='button';row.className='upcoming-row';
+    row.innerHTML='<span class="upcoming-date"><b>'+formatDate(day.date,{day:'numeric'})+'</b><small>'+formatDate(day.date,{weekday:'short'})+'</small></span><span class="upcoming-info"><strong>'+jobsLabel(day.jobs.length)+'</strong><small>'+esc(day.jobs.map(j=>j.client).join(', '))+'</small></span><span class="upcoming-type">'+plural(day.jobs.filter(j=>j.type==='Монтаж').length,'монтаж','монтажа','монтажей')+'</span>'+icon('chevron');
+    row.onclick=()=>onOpenDay(day.date);future.append(row);
+  });root.append(future);
+  const notes=section('today-notes',heading('Заметки',model.notes.length,onAddNote?'<button class="text-action" type="button" data-add-note>'+icon('plus')+'Заметка</button>':''));
+  notes.querySelector('[data-add-note]')?.addEventListener('click',onAddNote);
+  const notesList=section('today-note-grid');
+  model.notes.slice(0,4).forEach(note=>{
+    const row=document.createElement('button');row.type='button';row.className='today-note';row.innerHTML='<span class="note-kicker">'+icon('note')+'<small>'+(note.dueDate?formatDate(note.dueDate,{day:'numeric',month:'short'}):'Без срока')+'</small></span><strong>'+esc(note.title||'Заметка')+'</strong><p>'+esc(note.text||'Открыть заметку')+'</p>';row.onclick=()=>onOpenNote(note);notesList.append(row);
+  });
+  notes.append(notesList);
+  if(!model.notes.length)notes.insertAdjacentHTML('beforeend','<p class="quiet-empty">Всё важное можно записать здесь</p>');
+  const all=document.createElement('button');all.type='button';all.className='text-action notes-all';all.innerHTML='Все заметки и архив '+icon('arrow');all.onclick=onOpenNotes;notes.append(all);root.append(notes);
 };
