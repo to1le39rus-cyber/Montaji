@@ -17,15 +17,17 @@ export const buildClientsModel=({state})=>{
 export const renderClients=({root,model,onOpen=()=>{}})=>{
  if(!root)return;
  root.innerHTML='<section class="clients-header"><div><h1>Клиенты</h1><p>История и расчёты по клиентам</p></div><span>'+model.count+'</span></section>';
+ const tools=document.createElement('div');tools.className='clients-tools';tools.innerHTML='<label><span class="sr-only">Поиск клиентов</span><input type="search" placeholder="Имя или телефон" aria-label="Поиск клиентов"></label><button type="button" data-filter="debt">С долгом</button>';root.append(tools);
  const list=document.createElement('section'); list.className='clients-list';
  for(const client of model.clients){
   const el=document.createElement('button'); el.type='button'; el.className='client-row';
   el.innerHTML='<strong>'+esc(client.client||'Без имени')+'</strong><span>'+esc(client.phone||'')+'</span><span>'+client.jobs.length+' заявок · '+money(client.totalIncome)+'</span>'+(client.debt?'<em>Долг '+money(client.debt)+'</em>':'');
-  el.addEventListener('click',()=>onOpen(client));
+  el.dataset.search=(String(client.client||'')+' '+String(client.phone||'')).toLocaleLowerCase('ru');el.dataset.debt=client.debt?'true':'false';el.addEventListener('click',()=>onOpen(client));
   list.append(el);
  }
  if(!model.clients.length)list.innerHTML='<p class="clients-empty">Клиентов пока нет.</p>';
  root.append(list);
+ let debtOnly=false;const apply=()=>{const query=tools.querySelector('input').value.trim().toLocaleLowerCase('ru');list.querySelectorAll('.client-row').forEach(row=>row.hidden=Boolean((query&&!row.dataset.search.includes(query))||(debtOnly&&row.dataset.debt!=='true')))};tools.querySelector('input').oninput=apply;tools.querySelector('button').onclick=event=>{debtOnly=!debtOnly;event.currentTarget.classList.toggle('is-active',debtOnly);apply()};
 };
 
 export const renderClientDetail=({root,client,onBack=()=>{},onJobClick=()=>{}})=>{
