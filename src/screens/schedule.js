@@ -17,7 +17,7 @@ export const buildScheduleModel=({state,date,today=localISO(),view='month'})=>{
     const day=addDays(firstCell,i),list=jobsForDate(allJobs,day);
     return {date:day,count:list.length,montages:list.filter(j=>j.type==='Монтаж').length,measurements:list.filter(j=>j.type==='Замер').length,done:list.filter(isCompleted).length,inMonth:day.slice(0,7)===date.slice(0,7)};
   });
-  return {date,today,view,jobs,days,monthJobs:monthJobs.length,occupiedDays,daysInMonth,
+  return {date,today,view,jobs,allJobs,days,monthJobs:monthJobs.length,occupiedDays,daysInMonth,
     montageCount:jobs.filter(j=>j.type==='Монтаж').length,completedCount:jobs.filter(isCompleted).length};
 };
 const el=(className,html='')=>{const node=document.createElement('section');node.className=className;node.innerHTML=html;return node};
@@ -30,7 +30,7 @@ export const renderSchedule=({
   root.replaceChildren();root.dataset.screen='schedule';
   const heading=el('screen-heading','<div><h1>График</h1><p>Планы, выезды и свободные дни</p></div><button class="icon-button schedule-search-toggle" type="button" aria-label="Найти заявку" aria-expanded="'+String(Boolean(query))+'">'+icon('search')+'</button>');
   root.append(heading);
-  const search=el('schedule-search','<label>'+icon('search')+'<input type="search" placeholder="Клиент, телефон или адрес" aria-label="Поиск заявок на выбранный день" value="'+esc(query)+'"></label>');search.hidden=!query;root.append(search);
+  const search=el('schedule-search','<label>'+icon('search')+'<input type="search" placeholder="Клиент, телефон или адрес" aria-label="Поиск заявок по всем датам" value="'+esc(query)+'"></label>');search.hidden=!query;root.append(search);
   heading.querySelector('button').onclick=()=>{search.hidden=!search.hidden;heading.querySelector('button').setAttribute('aria-expanded',String(!search.hidden));if(!search.hidden)search.querySelector('input').focus()};
   const controls=el('schedule-controls','<div class="segmented" role="group" aria-label="Вид графика"><button type="button" data-view="month" aria-pressed="'+(model.view==='month')+'">Месяц</button><button type="button" data-view="week" aria-pressed="'+(model.view==='week')+'">Неделя</button></div><button class="text-action" type="button" data-today>'+icon('sun')+'Сегодня</button>');
   controls.querySelectorAll('[data-view]').forEach(button=>button.onclick=()=>onViewChange(button.dataset.view));controls.querySelector('[data-today]').onclick=onToday;root.append(controls);
@@ -60,16 +60,23 @@ export const renderSchedule=({
   let activeFilter=filter,currentQuery=query;
   const draw=()=>{
     const searchValue=currentQuery.trim().toLocaleLowerCase('ru');
-    const matches=model.jobs.filter(job=>(activeFilter==='all'||(activeFilter==='done'?isCompleted(job):!isCompleted(job)))&&(!searchValue||[job.client,job.phone,job.address,job.comment].join(' ').toLocaleLowerCase('ru').includes(searchValue)));
+    const candidates=searchValue?sortBySchedule(model.allJobs).sort((a,b)=>a.date.localeCompare(b.date)):model.jobs;
+    const matches=candidates.filter(job=>(activeFilter==='all'||(activeFilter==='done'?isCompleted(job):!isCompleted(job)))&&(!searchValue||[job.client,job.phone,job.address,job.comment].join(' ').toLocaleLowerCase('ru').includes(searchValue)));
     list.replaceChildren();
     if(!matches.length){
-      const empty=el('empty-state',icon(model.jobs.length?'search':'sun')+'<h3>'+(model.jobs.length?'Ничего не найдено':'День свободен')+'</h3><p>'+(model.jobs.length?'Попробуйте другое имя или уберите фильтр.':'Заявок пока нет. Можно запланировать новый выезд.')+'</p>');
+      const filtering=Boolean(searchValue||activeFilter!=='all');
+      const empty=el('empty-state',icon(filtering?'search':'sun')+'<h3>'+(filtering?'Ничего не найдено':'День свободен')+'</h3><p>'+(filtering?'Попробуйте другое имя или уберите фильтр.':'Заявок пока нет. Можно запланировать новый выезд.')+'</p>');
       const button=document.createElement('button');button.type='button';button.className='button subtle';
-      if(model.jobs.length){button.textContent='Сбросить фильтры';button.onclick=()=>{activeFilter='all';currentQuery='';onFilter('all');onSearch('');search.querySelector('input').value='';agenda.querySelectorAll('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.filter==='all')));draw()};empty.append(button)}
+      if(filtering){button.textContent='Сбросить фильтры';button.onclick=()=>{activeFilter='all';currentQuery='';onFilter('all');onSearch('');search.querySelector('input').value='';agenda.querySelectorAll('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.filter==='all')));draw()};empty.append(button)}
       else if(onAddJob){button.textContent='Добавить заявку';button.onclick=onAddJob;empty.append(button)}
       list.append(empty);return;
     }
-    matches.forEach(job=>list.append(createJobCard({job,onOpen:onJobClick,onComplete,onPaid,onRoute,onMore})));
+    let groupDate='';
+    if(searchValue)list.append(el('section-caption','Поиск по всем датам · '+jobsLabel(matches.length)));
+    matches.forEach(job=>{
+      if(searchValue&&groupDate!==job.date){groupDate=job.date;list.append(el('section-caption',capitalize(formatDate(job.date,{day:'numeric',month:'long',year:'numeric'}))))}
+      list.append(createJobCard({job,onOpen:onJobClick,onComplete,onPaid,onRoute,onMore}));
+    });
   };
   search.querySelector('input').oninput=event=>{currentQuery=event.target.value;onSearch(currentQuery);draw()};
   agenda.querySelectorAll('[data-filter]').forEach(button=>button.onclick=()=>{activeFilter=button.dataset.filter;onFilter(activeFilter);agenda.querySelectorAll('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));draw()});
