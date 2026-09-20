@@ -8,163 +8,231 @@ import { buildNotesModel, renderNotes } from '../screens/notes.js';
 import { buildMoreModel, renderMore } from '../screens/more.js';
 import { createJobForm } from '../components/job-form.js';
 import { createStoreForm } from '../components/store-form.js';
+import { createNoteForm } from '../components/note-form.js';
+import { createSheet } from '../components/sheet.js';
+import { createFeedback } from '../components/feedback.js';
+import { statusMarkup } from '../components/job-card.js';
 import { icon } from '../ui/icons.js';
+import { esc, money, localISO, formatDate, addDays, shiftMonth, dateObject } from '../ui/format.js';
+import { JOB_TYPES, isCancelled, isCompleted, isDebt } from '../domain/jobs.js';
 
-const isoToday=()=>new Date().toISOString().slice(0,10);
-const setText=(el,value)=>{el.textContent=String(value??'').trim()||'—';return el};
-export const createCanonicalShell=({root,initialState={jobs:[],expenses:[],stores:[],version:5},initialNotes=[],user=null,readOnly=false,jobService=null,storeService=null,actions={}})=>{
- const state=createAppState(); state.setState(initialState); state.setNotes(initialNotes); state.setUser(user);
- const content=document.createElement('main'); content.className='app-content';
- const addButton=document.createElement('button'); addButton.type='button'; addButton.className='canonical-add'; addButton.innerHTML=icon('plus')+'<span class="canonical-add-label">Новая заявка</span>'; addButton.setAttribute('aria-label','Новая заявка'); addButton.hidden=readOnly;
- const nav=document.createElement('nav'); nav.className='app-nav';
- const modal=document.createElement('div'); modal.className='canonical-modal'; modal.hidden=true;
- root.innerHTML=''; root.className='app-shell'; root.append(nav,addButton,content,modal);
- const routes=['today','schedule','money','clients','notes','more'];
- const names=['today','schedule','money','clients','more'];
- const navItems={
-  today:{label:'Сегодня',icon:icon('home')},schedule:{label:'График',icon:icon('calendar')},money:{label:'Деньги',icon:icon('money')},clients:{label:'Клиенты',icon:icon('user')},more:{label:'Ещё',icon:icon('more')}
- };
- let selectedDate=isoToday(), moneyStart=isoToday(), moneyEnd=isoToday(), cacheStatus='none';
- const renderRoute=async name=>{if(name==='today')return renderToday({root:content,model:buildTodayModel({state:state.snapshot.state,date:selectedDate,notes:state.snapshot.notes}),onJobClick:readOnly?openJobCard:openJob,onComplete:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.complete(id)),onPaid:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.markPaid(id)),onOpenNotes:()=>router.render('notes')});if(name==='schedule')return renderSchedule({root:content,model:buildScheduleModel({state:state.snapshot.state,date:selectedDate}),onJobClick:readOnly?openJobCard:openJob,onComplete:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.complete(id)),onPaid:readOnly?undefined:j=>mutateJob(j.id,id=>jobService.markPaid(id)),onDateChange:d=>{selectedDate=d;renderRoute('schedule')}});if(name==='money')return renderMoney({root:content,model:buildMoneyModel({state:state.snapshot.state,start:moneyStart,end:moneyEnd}),onJobClick:openJobCard,onPeriodChange:(key,value,endValue)=>{if(key==='range'){moneyStart=value;moneyEnd=endValue||value}else if(key==='start')moneyStart=value;else moneyEnd=value;if(moneyEnd<moneyStart)moneyEnd=moneyStart;renderRoute('money')}});if(name==='clients'){const model=buildClientsModel({state:state.snapshot.state}); return renderClients({root:content,model,onOpen:openClient})}if(name==='notes')return renderNotes({root:content,model:buildNotesModel({notes:state.snapshot.notes})});if(name==='more')return renderMore({root:content,model:buildMoreModel({user:state.snapshot.user,dataStatus:state.snapshot.dataStatus,cacheStatus,stores:state.snapshot.state.stores||[],notes:state.snapshot.notes}),actions:{...actions,openStores,openNotes:()=>router.render('notes')}});};
- const router=createRouter({root:content,routes:Object.fromEntries(routes.map(name=>[name,()=>renderRoute(name)]))});
- async function mutateJob(id,operation){
- if(readOnly||!jobService)return false;
- try{
-  const updated=await operation(id);
-  if(updated?.id){
-   const current=state.snapshot.state;
-   const nextJobs=(current.jobs||[]).map(job=>job.id===id?updated:job);
-   state.setState({...current,jobs:nextJobs});
-   await renderRoute(router.current||'today');
-  }
-  return true;
- }catch(error){
-  console.error(error);
-  alert(error?.message||'Не удалось сохранить заявку');
-  return false;
- }
-}
- function openClient(client){
-  modal.hidden=false;
-  modal.innerHTML='';
-  const panel=document.createElement('section');
-  panel.className='canonical-modal-panel client-modal-panel';
-  const close=()=>{modal.hidden=true;modal.innerHTML=''};
-  renderClientDetail({root:panel,client,onBack:close,onJobClick:job=>{modal.innerHTML='';openJobCard(job,()=>openClient(client))}});
-  const closeButton=document.createElement('button');
-  closeButton.type='button';
-  closeButton.className='client-modal-close';
-  closeButton.textContent='Закрыть';
-  closeButton.addEventListener('click',close);
-  panel.prepend(closeButton);
-  modal.append(panel);
-  modal.addEventListener('click',event=>{if(event.target===modal)close()},{once:true});
-}
- function openJobCard(job,onBack=null){
-  const jobId=job?.id;
-  const currentJob=()=>state.snapshot.state.jobs?.find(item=>item.id===jobId)||job;
-  job=currentJob();
-  modal.hidden=false; modal.innerHTML='';
-  const panel=document.createElement('section'); panel.className='canonical-modal-panel job-card-modal';
-  const close=()=>{modal.hidden=true;modal.innerHTML='';if(onBack)onBack()};
-  const head=document.createElement('div');head.className='canonical-modal-head';const headTitle=document.createElement('strong');headTitle.textContent=job.type||'Заявка';const closeButton=document.createElement('button');closeButton.type='button';closeButton.textContent=onBack?'Назад':'Закрыть';head.append(headTitle,closeButton);
-  const detail=document.createElement('div');detail.className='job-card-detail';const client=document.createElement('h1');setText(client,job.client);const meta=document.createElement('p');meta.textContent=(String(job.date||'').trim()||'—')+' · слот '+(String(job.slot||'').trim()||'—');const address=document.createElement('p');setText(address,job.address);const source=document.createElement('p');setText(source,job.source);const comment=document.createElement('p');setText(comment,job.comment);const stats=document.createElement('div');stats.className='job-card-detail-stats';const status=document.createElement('span');setText(status,job.status);const price=document.createElement('strong');price.textContent=new Intl.NumberFormat('ru-RU').format(Number(job.price)||0)+' ₽';const paid=document.createElement('span');paid.textContent=job.paid===true?'Оплачено':'Не оплачено';stats.append(status,price,paid);detail.append(client,meta,address,source,comment,stats);panel.append(head,detail);
-  closeButton.onclick=close;
-
-  const actions=document.createElement('div'); actions.className='job-card-detail-actions';
-  const edit=document.createElement('button'); edit.type='button'; edit.textContent='✏️ Редактировать';
-  edit.onclick=()=>{const latest=currentJob();close();openJob(latest)};
-  actions.append(edit); panel.append(actions); modal.append(panel);
-}
- function openReschedule(job){
-  modal.hidden=false; modal.innerHTML=''; const panel=document.createElement('section'); panel.className='canonical-modal-panel';
-  panel.innerHTML='<div class="canonical-modal-head"><strong>Перенести заявку</strong><button type="button">Закрыть</button></div><label class="reschedule-field">Новая дата<input type="date" value="'+job.date+'" /></label><div class="job-form-actions"><button type="button" data-cancel>Отмена</button><button type="button" data-save>Перенести</button></div>';
-  const close=()=>{modal.hidden=true;modal.innerHTML=''}; panel.querySelector('.canonical-modal-head button').onclick=close; panel.querySelector('[data-cancel]').onclick=close;
-  panel.querySelector('[data-save]').onclick=async()=>{const date=panel.querySelector('input').value;if(!date)return;const ok=await mutateJob(job.id,(id)=>jobService.reschedule(id,date));if(ok)close()}; modal.append(panel);
- }
- function setStores(stores){
-  state.setState({...state.snapshot.state,stores});
- }
- function openStores(){
-  modal.hidden=false;modal.innerHTML='';const panel=document.createElement('section');panel.className='canonical-modal-panel';const close=()=>{modal.hidden=true;modal.innerHTML=''};
-  const draw=()=>{
-   panel.innerHTML='<div class="canonical-modal-head"><strong>Магазины</strong><button type="button">Закрыть</button></div><button type="button" class="store-add">+ Добавить магазин</button><div class="store-list"></div>';
-   panel.querySelector('.canonical-modal-head button').onclick=close;
-   panel.querySelector('.store-add').onclick=()=>openStoreEditor(null);
-   const list=panel.querySelector('.store-list'),stores=state.snapshot.state.stores||[];
-   if(!stores.length){const empty=document.createElement('p');empty.textContent='Магазины пока не добавлены.';list.append(empty)}
-   for(const store of stores){
-    const row=document.createElement('button');row.type='button';row.className='store-row';
-    const title=document.createElement('strong');title.textContent=String(store.name||'');
-    const meta=document.createElement('span');meta.textContent=String(store.address||store.phone||'');
-    row.append(title,meta);row.onclick=()=>openStoreEditor(store.id);list.append(row);
-   }
+const element = (className, html = '') => { const el=document.createElement('div'); el.className=className; el.innerHTML=html; return el; };
+export const createCanonicalShell = ({
+  root, initialState={jobs:[],expenses:[],stores:[],version:5}, initialNotes=[], user=null, readOnly=false,
+  jobService=null, storeService=null, noteService=null, expenseService=null, actions={},
+  today=localISO(), demo=false, initialRoute='today'
+}) => {
+  const state=createAppState();
+  state.setState(initialState); state.setNotes(initialNotes); state.setUser(user);
+  const content=element('app-content'); content.id='main-content'; content.setAttribute('role','main');
+  const brand=element('app-brandbar','<span class="app-mark"><svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5l8 9 8-9v14M4 5l8 9V4"/></svg></span><span class="app-brand">МОНТАЖИ <em>AA</em></span><span class="app-sync"></span>');
+  const dock=element('app-dock');
+  const nav=document.createElement('nav'); nav.className='app-nav'; nav.setAttribute('aria-label','Основная навигация');
+  const indicator=element('app-nav-indicator'); indicator.setAttribute('aria-hidden','true'); nav.append(indicator);
+  const add=document.createElement('button'); add.type='button'; add.className='canonical-add'; add.setAttribute('aria-label','Добавить'); add.innerHTML=icon('plus'); add.hidden=readOnly;
+  dock.append(nav,add);
+  root.className='app-shell'; root.replaceChildren(brand,content,dock);
+  const sheet=createSheet({root,background:[brand,content,dock]});
+  const notify=createFeedback(root);
+  let selectedDate=today, scheduleView='month', scheduleFilter='all', scheduleQuery='';
+  let moneyStart=today, moneyEnd=today, cacheStatus='none';
+  const names=['today','schedule','money','clients','more'];
+  const navItems=[['Сегодня','home'],['График','calendar'],['Деньги','money'],['Клиенты','user'],['Ещё','more']];
+  const canJobs=!readOnly&&Boolean(jobService);
+  const currentJob=job=>state.snapshot.state.jobs?.find(item=>item.id===job.id)||job;
+  const jobCallbacks={
+    onJobClick:job=>openJobCard(job),
+    onComplete:canJobs?job=>mutateJob(job.id,()=>jobService.complete(job.id),'Заявка выполнена'):undefined,
+    onPaid:canJobs?job=>mutateJob(job.id,()=>jobService.markPaid(job.id),'Оплата отмечена'):undefined,
+    onRoute:job=>openRoute(job), onShare:job=>shareAddress(job), onMore:job=>openJobCard(job)
   };
-  draw();modal.append(panel);
- }
- function openStoreEditor(storeId){
-  if(!storeService)return;const store=storeId?(state.snapshot.state.stores||[]).find(item=>item.id===storeId):null;if(storeId&&!store){alert('Магазин уже удалён или недоступен');openStores();return}modal.innerHTML='';const panel=document.createElement('section');panel.className='canonical-modal-panel';const back=()=>{modal.innerHTML='';openStores()};
-  panel.innerHTML='<div class="canonical-modal-head"><strong>'+(store?'Редактировать магазин':'Новый магазин')+'</strong><button type="button">Назад</button></div>';panel.querySelector('button').onclick=back;
-  const form=createStoreForm({store:store||{},onCancel:back,onSubmit:async patch=>{
-   try{
-    const stores=state.snapshot.state.stores||[];
-    if(store){
-     const updated=await storeService.update(store.id,patch);
-     setStores(stores.map(item=>item.id===updated.id?updated:item));
-    }else{
-     const created=await storeService.create(patch);
-     setStores([...stores,created]);
+  const renderRoute=async name=>{
+    if(name==='today') renderToday({
+      root:content, model:buildTodayModel({state:state.snapshot.state,date:today,notes:state.snapshot.notes}), ...jobCallbacks,
+      onOpenNote:openNote, onOpenNotes:()=>navigate('notes'), onCompleteNote:noteService&&!readOnly?completeNote:undefined,
+      onAddNote:noteService&&!readOnly?()=>editNote({}):undefined, onAddJob:canJobs?()=>openJob({date:today}):undefined,
+      onAddExpense:expenseService&&!readOnly?()=>openExpense(today):undefined,
+      onOpenDay:date=>{selectedDate=date;navigate('schedule')},
+      onMoney:(start,end)=>{moneyStart=start;moneyEnd=end;navigate('money')}
+    });
+    else if(name==='schedule') renderSchedule({
+      root:content, model:buildScheduleModel({state:state.snapshot.state,date:selectedDate,today,view:scheduleView}), ...jobCallbacks,
+      query:scheduleQuery, filter:scheduleFilter,
+      onDateChange:date=>{selectedDate=date;renderRoute('schedule')},
+      onViewChange:view=>{scheduleView=view;renderRoute('schedule')},
+      onShift:direction=>{
+        if(scheduleView==='week') selectedDate=addDays(selectedDate,direction*7);
+        else {const first=shiftMonth(selectedDate,direction),end=dateObject(shiftMonth(first,1));end.setDate(0);selectedDate=first.slice(0,8)+String(Math.min(dateObject(selectedDate).getDate(),end.getDate())).padStart(2,'0')}
+        renderRoute('schedule');
+      },
+      onToday:()=>{selectedDate=today;renderRoute('schedule')},
+      onSearch:query=>scheduleQuery=query, onFilter:filter=>scheduleFilter=filter,
+      onAddJob:canJobs?()=>openJob({date:selectedDate}):undefined
+    });
+    else if(name==='money') renderMoney({root:content,model:buildMoneyModel({state:state.snapshot.state,start:moneyStart,end:moneyEnd}),onJobClick:job=>openJobCard(job),onPeriodChange:(key,value,endValue)=>{
+      if(key==='range'){moneyStart=value;moneyEnd=endValue||value}else if(key==='start')moneyStart=value;else moneyEnd=value;
+      if(moneyEnd<moneyStart)moneyEnd=moneyStart;renderRoute('money');
+    }});
+    else if(name==='clients') renderClients({root:content,model:buildClientsModel({state:state.snapshot.state}),onOpen:openClient});
+    else if(name==='notes') renderNotes({root:content,model:buildNotesModel({notes:state.snapshot.notes}),onOpen:openNote,onAdd:noteService&&!readOnly?()=>editNote({}):undefined});
+    else if(name==='more') renderMore({root:content,model:buildMoreModel({user:state.snapshot.user,dataStatus:state.snapshot.dataStatus,cacheStatus,stores:state.snapshot.state.stores||[],notes:state.snapshot.notes}),actions:{...actions,openStores,openNotes:()=>navigate('notes')}});
+    const index=Math.max(0,names.indexOf(name==='notes'?'more':name));
+    indicator.style.setProperty('--nav-index',index*100+'%');
+    nav.querySelectorAll('button').forEach((button,i)=>button.setAttribute('aria-current',i===index?'page':'false'));
+  };
+  const router=createRouter({root:content,routes:Object.fromEntries([...names,'notes'].map(name=>[name,()=>renderRoute(name)]))});
+  async function navigate(name) {
+    sheet.close(); await router.render(name); window.scrollTo(0,0);
+    if(!matchMedia('(prefers-reduced-motion: reduce)').matches)content.animate([{opacity:.5,transform:'translateY(5px)'},{opacity:1,transform:'none'}],{duration:200,easing:'ease-out'});
+  }
+  async function mutateJob(id, operation, message) {
+    if(!canJobs)return false;
+    try {
+      const updated=await operation();
+      if(updated?.id){const current=state.snapshot.state;state.setState({...current,jobs:current.jobs.map(job=>job.id===id?updated:job)})}
+      if(message)notify(message);
+      return true;
+    } catch(error) { notify(error?.message||'Не удалось сохранить заявку');return false; }
+  }
+  function actionButton(label, name, action, primary=false) {
+    const button=document.createElement('button');button.type='button';button.className='button'+(primary?' primary':'');button.innerHTML=icon(name)+'<span>'+esc(label)+'</span>';
+    button.onclick=async()=>{if(button.disabled)return;button.disabled=true;try{await action()}finally{button.disabled=false}};return button;
+  }
+  function openJobCard(source, returnTo) {
+    const job=currentJob(source), back=()=>openJobCard(source,returnTo);
+    const body=element('job-detail');
+    body.innerHTML='<div class="detail-head">'+statusMarkup(job)+'<h1>'+esc(job.client||'Без имени')+'</h1><p>'+esc(job.type)+' · '+formatDate(job.date)+' · слот '+esc(job.slot)+'</p></div><div class="detail-price"><strong>'+money(job.type==='Замер'?(job.measurePrice||job.price):job.price)+'</strong><span class="job-payment'+(isDebt(job)?' is-debt':'')+'">'+(job.paid?'Оплачено':isDebt(job)?'Долг':'Не оплачено')+'</span></div><div class="detail-info">'+[
+      ['pin','Адрес',job.address],['phone','Телефон',job.phone],['store','Магазин / источник',job.source],['note','Комментарий',job.comment]
+    ].filter(([, ,value])=>value).map(([name,label,value])=>'<div>'+icon(name)+'<span><small>'+label+'</small>'+esc(value)+'</span></div>').join('')+'</div>';
+    const controls=element('detail-actions');
+    if(job.address)controls.append(actionButton('Маршрут','route',()=>openRoute(job,back)));
+    if(job.phone){const link=document.createElement('a');link.className='button';link.href='tel:'+String(job.phone).replace(/[^+\d]/g,'');link.innerHTML=icon('phone')+'Позвонить';controls.append(link)}
+    if(job.address)controls.append(actionButton('Отправить адрес','share',()=>shareAddress(job)));
+    if(canJobs){
+      controls.append(actionButton('Редактировать','edit',()=>openJob(job,back)));
+      if(!isCancelled(job)){
+        if(!isCompleted(job))controls.append(actionButton('Выполнить','check',async()=>{if(await mutateJob(job.id,()=>jobService.complete(job.id),'Заявка выполнена'))back()},true));
+        controls.append(actionButton(job.paid?'Снять оплату':'Отметить оплату','money',async()=>{if(await mutateJob(job.id,()=>job.paid?jobService.markUnpaid(job.id):jobService.markPaid(job.id),'Оплата обновлена'))back()},isDebt(job)));
+        controls.append(actionButton('Перенести','calendar',()=>openReschedule(job,back)));
+        const cancel=actionButton('Отменить заявку','close',()=>{
+          const confirmation=element('simple-form','<p>Заявка останется в истории со статусом «Отменен» и перестанет учитываться в доходе.</p>');
+          confirmation.append(actionButton('Отменить заявку','close',async()=>{if(await mutateJob(job.id,()=>jobService.cancel(job.id),'Заявка отменена'))back()}));
+          sheet.open({title:'Отменить заявку?',body:confirmation,onBack:back});
+        });cancel.classList.add('danger');controls.append(cancel);
+      }
     }
-    back();
-   }catch(e){console.error(e);alert(e?.message||'Не удалось сохранить магазин')}
-  }});panel.append(form);
-  if(store){
-   const del=document.createElement('button');del.type='button';del.className='store-delete';del.textContent='Удалить из справочника';
-   del.onclick=async()=>{
-    if(!confirm('Удалить магазин из справочника? Старые заявки останутся без изменений.'))return;
-    try{
-     await storeService.remove(store.id);
-     setStores((state.snapshot.state.stores||[]).filter(item=>item.id!==store.id));
-     back();
-    }catch(e){alert(e?.message||'Не удалось удалить магазин')}
-   };
-   panel.append(del);
+    body.append(controls);sheet.open({title:'Заявка',body,onBack:returnTo});
   }
-  modal.append(panel);
- }
- function openJob(job={}){
-  if(readOnly)return;
-  if(job.id)job=state.snapshot.state.jobs?.find(item=>item.id===job.id)||job;
-  modal.hidden=false;modal.innerHTML='';const panel=document.createElement('section');panel.className='canonical-modal-panel job-edit-modal';
-  const close=()=>{modal.hidden=true;modal.innerHTML=''};
-  const form=createJobForm({job,stores:state.snapshot.state.stores||[],onCancel:close,onSubmit:async next=>{if(job.id){if(!Object.keys(next).length){close();return}const ok=await mutateJob(job.id,(id)=>jobService.update(id,next));if(ok)close();}else if(jobService){
- try{
-  const created=await jobService.create(next);
-  const current=state.snapshot.state;
-  state.setState({...current,jobs:[...(current.jobs||[]),created]});
-  await renderRoute(router.current||'today');
-  close();
- }catch(error){console.error(error);alert(error?.message||'Не удалось создать заявку');}
-}}});
-  const actionsBox=document.createElement('div');actionsBox.className='job-lifecycle-actions';
-  if(job.id){
-   const commands=[];
-   if(job.status!=='Выполнен'&&job.status!=='Отменен') commands.push(['Выполнить',()=>mutateJob(job.id,(id)=>jobService.complete(id))]);
-   if(job.status!=='Отменен'&&job.paid!==true) commands.push(['Оплатить',()=>mutateJob(job.id,(id)=>jobService.markPaid(id))]);
-   if(job.status!=='Отменен'&&job.paid===true) commands.push(['Не оплачено',()=>mutateJob(job.id,(id)=>jobService.markUnpaid(id))]);
-   if(job.status!=='Отменен') commands.push(['Перенести',()=>{openReschedule(job);return null}]);
-   if(job.status!=='Отменен') commands.push(['Отменить',()=>mutateJob(job.id,(id)=>jobService.cancel(id))]);
-   for(const [label,fn] of commands){const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',async()=>{const result=await fn();if(result!==null&&result!==false)close()});actionsBox.append(b)}
+  function openJob(input={}, returnTo) {
+    if(!canJobs)return;
+    const job=input.id?currentJob(input):{date:selectedDate,type:'Монтаж',slot:'1',status:'Запланировано',paid:false,...input};
+    const close=returnTo||sheet.close;
+    const form=createJobForm({job,stores:state.snapshot.state.stores||[],onCancel:close,onSubmit:async patch=>{
+      if(job.id){if(!Object.keys(patch).length){close();return}if(await mutateJob(job.id,()=>jobService.update(job.id,patch),'Заявка сохранена'))close()}
+      else try{const created=await jobService.create(patch);const current=state.snapshot.state;state.setState({...current,jobs:[...current.jobs,created]});notify('Заявка добавлена');close()}catch(e){notify(e.message||'Не удалось создать заявку')}
+    }});
+    sheet.open({title:job.id?'Редактировать заявку':'Новая заявка',body:form,onBack:returnTo});
   }
-  panel.innerHTML='<div class="canonical-modal-head"><strong>'+(job.id?'Заявка':'Новая заявка')+'</strong><button type="button">Закрыть</button></div>';panel.querySelector('button').addEventListener('click',close);const body=document.createElement('div');body.className='canonical-modal-body';body.append(form);if(job.id)body.append(actionsBox);panel.append(body);modal.append(panel);body.scrollTop=0;requestAnimationFrame(()=>{body.scrollTop=0});
- }
- addButton.addEventListener('click',()=>openJob({date:selectedDate,type:'Монтаж',slot:'1',status:'Запланировано',paid:false}));
- names.forEach(name=>{
-  const item=navItems[name],button=document.createElement('button');button.type='button';button.dataset.route=name;button.setAttribute('aria-label',item.label);
-  const icon=document.createElement('span');icon.className='app-nav-icon';icon.setAttribute('aria-hidden','true');icon.innerHTML=item.icon;
-  const label=document.createElement('span');label.className='app-nav-label';label.textContent=item.label;button.append(icon,label);
-  button.addEventListener('click',()=>router.render(name).then(()=>nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.dataset.route===name?'page':'false'))));nav.append(button)
- });
- router.render('today').then(()=>nav.querySelector('[data-route="today"]')?.setAttribute('aria-current','page'));
- return {state,router,root,openJob,setCacheStatus(value){cacheStatus=value;if(router.current==='more')renderRoute('more')}};
+  function openReschedule(job, returnTo) {
+    const form=element('simple-form','<label>Новая дата<input type="date" value="'+esc(job.date)+'" required></label><p class="section-caption">Слот и остальные детали сохранятся.</p>');
+    form.append(actionButton('Перенести заявку','calendar',async()=>{const date=form.querySelector('input').value;if(!date)return;if(await mutateJob(job.id,()=>jobService.reschedule(job.id,date),'Заявка перенесена'))returnTo()},true));
+    sheet.open({title:'Перенести заявку',body:form,onBack:returnTo});
+  }
+  function openRoute(job, returnTo) {
+    const body=element('sheet-choices','<p>'+esc(job.address)+'</p>');
+    const address=encodeURIComponent(job.address);
+    [['Яндекс Карты','https://yandex.ru/maps/?rtext=~'+address+'&rtt=auto'],['2ГИС','https://2gis.ru/search/'+address]].forEach(([label,href])=>{
+      const link=document.createElement('a');link.className='button';link.target='_blank';link.rel='noopener noreferrer';link.href=href;link.innerHTML=icon('route')+'<span>'+label+'</span>'+icon('arrow');body.append(link);
+    });
+    sheet.open({title:'Проложить маршрут',body,onBack:returnTo});
+  }
+  async function shareAddress(job) {
+    const text=[job.client,job.address].filter(Boolean).join(' — ');
+    try{if(navigator.share)await navigator.share({title:'Адрес клиента',text});else if(navigator.clipboard){await navigator.clipboard.writeText(text);notify('Адрес скопирован')}else notify('Скопируйте адрес из карточки заявки')}
+    catch(e){if(e.name!=='AbortError')notify('Не удалось отправить адрес')}
+  }
+  function openClient(client) {
+    const fresh=buildClientsModel({state:state.snapshot.state}).clients.find(c=>c.key===client.key)||client;
+    const body=element('client-detail');
+    renderClientDetail({root:body,client:fresh,onBack:sheet.close,onJobClick:job=>openJobCard(job,()=>openClient(client))});
+    sheet.open({title:'Клиент',body});
+  }
+  function openNote(source) {
+    const note=state.snapshot.notes.find(n=>n.id===source.id)||source;
+    const body=element('note-detail','<div class="detail-head"><span class="section-caption">'+(note.urgent?'Срочная задача':'Заметка')+'</span><h1>'+esc(note.title||'Заметка')+'</h1></div><p style="white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65">'+esc(note.text||'')+'</p>'+(note.dueDate?'<p class="section-caption">Срок: '+formatDate(note.dueDate)+'</p>':''));
+    if(noteService&&!readOnly){
+      const controls=element('detail-actions');
+      controls.append(actionButton(note.done?'Вернуть в активные':'Выполнено','check',async()=>{if(await updateNote(note,{done:!note.done}))sheet.close()},true));
+      controls.append(actionButton('Редактировать','edit',()=>editNote(note,()=>openNote(note))));
+      controls.append(actionButton(note.archived?'Из архива':'В архив','archive',async()=>{if(await updateNote(note,{archived:!note.archived}))sheet.close()}));body.append(controls);
+    }
+    sheet.open({title:note.urgent?'Задача':'Заметка',body});
+  }
+  async function updateNote(note, patch) {
+    try{state.setNotes(await noteService.update(note.id,patch));return true}catch(e){notify(e.message||'Не удалось сохранить заметку');return false}
+  }
+  async function completeNote(note) {
+    if(await updateNote(note,{done:true}))notify('Задача выполнена',{label:'Вернуть',run:()=>updateNote(note,{done:false})});
+  }
+  function editNote(note={}, returnTo) {
+    if(!noteService||readOnly)return;
+    const form=createNoteForm({note,onSubmit:async patch=>{
+      try{state.setNotes(note.id?await noteService.update(note.id,patch):await noteService.create(patch));notify('Заметка сохранена');(returnTo||sheet.close)()}catch(e){notify(e.message)}
+    }});
+    sheet.open({title:note.id?'Редактировать заметку':'Новая заметка',body:form,onBack:returnTo});
+  }
+  function openExpense(date=today) {
+    if(!expenseService||readOnly)return;
+    const form=document.createElement('form');form.className='simple-form';
+    form.innerHTML='<label>Сумма, ₽<input name="amount" inputmode="decimal" placeholder="0" required></label><label>Категория<select name="category">'+['Материалы','Топливо','Аренда','Обед','Прочее'].map(x=>'<option>'+x+'</option>').join('')+'</select></label><label>Дата<input name="date" type="date" value="'+date+'" required></label><label>Комментарий<input name="comment" placeholder="На что потратили"></label><button class="button primary" type="submit">Добавить расход</button>';
+    form.onsubmit=async event=>{event.preventDefault();const button=form.querySelector('[type="submit"]');if(button.disabled)return;button.disabled=true;try{
+      const input=Object.fromEntries(new FormData(form));input.amount=String(input.amount).replace(/\s/g,'');
+      state.setState(await expenseService.create(input));sheet.close();notify('Расход добавлен');
+    }catch(e){notify(e.message)}finally{button.disabled=false}};
+    sheet.open({title:'Новый расход',body:form});
+  }
+  function openQuickAdd() {
+    const body=element('quick-create');
+    const icons=['tools','measure','refresh','truck','briefcase','money'];
+    JOB_TYPES.forEach((type,i)=>{if(canJobs)body.append(actionButton(type,icons[i],()=>openJob({date:router.current==='schedule'?selectedDate:today,type},openQuickAdd)))});
+    if(expenseService)body.append(actionButton('Расход','receipt',()=>openExpense(router.current==='schedule'?selectedDate:today)));
+    if(noteService)body.append(actionButton('Заметка','note',()=>editNote({},openQuickAdd)));
+    sheet.open({title:'Что добавить?',body});
+  }
+  function openStores() {
+    const body=element('sheet-choices');
+    if(storeService&&!readOnly)body.append(actionButton('Добавить магазин','plus',()=>openStoreEditor(null)));
+    for(const store of state.snapshot.state.stores||[])body.append(actionButton(store.name,'store',()=>openStoreEditor(store.id)));
+    if(!body.children.length)body.innerHTML='<p>Магазины пока не добавлены.</p>';
+    sheet.open({title:'Магазины',body});
+  }
+  function openStoreEditor(id) {
+    if(!storeService||readOnly)return;
+    const store=(state.snapshot.state.stores||[]).find(s=>s.id===id);
+    const form=createStoreForm({store:store||{},onCancel:openStores,onSubmit:async patch=>{
+      try{const next=store?await storeService.update(store.id,patch):await storeService.create(patch);const current=state.snapshot.state;state.setState({...current,stores:store?current.stores.map(s=>s.id===next.id?next:s):[...current.stores,next]});openStores()}catch(e){notify(e.message)}
+    }});
+    if(store)form.append(actionButton('Удалить из справочника','close',()=>{
+      const body=element('simple-form','<p>Исторические заявки сохранят название магазина.</p>');
+      body.append(actionButton('Удалить магазин','close',async()=>{try{await storeService.remove(id);const current=state.snapshot.state;state.setState({...current,stores:current.stores.filter(s=>s.id!==id)});openStores()}catch(e){notify(e.message)}}));
+      sheet.open({title:'Удалить магазин?',body,onBack:()=>openStoreEditor(id)});
+    }));
+    sheet.open({title:store?'Редактировать магазин':'Новый магазин',body:form,onBack:openStores});
+  }
+  add.onclick=openQuickAdd;
+  names.forEach((name,i)=>{
+    const button=document.createElement('button');button.type='button';button.dataset.route=name;button.setAttribute('aria-label',navItems[i][0]);
+    button.innerHTML='<span class="app-nav-icon">'+icon(navItems[i][1])+'</span><span class="app-nav-label">'+navItems[i][0]+'</span>';
+    button.onclick=()=>navigate(name);nav.append(button);
+  });
+  let previous=state.snapshot, queued=false;
+  state.subscribe(snapshot=>{
+    const sync=brand.querySelector('.app-sync');sync.dataset.status=snapshot.dataStatus;
+    sync.textContent=demo?'Демо · без Firebase':({ready:'Синхронизировано',cache:'Локальный снимок',offline:'Без сети',pending:'Сохраняется',error:'Ошибка связи'}[snapshot.dataStatus]||'Подключение');
+    const changed=previous.state!==snapshot.state||previous.notes!==snapshot.notes;previous=snapshot;
+    if(changed&&!queued){queued=true;queueMicrotask(()=>{queued=false;if(root.isConnected)renderRoute(router.current||'today')})}
+  });
+  state.setDataStatus(demo?'ready':'idle');
+  router.render([...names,'notes'].includes(initialRoute)?initialRoute:'today');
+  return {state,router,root,openJob,setCacheStatus(value){cacheStatus=value;if(router.current==='more')renderRoute('more')}};
 };

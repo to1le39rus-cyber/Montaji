@@ -25,8 +25,11 @@ import {createCanonicalShell} from './src/core/canonical-shell.js';
 import {normalizeShared,normalizeNotes} from './src/domain/normalize.js';
 import {createJobService} from './src/domain/job-service.js';
 import {createStoreService} from './src/domain/store-service.js';
-import {createDevJobRepository,createDevStoreRepository} from './src/data/dev-repository.js';
+import {createNoteService} from './src/domain/note-service.js';
+import {createExpenseService} from './src/domain/expense-service.js';
+import {createDevJobRepository,createDevStoreRepository,createDevNotesRepository,createDevExpenseRepository} from './src/data/dev-repository.js';
 import {loadFixture} from './src/data/fixture.js';
+import {localISO,addDays,dateObject} from './src/ui/format.js';
 
 const boot=document.querySelector('#boot');
 const root=document.querySelector('#app');
@@ -34,11 +37,18 @@ const root=document.querySelector('#app');
 async function start(){
  try{
   const fixture=await loadFixture('./montaji-fixture.json');
-  const shared=normalizeShared(fixture.shared);
-  const notes=normalizeNotes({notes:fixture.notes});
+  // Keep the authored demo day useful whenever the preview is opened.
+  const today=localISO();
+  const shift=Math.round((dateObject(today)-dateObject('2026-09-20'))/86400000);
+  const shiftDate=date=>date?addDays(date,shift):date;
+  const shared=normalizeShared({...fixture.shared,jobs:fixture.shared.jobs.map(job=>({...job,date:shiftDate(job.date),completedDate:shiftDate(job.completedDate)})),expenses:fixture.shared.expenses.map(expense=>({...expense,date:shiftDate(expense.date)}))});
+  const notes=normalizeNotes({notes:fixture.notes.map(note=>({...note,dueDate:shiftDate(note.dueDate)}))});
   const devState={jobs:[...shared.jobs],expenses:[...shared.expenses],stores:[...(shared.stores||[])],version:shared.version};
   const jobService=createJobService({repository:createDevJobRepository({state:devState})});
   const storeService=createStoreService({repository:createDevStoreRepository({state:devState})});
+  const noteState={notes};
+  const noteService=createNoteService({repository:createDevNotesRepository({state:noteState}),actor:{uid:'pages-dev',displayName:'DEV'}});
+  const expenseService=createExpenseService({repository:createDevExpenseRepository({state:devState})});
   boot.remove();
   createCanonicalShell({
    root,
@@ -48,6 +58,11 @@ async function start(){
    readOnly:false,
    jobService,
    storeService,
+   noteService,
+   expenseService,
+   today,
+   demo:true,
+   initialRoute:new URLSearchParams(location.search).get('screen')||'today',
    actions:{}
   });
  }catch(e){

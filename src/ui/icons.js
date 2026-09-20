@@ -16,6 +16,17 @@ const paths={
  store:'<path d="M4 9h16l-1.2-5H5.2L4 9Z"/><path d="M5 9v11h14V9M9 20v-6h6v6"/>',
  check:'<path d="m6 12 4 4 8-9"/>',
  route:'<path d="M5 19c2.5 0 3.5-2 3.5-4S7.5 11 10 9s4 .5 5.5-1S16 4 19 4"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="4" r="2"/>',
- share:'<path d="M12 16V4m0 0L8 8m4-4 4 4"/><path d="M6 11v8h12v-8"/>'
+ share:'<path d="M12 16V4m0 0L8 8m4-4 4 4"/><path d="M6 11v8h12v-8"/>',
+ search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',
+ arrow:'<path d="M5 12h14m-5-5 5 5-5 5"/>',
+ sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/>',
+ receipt:'<path d="M6 3v18l3-2 3 2 3-2 3 2V3l-3 2-3-2-3 2-3-2Z"/><path d="M9 9h6m-6 4h4"/>',
+ spark:'<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3Z"/>',
+ edit:'<path d="m15 4 5 5M4 20l5-1L21 7l-4-4L5 15l-1 5Z"/>',
+ archive:'<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v12h14V8m-10 4h6"/>',
+ tools:'<path d="m14 6 4 4 3-3a6 6 0 0 1-8 7l-7 7-3-3 7-7a6 6 0 0 1 7-8l-3 3Z"/>',
+ measure:'<path d="m3 16 13-13 5 5L8 21l-5-5Zm4-4 2 2m2-6 2 2m2-6 2 2"/>',
+ truck:'<path d="M3 5h11v12H3V5Zm11 5h4l3 4v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>',
+ refresh:'<path d="M20 4v6h-6M4 20v-6h6"/><path d="M5 8a8 8 0 0 1 13-3l2 5M4 14l2 5a8 8 0 0 0 13-3"/>'
 };
 export const icon=name=>`<svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true">${paths[name]||''}</svg>`;

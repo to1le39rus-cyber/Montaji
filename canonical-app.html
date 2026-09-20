@@ -34,6 +34,8 @@ import {createJobRepository} from './src/data/job-repository.js';
 import {createJobService} from './src/domain/job-service.js';
 import {createStoreRepository} from './src/data/store-repository.js';
 import {createStoreService} from './src/domain/store-service.js';
+import {createNoteService} from './src/domain/note-service.js';
+import {createExpenseService} from './src/domain/expense-service.js';
 import {normalizeShared,normalizeNotes} from './src/domain/normalize.js';
 import {createCanonicalShell} from './src/core/canonical-shell.js';
 import {loadLocalSnapshot,saveLocalSnapshot,clearLocalCache} from './src/data/local-cache.js';
@@ -52,8 +54,10 @@ async function open(user){
  const storeRepository=createStoreRepository({firestore:fb.firestore,...fb.firestoreApi,actorId:user.uid});
  const storeService=createStoreService({repository:storeRepository});
  const actions={clearCache:resetCache,signOut:()=>fb.authApi.signOut(fb.auth)};
+ const noteService=createNoteService({repository:notes,actor:user});
+ const expenseService=createExpenseService({repository:shared});
  if(cached){
-  shell=createCanonicalShell({root:app,initialState:normalizeShared(cached.shared),initialNotes:normalizeNotes({notes:cached.notes}),user,readOnly:false,jobService,storeService,actions});
+  shell=createCanonicalShell({root:app,initialState:normalizeShared(cached.shared),initialNotes:normalizeNotes({notes:cached.notes}),user,readOnly:false,jobService,storeService,noteService,expenseService,actions});
   shell.state.setDataStatus('cache');shell.setCacheStatus('cached');
   status.textContent='● Локальный снимок · проверяем Firestore…';
  }else{
@@ -64,7 +68,7 @@ async function open(user){
   const state=normalizeShared(raw);
   let ns=[];try{ns=normalizeNotes({notes:await notes.load()})}catch(e){console.warn(e);ns=cached?.notes?normalizeNotes({notes:cached.notes}):[]}
   if(!shell){
-   shell=createCanonicalShell({root:app,initialState:state,initialNotes:ns,user,readOnly:false,jobService,storeService,actions});
+   shell=createCanonicalShell({root:app,initialState:state,initialNotes:ns,user,readOnly:false,jobService,storeService,noteService,expenseService,actions});
   }else{
    shell.state.setState(state);shell.state.setNotes(ns);
   }

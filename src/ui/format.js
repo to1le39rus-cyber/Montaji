@@ -1,0 +1,13 @@
+const number = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 });
+export const money = value => number.format(Math.round(Number(value) || 0)) + '\u00a0₽';
+export const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
+export const plural = (n, one, few, many) => `${n} ${n % 10 === 1 && n % 100 !== 11 ? one : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? few : many}`;
+export const jobsLabel = n => plural(n, 'заявка', 'заявки', 'заявок');
+export const localISO = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+export const dateObject = date => new Date(`${date}T12:00:00`);
+export const addDays = (date, count) => { const d = dateObject(date); d.setDate(d.getDate() + count); return localISO(d); };
+export const weekStart = date => addDays(date, -((dateObject(date).getDay() + 6) % 7));
+export const monthStart = date => date.slice(0, 7) + '-01';
+export const shiftMonth = (date, count) => { const d = dateObject(monthStart(date)); d.setMonth(d.getMonth() + count); return localISO(d); };
+export const formatDate = (date, options = { day: 'numeric', month: 'long' }) => new Intl.DateTimeFormat('ru-RU', options).format(dateObject(date));
+export const capitalize = value => value.charAt(0).toUpperCase() + value.slice(1);

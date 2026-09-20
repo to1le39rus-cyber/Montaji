@@ -1,26 +1,36 @@
 import { icon } from '../ui/icons.js';
+import { esc, money } from '../ui/format.js';
+import { isCompleted, isCancelled, isDebt } from '../domain/jobs.js';
 
-const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-const money=n=>new Intl.NumberFormat('ru-RU').format(Math.round(Number(n)||0))+' ₽';
-const statusKey=status=>({'Запланировано':'planned','Выполнен':'done','Перенесен':'moved','Отменен':'cancelled'}[status]||'neutral');
-const routeUrl=address=>'https://yandex.ru/maps/?rtext=~'+encodeURIComponent(address)+'&rtt=auto';
-
-export const createJobCard=({job,onOpen=()=>{},onComplete=()=>{},onPaid=()=>{}})=>{
- const el=document.createElement('article');el.className='job-card';el.dataset.jobId=job.id;el.dataset.status=statusKey(job.status);
- const completed=job.status==='Выполнен';
- const payment=completed?(job.paid===false?'<span class="job-payment is-unpaid">Не оплачено</span>':'<span class="job-payment is-paid">Оплачено</span>'):'<span class="job-payment is-future">Оплата после выполнения</span>';
- const route=job.address?'<a class="job-card-action is-icon" href="'+routeUrl(job.address)+'" target="_blank" rel="noopener" aria-label="Проложить маршрут">'+icon('route')+'<span>Маршрут</span></a>':'';
- const phone=job.phone?'<a class="job-card-action is-icon" href="tel:'+esc(job.phone)+'" aria-label="Позвонить клиенту">'+icon('phone')+'<span>Позвонить</span></a>':'';
- const share=job.address?'<button class="job-card-action is-icon" type="button" data-action="share">'+icon('share')+'<span>Адрес</span></button>':'';
- const lifecycle=!completed?'<button class="job-card-action is-primary" type="button" data-action="complete">'+icon('check')+'<span>Выполнить</span></button>':job.paid===false?'<button class="job-card-action is-primary" type="button" data-action="paid"><span>Отметить оплату</span></button>':'';
- el.innerHTML='<button class="job-card-main" type="button"><div class="job-card-top"><div class="job-card-identity"><span>'+esc(job.type||'Монтаж')+' · слот '+esc(job.slot||'1')+'</span><strong>'+esc(job.client||'Без клиента')+'</strong></div><span class="job-card-status"><i></i>'+esc(job.status||'')+'</span></div>'+(job.time?'<div class="job-card-time">'+icon('clock')+'<span>'+esc(job.time)+'</span></div>':'')+(job.address?'<div class="job-card-address">'+icon('pin')+'<span>'+esc(job.address)+'</span></div>':'')+(job.comment?'<div class="job-card-comment">'+icon('note')+'<span>'+esc(job.comment)+'</span></div>':'')+'<div class="job-card-bottom"><strong>'+money(job.price)+'</strong>'+payment+'</div></button><div class="job-card-actions">'+route+phone+share+lifecycle+'</div>';
- el.querySelector('.job-card-main').addEventListener('click',()=>onOpen(job));
- el.querySelector('[data-action="complete"]')?.addEventListener('click',()=>onComplete(job));
- el.querySelector('[data-action="paid"]')?.addEventListener('click',()=>onPaid(job));
- el.querySelector('[data-action="share"]')?.addEventListener('click',async()=>{
-  const text=[job.client,job.address].filter(Boolean).join(' — ');
-  if(navigator.share){try{await navigator.share({title:'Адрес клиента',text})}catch{}}
-  else if(navigator.clipboard){await navigator.clipboard.writeText(text)}
- });
- return el;
+export const statusKey = status => ({'Запланировано':'planned','Выполнен':'done','Перенесен':'moved','Отменен':'cancelled'}[status] || 'neutral');
+export const statusMarkup = job => '<span class="job-status" data-status="'+statusKey(job.status)+'">'+icon(isCompleted(job)?'check':isCancelled(job)?'close':job.status==='Перенесен'?'refresh':'clock')+esc(job.status)+'</span>';
+export const createJobCard = ({job,onOpen=()=>{},onComplete,onPaid,onRoute,onShare,onMore}) => {
+  const card=document.createElement('article');
+  card.className='job-card'; card.dataset.jobId=job.id; card.dataset.status=statusKey(job.status);
+  const done=isCompleted(job), cancelled=isCancelled(job);
+  // Payment is independent of completion; a prepaid planned job must stay visible as paid.
+  const payment=job.paid===true?'Оплачено':isDebt(job)?'Долг':'Не оплачено';
+  card.innerHTML=`
+    <button class="job-card-main" type="button" aria-label="Открыть заявку: ${esc(job.client||'Без имени')}">
+      <div class="job-card-kicker"><span>${esc(job.type)}<i></i>Слот ${esc(job.slot||'1')}</span>${job.time?'<time>'+esc(job.time)+'</time>':''}</div>
+      <div class="job-card-identity"><h3>${esc(job.client||'Без имени')}</h3><strong>${money(job.type==='Замер'?(job.measurePrice||job.price):job.price)}</strong></div>
+      ${job.address?'<p class="job-card-address">'+icon('pin')+'<span>'+esc(job.address)+'</span></p>':''}
+      ${job.comment?'<p class="job-card-comment">'+icon('note')+'<span>'+esc(job.comment)+'</span></p>':''}
+      <div class="job-card-state">${statusMarkup(job)}${!cancelled?'<span class="job-payment'+(isDebt(job)?' is-debt':'')+'">'+(job.paid===true?icon('check'):'')+payment+'</span>':''}</div>
+    </button>
+    <div class="job-card-actions">
+      ${job.address?'<button class="job-route" type="button" data-route>'+icon('route')+'<span>Маршрут</span></button>':''}
+      ${job.phone?'<a href="tel:'+esc(String(job.phone).replace(/[^+\d]/g,''))+'" aria-label="Позвонить: '+esc(job.client)+'">'+icon('phone')+'<span>Позвонить</span></a>':''}
+      <button class="job-card-more" type="button" data-more aria-label="Действия с заявкой: ${esc(job.client)}">${icon('more')}</button>
+    </div>
+    ${!cancelled&&((!done&&onComplete)||(isDebt(job)&&onPaid))?'<div class="job-card-command"><button type="button" data-command>'+icon(done?'money':'check')+(done?'Отметить оплату':'Отметить выполнение')+icon('arrow')+'</button></div>':''}
+  `;
+  card.querySelector('.job-card-main').onclick=()=>onOpen(job);
+  card.querySelector('[data-more]').onclick=()=>onMore?onMore(job):onOpen(job);
+  card.querySelector('[data-route]')?.addEventListener('click',()=>onRoute?onRoute(job):onOpen(job));
+  card.querySelector('[data-command]')?.addEventListener('click',async event=>{
+    const button=event.currentTarget; button.disabled=true; button.setAttribute('aria-busy','true');
+    try{await (done?onPaid:onComplete)(job)}finally{if(button.isConnected){button.disabled=false;button.removeAttribute('aria-busy')}}
+  });
+  return card;
 };

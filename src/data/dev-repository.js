@@ -1,6 +1,22 @@
 const clone=value=>typeof structuredClone==='function'?structuredClone(value):JSON.parse(JSON.stringify(value));
 const uid=()=>crypto.randomUUID?.()||('dev-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8));
 
+export const createDevNotesRepository = ({ state }) => ({
+ async transact(mutator) {
+  const next = await mutator({ notes: clone(state.notes || []) });
+  state.notes = clone(next.notes);
+  return clone(state.notes);
+ }
+});
+export const createDevExpenseRepository = ({ state }) => ({
+ async transact(mutator, normalize) {
+  const next = normalize(await mutator(clone(state)));
+  // Match the production transaction while keeping the dev repository reference stable.
+  Object.assign(state, next);
+  return clone(next);
+ }
+});
+
 export const createDevJobRepository=({state})=>({
  async createJob(job){
   const created=clone({...job,id:job.id||uid()});
