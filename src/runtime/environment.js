@@ -1,3 +1,7 @@
-// Safe by default, including GitHub Pages and any automatic Vercel preview.
-// A future approved release supplies a reviewed environment config; UI code is shared.
-export const environment = Object.freeze({mode:'demo',id:'astra-synthetic-v1',label:'DEV · вымышленные данные'});
+const hostname=typeof location==='undefined'?'':location.hostname;
+const production=hostname==='montaji.vercel.app';
+export const environment=Object.freeze({
+ mode:production?'production':'demo',
+ id:production?'production-firestore':'astra-synthetic-v1',
+ label:production?'LIVE · FIRESTORE':'DEV · вымышленные данные'
+});
