@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Montaji — проверка мобильных экранов</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:28px;font:14px system-ui;background:#e6e9e0;color:#233b2e}header{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin:0 auto 24px;max-width:1100px}h1{font-size:20px;margin:0}header p{margin:5px 0;color:#687961;font-size:12px}select{font:inherit;min-height:44px;padding:0 12px;background:#fff;border:1px solid #c8d4bc;border-radius:12px}main{display:flex;justify-content:center;align-items:flex-start;gap:32px;flex-wrap:wrap}.device{margin:0;display:grid;gap:10px}figcaption{display:flex;justify-content:space-between;font-size:13px}a{color:#42634b}iframe{display:block;border:0;width:390px;height:844px;background:#f3f4ee;border-radius:24px;box-shadow:0 20px 55px #243d2a20}footer{margin:24px;text-align:center;color:#697962;font-size:12px}
+</style>
+</head>
+<body>
+<header><div><h1>Montaji · Today & Schedule</h1><p>Живые экраны приложения в мобильных viewport. Только демонстрационные данные.</p></div><label>Ширина <select aria-label="Ширина viewport"><option value="320">320 px</option><option value="360">360 px</option><option selected value="390">390 px</option><option value="430">430 px</option></select></label></header>
+<main>
+<figure class="device"><figcaption>Сегодня <a href="./canonical-dev.html">Открыть приложение</a></figcaption><iframe title="Сегодня, мобильный viewport" src="./canonical-dev.html"></iframe></figure>
+<figure class="device"><figcaption>График <a href="./canonical-dev.html?screen=schedule">Открыть график</a></figcaption><iframe title="График, мобильный viewport" src="./canonical-dev.html?screen=schedule"></iframe></figure>
+</main>
+<footer>Проверка компоновки в Chrome. Данные сбрасываются при обновлении страницы.</footer>
+<script>document.querySelector('select').addEventListener('change',event=>document.querySelectorAll('iframe').forEach(frame=>frame.style.width=event.target.value+'px'));</script>
+</body>
+</html>
