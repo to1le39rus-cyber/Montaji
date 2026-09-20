@@ -31,7 +31,12 @@ export const renderSchedule=({
   const heading=el('screen-heading','<div><h1>График</h1><p>Планы, выезды и свободные дни</p></div><button class="icon-button schedule-search-toggle" type="button" aria-label="Найти заявку" aria-expanded="'+String(Boolean(query))+'">'+icon('search')+'</button>');
   root.append(heading);
   const search=el('schedule-search','<label>'+icon('search')+'<input type="search" placeholder="Клиент, телефон или адрес" aria-label="Поиск заявок по всем датам" value="'+esc(query)+'"></label>');search.hidden=!query;root.append(search);
-  heading.querySelector('button').onclick=()=>{search.hidden=!search.hidden;heading.querySelector('button').setAttribute('aria-expanded',String(!search.hidden));if(!search.hidden)search.querySelector('input').focus()};
+  heading.querySelector('button').onclick=()=>{
+    search.hidden=!search.hidden;
+    heading.querySelector('button').setAttribute('aria-expanded',String(!search.hidden));
+    if(!search.hidden)search.querySelector('input').focus();
+    else {currentQuery='';search.querySelector('input').value='';onSearch('');draw()}
+  };
   const controls=el('schedule-controls','<div class="segmented" role="group" aria-label="Вид графика"><button type="button" data-view="month" aria-pressed="'+(model.view==='month')+'">Месяц</button><button type="button" data-view="week" aria-pressed="'+(model.view==='week')+'">Неделя</button></div><button class="text-action" type="button" data-today>'+icon('sun')+'Сегодня</button>');
   controls.querySelectorAll('[data-view]').forEach(button=>button.onclick=()=>onViewChange(button.dataset.view));controls.querySelector('[data-today]').onclick=onToday;root.append(controls);
   const monthLabel=capitalize(formatDate(model.date,{month:'long'}));
@@ -60,6 +65,8 @@ export const renderSchedule=({
   let activeFilter=filter,currentQuery=query;
   const draw=()=>{
     const searchValue=currentQuery.trim().toLocaleLowerCase('ru');
+    controls.hidden=Boolean(searchValue);calendar.hidden=Boolean(searchValue);
+    agenda.querySelector('.section-head').hidden=Boolean(searchValue);
     const candidates=searchValue?sortBySchedule(model.allJobs).sort((a,b)=>a.date.localeCompare(b.date)):model.jobs;
     const matches=candidates.filter(job=>(activeFilter==='all'||(activeFilter==='done'?isCompleted(job):!isCompleted(job)))&&(!searchValue||[job.client,job.phone,job.address,job.comment].join(' ').toLocaleLowerCase('ru').includes(searchValue)));
     list.replaceChildren();

@@ -2,7 +2,7 @@
 .schedule-search { margin-bottom:16px; }
 .schedule-search label { display:flex; align-items:center; gap:8px; min-height:48px; padding:0 14px; border:1px solid var(--line-strong); border-radius:14px; background:var(--surface-strong); color:var(--muted); }
 .schedule-search input { flex:1; min-width:0; min-height:46px; padding:0; border:0; background:none; font-size:16px; }
-.schedule-controls { display:flex; justify-content:space-between; align-items:center; gap:10px; margin:0 0 16px; }
+.schedule-controls:not([hidden]) { display:flex; justify-content:space-between; align-items:center; gap:10px; margin:0 0 16px; }
 .segmented { display:grid; grid-template-columns:1fr 1fr; padding:3px; background:#e7ecdf; border:1px solid #e0e6d8; border-radius:13px; }
 .segmented button { min-height:44px; min-width:88px; border:0; padding:0 14px; border-radius:10px; background:none; color:var(--muted); font-size:12px; font-weight:650; }
 .segmented button[aria-pressed="true"] { color:var(--accent-deep); background:var(--surface-strong); box-shadow:0 2px 7px #2735220a; }
@@ -38,6 +38,7 @@
 .load-swatch { width:8px; height:8px; background:#d6e3c8; border-radius:3px; }
 .measurement-dot { display:inline-block; flex-shrink:0; width:4px; height:4px; border-radius:50%; background:#b89353; }
 .schedule-agenda>.section-head { align-items:center; margin-bottom:12px; }
+.schedule-agenda>.section-head[hidden] { display:none; }
 .schedule-agenda h2 { font-size:19px; }
 .agenda-summary { margin:6px 0 0; color:var(--muted); font-size:11px; }
 .agenda-add { background:var(--accent-soft); color:var(--accent); border:0; border-radius:14px; }
