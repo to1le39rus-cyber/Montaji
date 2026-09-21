@@ -91,9 +91,13 @@ export const createCanonicalShell = ({
     if(!node)return;
     clearTimeout(connectionTimer);
     const labels={idle:'Подключаем базу',cache:'Проверяем Firestore',ready:'База подключена',pending:'Сохраняем',offline:'Нет соединения',error:'Ошибка связи'};
-    node.dataset.status=value;node.classList.remove('is-compact');
+    node.dataset.status=value;node.classList.remove('is-compact');node.setAttribute('aria-expanded','true');
     node.querySelector('span').textContent=demo?'Демо-режим':(labels[value]||labels.idle);
-    if(value==='ready'||value==='pending')connectionTimer=setTimeout(()=>node.isConnected&&node.classList.add('is-compact'),1500);
+    const compact=()=>{if(!node.isConnected)return;node.classList.add('is-compact');node.setAttribute('aria-expanded','false')};
+    if(value==='ready'||value==='pending'){
+      node.onclick=()=>{const closing=!node.classList.contains('is-compact');node.classList.toggle('is-compact',closing);node.setAttribute('aria-expanded',String(!closing))};
+      connectionTimer=setTimeout(compact,1500);
+    }else node.onclick=null;
   }
   const router=createRouter({root:content,routes:Object.fromEntries([...names,'notes'].map(name=>[name,()=>renderRoute(name)]))});
   async function navigate(name) {
