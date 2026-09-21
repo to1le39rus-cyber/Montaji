@@ -12,7 +12,7 @@ test('normalize keeps cancelled expenses out of active semantics',()=>{
   assert.equal(e.amount,100.5); assert.equal(e.cancelled,true);
 });
 test('shared normalization never returns an undefined collection shape',()=>{
-  assert.deepEqual(normalizeShared(null),{jobs:[],expenses:[],version:5});
+  assert.deepEqual(normalizeShared(null),{jobs:[],expenses:[],stores:[],version:5});
 });
 test('notes normalization is isolated',()=>{
   assert.deepEqual(normalizeNotes(null),[]);

@@ -16,7 +16,7 @@ const harness=(initial={jobs:[]})=>{
    };
    return fn(tx);
   }
- };
+ });
  return {repository,get:()=>stored};
 };
 

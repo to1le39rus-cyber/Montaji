@@ -7,7 +7,7 @@ export const createReadOnlySnapshot = async ({sharedRepository,notesRepository})
   ]);
   return {
     shared:normalizeShared(rawShared),
-    notes:normalizeNotes(rawNotes),
+    notes:normalizeNotes({notes:rawNotes}),
     readOnly:true
   };
 };

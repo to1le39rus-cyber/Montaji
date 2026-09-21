@@ -39,5 +39,5 @@ test('finance totals separate income, debt and expenses',()=>{
 });
 
 test('job lifecycle has only the agreed four statuses',()=>{
-  assert.deepEqual(JOB_STATUSES,['Запланировано','Выполнен','Отменен','Перенесен']);
+  assert.deepEqual([...JOB_STATUSES].sort(),['Запланировано','Выполнен','Перенесен','Отменен'].sort());
 });

@@ -1,4 +1,4 @@
-.today-attention { margin-bottom:15px; padding:10px 10px 5px; background:linear-gradient(110deg,#f4eddf,#faf7ee); border:1px solid #e7dfcf; border-radius:18px; }
+.today-attention { margin:-5px 0 22px; padding:10px 10px 5px; background:linear-gradient(110deg,#f4eddf,#faf7ee); border:1px solid #e7dfcf; border-radius:18px; }
 .attention-heading { display:flex; align-items:center; gap:7px; padding:0 6px 4px; color:#876430; }
 .attention-heading h2 { flex:1; margin:0; font-size:10px; text-transform:uppercase; letter-spacing:.08em; font-weight:700; }
 .attention-heading>span:last-child { font-size:10px; }
@@ -13,8 +13,11 @@
 .task-open strong { font-size:13px; font-weight:650; line-height:1.35; }
 .task-open small { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; color:#8b806c; font-size:10px; }
 .task-open>.app-icon { margin-left:auto; width:14px; height:14px; color:#a99779; }
-.today-hero { position:relative; isolation:isolate; padding:20px; border-radius:24px; background:linear-gradient(115deg,#234335,#34523b); color:#f6f8eb; box-shadow:0 14px 26px -12px #29463250; }
-.today-hero::after { content:""; position:absolute; z-index:-1; inset:0; border-radius:inherit; background:radial-gradient(ellipse at 85% 5%,#9dad6333,transparent 65%); pointer-events:none; }
+.today-hero { position:relative; isolation:isolate; overflow:hidden; padding:20px; border-radius:24px; background:linear-gradient(115deg,#1d3d30,#36553d); color:#f6f8eb; box-shadow:0 14px 26px -12px #29463250; }
+.today-hero::before { content:""; position:absolute; z-index:0; inset:-4%; border-radius:inherit; background:url('../assets/hero-mountains-photo.webp') center 56%/cover no-repeat; opacity:.58; transform:scale(1.035); transition:transform 1.2s var(--ease-out),opacity .6s var(--ease-out); pointer-events:none; }
+.today-hero::after { content:""; position:absolute; z-index:0; inset:0; border-radius:inherit; background:linear-gradient(105deg,#163a2fdb 0%,#264c39bd 52%,#405d3db8 100%),radial-gradient(ellipse at 85% 5%,#c6d58b24,transparent 62%); pointer-events:none; }
+.today-hero>* { position:relative; z-index:1; }
+.today-hero:active::before { transform:scale(1.055) translate3d(0,-2px,0); opacity:.64; }
 .hero-heading { display:flex; justify-content:space-between; align-items:center; color:#c4d2bc; font-size:11px; }
 .hero-date { font-size:10px; color:#c1cfb5; padding:4px 7px; border:1px solid #c4d2bc33; border-radius:7px; letter-spacing:.04em; }
 .hero-focus { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:14px 0 18px; }
