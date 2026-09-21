@@ -26,7 +26,7 @@ export const createCanonicalShell = ({
   const state=createAppState();
   state.setState(initialState); state.setNotes(initialNotes); state.setUser(user);
   const content=element('app-content'); content.id='main-content'; content.setAttribute('role','main');
-  const brand=element('app-brandbar','<span class="app-mark"><svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5l8 9 8-9v14M4 5l8 9V4"/></svg></span><span class="app-brand">МОНТАЖИ <em>AA</em></span><span class="app-sync"></span>');
+  const brand=element('app-brandbar','<span class="app-mark"><svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5l8 9 8-9v14M4 5l8 9V4"/></svg></span><span class="app-brand">МОНТАЖИ <em>AA</em></span>');
   const dock=element('app-dock');
   const nav=document.createElement('nav'); nav.className='app-nav'; nav.setAttribute('aria-label','Основная навигация');
   const indicator=element('app-nav-indicator'); indicator.setAttribute('aria-hidden','true'); nav.append(indicator);
@@ -38,6 +38,7 @@ export const createCanonicalShell = ({
   let selectedDate=today, scheduleView='month', scheduleFilter='all', scheduleQuery='';
   let activeNoteId, disposeScreen;
   let moneyStart=today, moneyEnd=today, cacheStatus='none';
+  let connectionTimer;
   const names=['today','schedule','money','clients','more'];
   const navItems=[['Сегодня','home'],['График','calendar'],['Деньги','money'],['Клиенты','user'],['Ещё','more']];
   const canJobs=!readOnly&&Boolean(jobService);
@@ -83,7 +84,17 @@ export const createCanonicalShell = ({
     const index=Math.max(0,names.indexOf(name==='notes'?'more':name));
     indicator.style.setProperty('--nav-index',index*100+'%');
     nav.querySelectorAll('button').forEach((button,i)=>button.setAttribute('aria-current',i===index?'page':'false'));
+    paintConnection(state.snapshot.dataStatus);
   };
+  function paintConnection(value) {
+    const node=content.querySelector('.connection-state');
+    if(!node)return;
+    clearTimeout(connectionTimer);
+    const labels={idle:'Подключаем базу',cache:'Проверяем Firestore',ready:'База подключена',pending:'Сохраняем',offline:'Нет соединения',error:'Ошибка связи'};
+    node.dataset.status=value;node.classList.remove('is-compact');
+    node.querySelector('span').textContent=demo?'Демо-режим':(labels[value]||labels.idle);
+    if(value==='ready'||value==='pending')connectionTimer=setTimeout(()=>node.isConnected&&node.classList.add('is-compact'),1500);
+  }
   const router=createRouter({root:content,routes:Object.fromEntries([...names,'notes'].map(name=>[name,()=>renderRoute(name)]))});
   async function navigate(name) {
     sheet.close(); await router.render(name); window.scrollTo(0,0);
@@ -234,8 +245,7 @@ export const createCanonicalShell = ({
   });
   let previous=state.snapshot, queued=false;
   state.subscribe(snapshot=>{
-    const sync=brand.querySelector('.app-sync');sync.dataset.status=snapshot.dataStatus;
-    sync.textContent=demo?'Демо · без Firebase':({ready:'Синхронизировано',cache:'Локальный снимок',offline:'Без сети',pending:'Сохраняется',error:'Ошибка связи'}[snapshot.dataStatus]||'Подключение');
+    paintConnection(snapshot.dataStatus);
     const changed=previous.state!==snapshot.state||previous.notes!==snapshot.notes;previous=snapshot;
     if(changed&&!queued){queued=true;queueMicrotask(()=>{queued=false;if(root.isConnected)renderRoute(router.current||'today')})}
   });
