@@ -10,6 +10,7 @@ const cache=fs.readFileSync(path.join(root,'src/data/local-cache.js'),'utf8');
 const rules=fs.readFileSync(path.join(root,'firestore.rules'),'utf8');
 const sharedRepository=fs.readFileSync(path.join(root,'src/data/shared-repository.js'),'utf8');
 const app=fs.readFileSync(path.join(root,'canonical-app.html'),'utf8');
+const shell=fs.readFileSync(path.join(root,'src/core/canonical-shell.js'),'utf8');
 
 test('canonical cache is versioned and never a source of truth',()=>{
  assert.match(cache,/CANONICAL_RUNTIME_VERSION/);
@@ -42,5 +43,5 @@ test('realtime freshness distinguishes server cache and pending writes',()=>{
  assert.match(sharedRepository,/hasPendingWrites:snap\.metadata\.hasPendingWrites/);
  assert.match(app,/meta\.hasPendingWrites/);
  assert.match(app,/meta\.fromCache/);
- assert.match(app,/сервер подтверждён/);
+ assert.match(shell,/База подключена/);
 });
