@@ -29,8 +29,10 @@ export const renderMoney=({root,model,onPeriodChange=()=>{},onJobClick=()=>{},on
  const title=document.createElement('div'); title.innerHTML='<span class="money-eyebrow">Финансы</span><h1>Деньги</h1><p class="money-subtitle">'+model.jobCount+' заявок в выбранном периоде</p>';
  const range=document.createElement('div'); range.className='money-range';
  for(const [key,value] of [['start',model.start],['end',model.end]]){
+  const field=document.createElement('label');field.className='money-date-field';
+  field.innerHTML='<span class="money-date-label">'+(key==='start'?'С':'По')+'</span><span class="money-date-icon">'+icon('calendar')+'</span>';
   const input=document.createElement('input'); input.type='date'; input.value=value; input.dataset.period=key; input.setAttribute('aria-label',key==='start'?'Начало периода':'Конец периода');
-  input.addEventListener('change',()=>onPeriodChange(input.dataset.period,input.value)); range.append(input);
+  input.addEventListener('change',()=>onPeriodChange(input.dataset.period,input.value)); field.append(input);range.append(field);
  }
  header.append(title); root.append(header);
 
@@ -50,7 +52,7 @@ export const renderMoney=({root,model,onPeriodChange=()=>{},onJobClick=()=>{},on
  root.append(summary);
 
  const period=document.createElement('section');period.className='money-period';
- period.innerHTML='<div class="section-head"><h2>Период</h2><span class="section-caption">Можно выбрать любые даты</span></div>';
+ period.innerHTML='<div class="section-head"><h2>Период</h2><span class="section-caption">Произвольный диапазон</span></div>';
  period.append(range);root.append(period);
 
  const lifetime=document.createElement('section');lifetime.className='money-lifetime';
