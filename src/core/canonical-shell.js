@@ -11,6 +11,7 @@ import { createStoreForm } from '../components/store-form.js';
 import { createNoteForm } from '../components/note-form.js';
 import { createSheet } from '../components/sheet.js';
 import { createFeedback } from '../components/feedback.js';
+import { enterScreen } from '../ui/motion.js';
 import { statusMarkup } from '../components/job-card.js';
 import { icon } from '../ui/icons.js';
 import { esc, money, localISO, formatDate, addDays, shiftMonth, dateObject } from '../ui/format.js';
@@ -35,6 +36,7 @@ export const createCanonicalShell = ({
   const sheet=createSheet({root,background:[brand,content,dock]});
   const notify=createFeedback(root);
   let selectedDate=today, scheduleView='month', scheduleFilter='all', scheduleQuery='';
+  let activeNoteId, disposeScreen;
   let moneyStart=today, moneyEnd=today, cacheStatus='none';
   const names=['today','schedule','money','clients','more'];
   const navItems=[['Сегодня','home'],['График','calendar'],['Деньги','money'],['Клиенты','user'],['Ещё','more']];
@@ -47,9 +49,11 @@ export const createCanonicalShell = ({
     onRoute:job=>openRoute(job), onShare:job=>shareAddress(job), onMore:job=>openJobCard(job)
   };
   const renderRoute=async name=>{
-    if(name==='today') renderToday({
+    disposeScreen?.();disposeScreen=undefined;
+    if(name==='today') disposeScreen=renderToday({
       root:content, model:buildTodayModel({state:state.snapshot.state,date:today,notes:state.snapshot.notes}), ...jobCallbacks,
       onOpenNote:openNote, onOpenNotes:()=>navigate('notes'), onCompleteNote:noteService&&!readOnly?completeNote:undefined,
+      activeNoteId,onNoteChange:id=>activeNoteId=id,
       onAddNote:noteService&&!readOnly?()=>editNote({}):undefined, onAddJob:canJobs?()=>openJob({date:today}):undefined,
       onAddExpense:expenseService&&!readOnly?()=>openExpense(today):undefined,
       onOpenDay:date=>{selectedDate=date;navigate('schedule')},
@@ -83,7 +87,7 @@ export const createCanonicalShell = ({
   const router=createRouter({root:content,routes:Object.fromEntries([...names,'notes'].map(name=>[name,()=>renderRoute(name)]))});
   async function navigate(name) {
     sheet.close(); await router.render(name); window.scrollTo(0,0);
-    if(!matchMedia('(prefers-reduced-motion: reduce)').matches)content.animate([{opacity:.5,transform:'translateY(5px)'},{opacity:1,transform:'none'}],{duration:200,easing:'ease-out'});
+    enterScreen(content);
   }
   async function mutateJob(id, operation, message) {
     if(!canJobs)return false;
@@ -233,6 +237,6 @@ export const createCanonicalShell = ({
     if(changed&&!queued){queued=true;queueMicrotask(()=>{queued=false;if(root.isConnected)renderRoute(router.current||'today')})}
   });
   state.setDataStatus(demo?'ready':'idle');
-  router.render([...names,'notes'].includes(initialRoute)?initialRoute:'today');
+  router.render([...names,'notes'].includes(initialRoute)?initialRoute:'today').then(()=>enterScreen(content));
   return {state,router,root,openJob,setCacheStatus(value){cacheStatus=value;if(router.current==='more')renderRoute('more')}};
 };

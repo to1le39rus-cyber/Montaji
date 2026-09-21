@@ -1,0 +1,10 @@
+@media(prefers-reduced-motion:no-preference) {
+  .today-note,.upcoming-row,.task-open,.today-periods>button { transition:transform var(--motion-fast) var(--ease-spring),opacity var(--motion-fast) var(--ease-out); }
+  .today-note:active { transform:scale(.975); }
+  .upcoming-row:active,.today-periods>button:active { transform:translateY(2px); }
+  .task-open:active { opacity:.65; }
+  .task-complete>span { transition:transform var(--motion-fast) var(--ease-spring); }
+  .task-complete:active>span { transform:scale(.88); }
+  .app-nav-icon { transition:transform var(--motion-fast) var(--ease-spring); }
+  .app-nav button:active .app-nav-icon { transform:translateY(-3px) scale(1.08); }
+}

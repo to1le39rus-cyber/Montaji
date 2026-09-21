@@ -1,0 +1,15 @@
+.app-carousel { min-width:0; }
+.carousel-track { position:relative; display:grid; grid-auto-flow:column; grid-auto-columns:min(300px,calc(100% - 40px)); align-items:stretch; gap:12px; padding:6px 0 12px; overflow-x:auto; overscroll-behavior-x:contain; scroll-snap-type:x mandatory; scrollbar-width:none; }
+.carousel-track::-webkit-scrollbar { display:none; }
+.carousel-slide { min-width:0; scroll-snap-align:start; scroll-snap-stop:always; }
+.carousel-slide>button { width:100%; height:100%; }
+.app-carousel[data-count="1"] .carousel-track { grid-auto-columns:100%; }
+.carousel-controls:not([hidden]) { display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:44px; }
+.carousel-position { display:flex; align-items:center; gap:10px; color:var(--muted); }
+.carousel-counter { min-width:38px; font-size:11px; font-variant-numeric:tabular-nums; }
+.carousel-progress { width:52px; height:3px; border-radius:3px; overflow:hidden; background:var(--line); }
+.carousel-progress>span { display:block; height:100%; border-radius:inherit; background:var(--accent); transform-origin:left; transition:transform var(--motion-base) var(--ease-out); }
+.carousel-arrows { display:flex; gap:6px; }
+.carousel-arrows .icon-button { border-radius:50%; background:transparent; }
+.carousel-arrows .icon-button:disabled { opacity:.3; cursor:default; }
+.carousel-arrows svg { width:16px; height:16px; }

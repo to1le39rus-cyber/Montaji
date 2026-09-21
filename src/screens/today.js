@@ -2,6 +2,7 @@ import { jobsForDate, isCompleted, isCancelled, isDebt, activityDate } from '../
 import { financeTotals, periodFilter } from '../domain/finances.js';
 import { sortBySchedule } from '../domain/scheduling.js';
 import { createJobCard } from '../components/job-card.js';
+import { createCarousel } from '../ui/carousel.js';
 import { icon } from '../ui/icons.js';
 import { esc, money, jobsLabel, plural, formatDate, capitalize, weekStart, monthStart } from '../ui/format.js';
 
@@ -28,7 +29,8 @@ const heading=(title,count,action='')=>'<div class="section-head"><h2>'+title+(c
 
 export const renderToday = ({
   root,model,onJobClick,onComplete,onPaid,onRoute,onMore,
-  onOpenNote=()=>{},onOpenNotes=()=>{},onCompleteNote,onAddNote,onAddJob,onAddExpense,onOpenDay=()=>{},onMoney=()=>{}
+  onOpenNote=()=>{},onOpenNotes=()=>{},onCompleteNote,onAddNote,onAddJob,onAddExpense,onOpenDay=()=>{},onMoney=()=>{},
+  activeNoteId,onNoteChange=()=>{}
 }) => {
   if(!root)return;
   root.replaceChildren();root.dataset.screen='today';
@@ -77,11 +79,16 @@ export const renderToday = ({
   });root.append(future);
   const notes=section('today-notes',heading('Заметки',model.notes.length,onAddNote?'<button class="text-action" type="button" data-add-note>'+icon('plus')+'Заметка</button>':''));
   notes.querySelector('[data-add-note]')?.addEventListener('click',onAddNote);
-  const notesList=section('today-note-grid');
-  model.notes.slice(0,4).forEach(note=>{
-    const row=document.createElement('button');row.type='button';row.className='today-note';row.innerHTML='<span class="note-kicker">'+icon('note')+'<small>'+(note.dueDate?formatDate(note.dueDate,{day:'numeric',month:'short'}):'Без срока')+'</small></span><strong>'+esc(note.title||'Заметка')+'</strong><p>'+esc(note.text||'Открыть заметку')+'</p>';row.onclick=()=>onOpenNote(note);notesList.append(row);
-  });
-  notes.append(notesList);
+  let carousel;
+  if(model.notes.length){
+    carousel=createCarousel({label:'Заметки на сегодня',activeId:activeNoteId,onActiveChange:onNoteChange,items:model.notes.map(note=>{
+      const row=document.createElement('button');row.type='button';row.className='today-note';row.innerHTML='<span class="note-kicker">'+icon('note')+'<small>'+(note.dueDate?formatDate(note.dueDate,{day:'numeric',month:'short'}):'Без срока')+'</small></span><strong>'+esc(note.title||'Заметка')+'</strong><p>'+esc(note.text||'Открыть заметку')+'</p>';row.onclick=()=>onOpenNote(note);
+      return {id:note.id,content:row};
+    })});
+    notes.append(carousel.element);
+  }
   if(!model.notes.length)notes.insertAdjacentHTML('beforeend','<p class="quiet-empty">Всё важное можно записать здесь</p>');
   const all=document.createElement('button');all.type='button';all.className='text-action notes-all';all.innerHTML='Все заметки и архив '+icon('arrow');all.onclick=onOpenNotes;notes.append(all);root.append(notes);
+  carousel?.mount();
+  return ()=>carousel?.destroy();
 };
