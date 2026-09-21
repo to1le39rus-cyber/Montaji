@@ -15,16 +15,45 @@
 <link rel="stylesheet" href="./src/styles/motion.css">
 <link rel="stylesheet" href="./src/styles/auth.css">
 <style>
-body{background:#f6f7f5;color:#171914}.gate{max-width:560px;margin:8vh auto;padding:24px;border:1px solid #ddd;border-radius:24px;background:#fff}.gate label{display:grid;gap:7px;margin:14px 0}.gate input{padding:13px;border:1px solid #ccc;border-radius:12px}.gate button{padding:13px 16px;border:0;border-radius:12px;background:#2f6fed;color:#fff;font-weight:700}.error{margin-top:12px;color:#a33}.status,.warning{max-width:900px;margin:12px auto;padding:10px 12px;font-size:13px}.warning{border-radius:12px;background:#fff4d6;color:#6b5314}
+body{background:#f6f7f5;color:#171914}.status,.warning{max-width:900px;margin:12px auto;padding:10px 12px;font-size:13px}.warning{border-radius:12px;background:#fff4d6;color:#6b5314}
 </style>
 </head>
 <body>
 <section id="gate" class="gate" hidden>
-<h1>Montaji — Canonical App</h1>
-<p>Новый runtime. Реальные данные Firestore. Изменения заявок выполняются через transaction.</p>
-<label>Email<input id="email" type="email" autocomplete="username"></label>
-<label>Пароль<input id="password" type="password" autocomplete="current-password"></label>
-<button id="login" type="button">Войти</button><div id="error" class="error"></div>
+ <div class="auth-ambient" aria-hidden="true"></div>
+ <main class="auth-card">
+  <header class="auth-brand">
+   <span class="auth-mark" aria-hidden="true">
+    <svg viewBox="0 0 48 48"><path d="M12 34V14l12 11 12-11v20M24 25v12"/></svg>
+   </span>
+   <span class="auth-wordmark"><strong>МОНТАЖИ</strong><b>AA</b></span>
+  </header>
+  <div class="auth-copy">
+   <span class="auth-eyebrow">Рабочее пространство</span>
+   <h1>С возвращением</h1>
+   <p>Ваши заявки, клиенты и финансы — в одном месте.</p>
+  </div>
+  <form class="auth-form" id="loginForm">
+   <label class="auth-field">
+    <span>Электронная почта</span>
+    <span class="auth-control">
+     <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 6.5h16v11H4zM4.5 7l7.5 6 7.5-6"/></svg>
+     <input id="email" type="email" inputmode="email" autocomplete="username" placeholder="name@example.ru" required>
+    </span>
+   </label>
+   <label class="auth-field">
+    <span>Пароль</span>
+    <span class="auth-control">
+     <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7.5 10V7.5a4.5 4.5 0 0 1 9 0V10M5 10h14v10H5z"/></svg>
+     <input id="password" type="password" autocomplete="current-password" placeholder="Введите пароль" required>
+     <button class="auth-reveal" id="revealPassword" type="button" aria-label="Показать пароль"><svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-5 9.5-5 9.5 5 9.5 5-3.5 5-9.5 5-9.5-5-9.5-5z"/><circle cx="12" cy="12" r="2.5"/></svg></button>
+    </span>
+   </label>
+   <div id="error" class="error" role="alert" aria-live="polite"></div>
+   <button id="login" class="auth-submit" type="submit"><span>Войти в приложение</span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12h14M14 7l5 5-5 5"/></svg></button>
+  </form>
+  <footer class="auth-trust"><i aria-hidden="true"></i><span>Защищённое подключение</span></footer>
+ </main>
 </section>
 <div id="status" class="status" hidden></div>
 <div id="warning" class="warning" hidden>Canonical beta: изменения заявок записываются в реальную общую базу.</div>
@@ -44,7 +73,7 @@ import {createCanonicalShell} from './src/core/canonical-shell.js';
 import {loadLocalSnapshot,saveLocalSnapshot,clearLocalCache} from './src/data/local-cache.js';
 import {firebaseConfig} from './firebase-config.js';
 import {createLaunchScreen} from './src/components/launch-screen.js';
-const gate=document.querySelector('#gate'),app=document.querySelector('#app'),status=document.querySelector('#status'),warning=document.querySelector('#warning'),error=document.querySelector('#error'),email=document.querySelector('#email'),password=document.querySelector('#password');
+const gate=document.querySelector('#gate'),app=document.querySelector('#app'),status=document.querySelector('#status'),warning=document.querySelector('#warning'),error=document.querySelector('#error'),email=document.querySelector('#email'),password=document.querySelector('#password'),loginForm=document.querySelector('#loginForm'),loginButton=document.querySelector('#login'),revealPassword=document.querySelector('#revealPassword');
 const launch=createLaunchScreen();
 const fb=createFirebase(firebaseConfig),shared=createSharedRepository({firestore:fb.firestore,...fb.firestoreApi}),notes=createNotesRepository({firestore:fb.firestore,...fb.firestoreApi});
 let shell=null,unsubShared=null,unsubNotes=null,uid='';
@@ -90,7 +119,8 @@ async function open(user){
  unsubShared=shared.subscribe((raw,meta={})=>{if(!shell)return;const s=normalizeShared(raw);shell.state.setState(s);const freshness=meta.hasPendingWrites?'pending':meta.fromCache?'cache':'ready';shell.state.setDataStatus(freshness);shell.setCacheStatus('cached');saveLocalSnapshot({userId:user.uid,shared:s,notes:shell.state.snapshot.notes});shell.router.render(shell.router.current||'today');status.textContent=meta.hasPendingWrites?'◌ Изменения отправляются в Firestore…':meta.fromCache?'◌ Firestore · локальный snapshot · ждём сервер…':'● Firestore · realtime · сервер подтверждён'},showError);
  unsubNotes=notes.subscribe(raw=>{if(!shell)return;const ns=normalizeNotes({notes:raw});shell.state.setNotes(ns);saveLocalSnapshot({userId:user.uid,shared:shell.state.snapshot.state,notes:ns});if(shell.router.current==='notes')shell.router.render('notes')},e=>console.warn('Notes realtime skipped',e));
 }
-document.querySelector('#login').onclick=async()=>{error.textContent='';try{await fb.authApi.signInWithEmailAndPassword(fb.auth,email.value.trim(),password.value)}catch(e){showError(e)}};
+revealPassword.onclick=()=>{const revealing=password.type==='password';password.type=revealing?'text':'password';revealPassword.setAttribute('aria-label',revealing?'Скрыть пароль':'Показать пароль');revealPassword.classList.toggle('is-active',revealing)};
+loginForm.onsubmit=async event=>{event.preventDefault();error.textContent='';loginButton.disabled=true;loginButton.classList.add('is-loading');try{await fb.authApi.signInWithEmailAndPassword(fb.auth,email.value.trim(),password.value)}catch(e){showError(e);loginButton.disabled=false;loginButton.classList.remove('is-loading')}};
 fb.authApi.onAuthStateChanged(fb.auth,async user=>{if(user){launch.dismiss();open(user)}else{stop();uid='';shell=null;app.innerHTML='';warning.hidden=true;status.hidden=true;await launch.ready;gate.hidden=false;email.focus({preventScroll:true})}},showError);
 </script>
 </body>
