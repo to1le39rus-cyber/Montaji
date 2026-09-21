@@ -34,7 +34,7 @@ export const renderToday = ({
 }) => {
   if(!root)return;
   root.replaceChildren();root.dataset.screen='today';
-  const header=section('screen-heading','<div><h1>Сегодня</h1><p>'+capitalize(formatDate(model.date,{weekday:'long',day:'numeric',month:'long'}))+'</p></div><span class="connection-state" role="status" aria-live="polite"><i aria-hidden="true"></i><span>Подключаем базу</span></span>');
+  const header=section('screen-heading','<div><h1>Сегодня</h1><p>'+capitalize(formatDate(model.date,{weekday:'long',day:'numeric',month:'long'}))+'</p></div><button class="connection-state" type="button" aria-live="polite" aria-expanded="true"><i aria-hidden="true"></i><span>Подключаем базу</span></button>');
   root.append(header);
   if(model.urgent.length){
     const attention=section('today-attention','<div class="attention-heading"><span class="attention-dot"></span><h2>На первом месте</h2><span>'+model.urgent.length+'</span></div>');
