@@ -105,27 +105,30 @@ export const createCanonicalShell = ({
   function openJobCard(source, returnTo) {
     const job=currentJob(source), back=()=>openJobCard(source,returnTo);
     const body=element('job-detail');
-    body.innerHTML='<div class="detail-head">'+statusMarkup(job)+'<h1>'+esc(job.client||'Без имени')+'</h1><p>'+esc(job.type)+' · '+formatDate(job.date)+' · слот '+esc(job.slot)+'</p></div><div class="detail-price"><strong>'+money(job.type==='Замер'?(job.measurePrice||job.price):job.price)+'</strong><span class="job-payment'+(isDebt(job)?' is-debt':'')+'">'+(job.paid?'Оплачено':isDebt(job)?'Долг':'Не оплачено')+'</span></div><div class="detail-info">'+[
-      ['pin','Адрес',job.address],['phone','Телефон',job.phone],['store','Магазин / источник',job.source],['note','Комментарий',job.comment]
-    ].filter(([, ,value])=>value).map(([name,label,value])=>'<div>'+icon(name)+'<span><small>'+label+'</small>'+esc(value)+'</span></div>').join('')+'</div>';
+    const payment=job.paid?'Оплачено':isDebt(job)?'Долг':'Не оплачено';
+    body.innerHTML='<section class="detail-hero"><div class="detail-eyebrow"><span>'+esc(job.type)+'</span><i></i><span>Слот '+esc(job.slot||'1')+'</span><time>'+formatDate(job.date,{day:'numeric',month:'long'})+'</time></div><div class="detail-title"><h1>'+esc(job.client||'Без имени')+'</h1>'+statusMarkup(job)+'</div><div class="detail-value"><strong>'+money(job.type==='Замер'?(job.measurePrice||job.price):job.price)+'</strong><span class="job-payment'+(isDebt(job)?' is-debt':'')+'">'+payment+'</span></div></section><section class="detail-facts">'+[
+      ['pin','Адрес',job.address],['phone','Телефон',job.phone],['store','Источник',job.source],['note','Комментарий',job.comment]
+    ].filter(([, ,value])=>value).map(([name,label,value])=>'<div class="detail-fact" data-kind="'+name+'"><span class="detail-fact-icon">'+icon(name)+'</span><span><small>'+label+'</small><strong>'+esc(value)+'</strong></span></div>').join('')+'</section>';
     const controls=element('detail-actions');
-    if(job.address)controls.append(actionButton('Маршрут','route',()=>openRoute(job,back)));
-    if(job.phone){const link=document.createElement('a');link.className='button';link.href='tel:'+String(job.phone).replace(/[^+\d]/g,'');link.innerHTML=icon('phone')+'Позвонить';controls.append(link)}
-    if(job.address)controls.append(actionButton('Отправить адрес','share',()=>shareAddress(job)));
+    if(job.address){const route=actionButton('Маршрут','route',()=>openRoute(job,back),true);route.classList.add('detail-primary');controls.append(route)}
+    if(job.phone){const link=document.createElement('a');link.className='button detail-primary';link.href='tel:'+String(job.phone).replace(/[^+\d]/g,'');link.innerHTML=icon('phone')+'Позвонить';controls.append(link)}
+    const secondary=element('detail-secondary');
+    if(job.address)secondary.append(actionButton('Поделиться','share',()=>shareAddress(job)));
     if(canJobs){
-      controls.append(actionButton('Редактировать','edit',()=>openJob(job,back)));
+      secondary.append(actionButton('Изменить','edit',()=>openJob(job,back)));
       if(!isCancelled(job)){
-        if(!isCompleted(job))controls.append(actionButton('Выполнить','check',async()=>{if(await mutateJob(job.id,()=>jobService.complete(job.id),'Заявка выполнена'))back()},true));
-        controls.append(actionButton(job.paid?'Снять оплату':'Отметить оплату','money',async()=>{if(await mutateJob(job.id,()=>job.paid?jobService.markUnpaid(job.id):jobService.markPaid(job.id),'Оплата обновлена'))back()},isDebt(job)));
-        controls.append(actionButton('Перенести','calendar',()=>openReschedule(job,back)));
+        if(!isCompleted(job))secondary.append(actionButton('Выполнить','check',async()=>{if(await mutateJob(job.id,()=>jobService.complete(job.id),'Заявка выполнена'))back()}));
+        secondary.append(actionButton(job.paid?'Снять оплату':'Оплатить','money',async()=>{if(await mutateJob(job.id,()=>job.paid?jobService.markUnpaid(job.id):jobService.markPaid(job.id),'Оплата обновлена'))back()},isDebt(job)));
+        secondary.append(actionButton('Перенести','calendar',()=>openReschedule(job,back)));
         const cancel=actionButton('Отменить заявку','close',()=>{
           const confirmation=element('simple-form','<p>Заявка останется в истории со статусом «Отменен» и перестанет учитываться в доходе.</p>');
           confirmation.append(actionButton('Отменить заявку','close',async()=>{if(await mutateJob(job.id,()=>jobService.cancel(job.id),'Заявка отменена'))back()}));
           sheet.open({title:'Отменить заявку?',body:confirmation,onBack:back});
-        });cancel.classList.add('danger');controls.append(cancel);
+        });cancel.classList.add('danger','detail-cancel');secondary.append(cancel);
       }
     }
-    body.append(controls);sheet.open({title:'Заявка',body,onBack:returnTo});
+    if(secondary.childElementCount)controls.append(secondary);
+    body.append(controls);sheet.open({title:'Заявка',body,onBack:returnTo,className:'job-detail-sheet'});
   }
   function openJob(input={}, returnTo) {
     if(!canJobs)return;
