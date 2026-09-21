@@ -34,8 +34,9 @@ export const renderToday = ({
 }) => {
   if(!root)return;
   root.replaceChildren();root.dataset.screen='today';
-  const header=section('screen-heading','<div><h1>Сегодня</h1><p>'+capitalize(formatDate(model.date,{weekday:'long',day:'numeric',month:'long'}))+'</p></div><span class="screen-heading-icon" aria-hidden="true">'+icon('sun')+'</span>');
+  const header=section('screen-heading','<div><h1>Сегодня</h1><p>'+capitalize(formatDate(model.date,{weekday:'long',day:'numeric',month:'long'}))+'</p></div><button class="connection-state" type="button" aria-live="polite" aria-expanded="true"><i aria-hidden="true"></i><span>Подключаем базу</span></button>');
   root.append(header);
+  let attentionBlock;
   if(model.urgent.length){
     const attention=section('today-attention','<div class="attention-heading"><span class="attention-dot"></span><h2>На первом месте</h2><span>'+model.urgent.length+'</span></div>');
     model.urgent.slice(0,2).forEach(note=>{
@@ -45,7 +46,7 @@ export const renderToday = ({
       const open=document.createElement('button');open.type='button';open.className='task-open';open.innerHTML='<span><strong>'+esc(note.title||note.text)+'</strong><small>'+due+(note.text&&note.title?' · '+esc(note.text):'')+'</small></span>'+icon('chevron');open.onclick=()=>onOpenNote(note);row.append(open);attention.append(row);
     });
     if(model.urgent.length>2){const all=document.createElement('button');all.className='text-action';all.textContent='Все срочные задачи';all.onclick=onOpenNotes;attention.append(all)}
-    root.append(attention);
+    attentionBlock=attention;
   }
   const hero=section('today-hero');
   const ratio=model.jobs.length?model.completed.length/model.jobs.length:0;
@@ -55,6 +56,7 @@ export const renderToday = ({
   const periods=section('today-periods','<button type="button" data-period="week"><span>Эта неделя</span><strong>'+money(model.weekNet)+'</strong>'+icon('chevron')+'</button><button type="button" data-period="month"><span>Этот месяц</span><strong>'+money(model.monthNet)+'</strong>'+icon('chevron')+'</button>');
   periods.querySelector('[data-period="week"]').onclick=()=>onMoney(model.weekStart,model.date);periods.querySelector('[data-period="month"]').onclick=()=>onMoney(model.monthStart,model.date);
   root.append(periods);
+  if(attentionBlock)root.append(attentionBlock);
   const work=section('today-work',heading('Заявки на сегодня',model.jobs.length,onAddJob?'<button type="button" class="text-action" data-add-job>'+icon('plus')+'Заявка</button>':''));
   work.querySelector('[data-add-job]')?.addEventListener('click',onAddJob);
   const list=section('today-jobs');
