@@ -73,7 +73,7 @@ export const createCanonicalShell = ({
       onSearch:query=>scheduleQuery=query, onFilter:filter=>scheduleFilter=filter,
       onAddJob:canJobs?()=>openJob({date:selectedDate}):undefined
     });
-    else if(name==='money') renderMoney({root:content,model:buildMoneyModel({state:state.snapshot.state,start:moneyStart,end:moneyEnd}),onJobClick:job=>openJobCard(job),onPeriodChange:(key,value,endValue)=>{
+    else if(name==='money') renderMoney({root:content,model:buildMoneyModel({state:state.snapshot.state,start:moneyStart,end:moneyEnd}),onJobClick:job=>openJobCard(job),onAddExpense:expenseService&&!readOnly?date=>openExpense(date):undefined,onPeriodChange:(key,value,endValue)=>{
       if(key==='range'){moneyStart=value;moneyEnd=endValue||value}else if(key==='start')moneyStart=value;else moneyEnd=value;
       if(moneyEnd<moneyStart)moneyEnd=moneyStart;renderRoute('money');
     }});
