@@ -56,6 +56,7 @@ export const createCanonicalShell = ({
       root:content, model:buildTodayModel({state:state.snapshot.state,date:today,notes:state.snapshot.notes}), ...jobCallbacks,
       onOpenNote:openNote, onOpenNotes:()=>navigate('notes'), onCompleteNote:noteService&&!readOnly?completeNote:undefined,
       activeNoteId,onNoteChange:id=>activeNoteId=id,
+      onOpenOverdue:openOverdue,
       onAddNote:noteService&&!readOnly?()=>editNote({}):undefined, onAddJob:canJobs?()=>openJob({date:today}):undefined,
       onAddExpense:expenseService&&!readOnly?()=>openExpense(today):undefined,
       onOpenDay:date=>{selectedDate=date;navigate('schedule')},
@@ -117,6 +118,15 @@ export const createCanonicalShell = ({
   function actionButton(label, name, action, primary=false) {
     const button=document.createElement('button');button.type='button';button.className='button'+(primary?' primary':'');button.innerHTML=icon(name)+'<span>'+esc(label)+'</span>';
     button.onclick=async()=>{if(button.disabled)return;button.disabled=true;try{await action()}finally{button.disabled=false}};return button;
+  }
+  function openOverdue(jobs=[]) {
+    const body=element('sheet-choices');
+    jobs.forEach(job=>{
+      const button=document.createElement('button');button.type='button';button.className='button';
+      button.innerHTML='<span style="min-width:0;text-align:left"><strong>'+esc(job.client||'Без имени')+'</strong><small style="display:block;margin-top:4px">'+formatDate(job.date,{day:'numeric',month:'long'})+(job.address?' · '+esc(job.address):'')+'</small></span>'+icon('chevron');
+      button.onclick=()=>openJobCard(job,()=>openOverdue(jobs));body.append(button);
+    });
+    sheet.open({title:'Просроченные выезды',body});
   }
   function openJobCard(source, returnTo) {
     const job=currentJob(source), back=()=>openJobCard(source,returnTo);
