@@ -7,6 +7,7 @@ const root = path.resolve(process.cwd());
 const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
 const rules = fs.readFileSync(path.join(root, 'firestore.rules'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const vercel = JSON.parse(fs.readFileSync(path.join(root, 'vercel.json'), 'utf8'));
 
 function has(pattern, source = app) { assert.match(source, pattern); }
 
@@ -16,6 +17,10 @@ test('production entry is deterministic', () => {
   assert.equal((index.match(/type="module"/g) || []).length, 1);
   assert.ok(fs.existsSync(path.join(root, 'firebase-config.js')));
   assert.ok(fs.existsSync(path.join(root, 'firestore.rules')));
+});
+
+test('production root serves the canonical application', () => {
+  assert.deepEqual(vercel.rewrites, [{ source: '/', destination: '/canonical-app.html' }]);
 });
 
 test('shared and notes use Firestore as source of truth', () => {
