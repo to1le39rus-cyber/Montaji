@@ -11,7 +11,7 @@ const navIcons={home:'home',calendar:'calendar',orders:'briefcase',clients:'user
 
 function shell(content){
   const salon=partnerFixture.organization.salons.find(x=>x.id===partnerFixture.currentUser.salonId);
-  return `<main class="partner-shell"><header class="partner-top">${logo}<div><b>MONTAJI</b><span>ПАРТНЁР</span></div><button class="salon-switch" data-action="team">${partnerFixture.organization.name}<small>${salon.name}</small>${icon('chevron')}</button></header><div class="partner-content">${content}</div></main>
+  return `<main class="partner-shell"><header class="partner-top">${logo}<div><b>MONTRA</b><span>ПАРТНЁР</span></div><button class="salon-switch" data-action="team">${partnerFixture.organization.name}<small>${salon.name}</small>${icon('chevron')}</button></header><div class="partner-content">${content}</div></main>
   <nav class="partner-dock" aria-label="Основная навигация">${Object.keys(names).map(key=>`<button data-screen="${key}" ${state.screen===key?'aria-current="page"':''}>${icon(navIcons[key])}<span>${names[key]}</span></button>`).join('')}</nav>`;
 }
 

@@ -26,7 +26,7 @@ export const createCanonicalShell = ({
   const state=createAppState();
   state.setState(initialState); state.setNotes(initialNotes); state.setUser(user);
   const content=element('app-content'); content.id='main-content'; content.setAttribute('role','main');
-  const brand=element('app-brandbar','<span class="app-mark"><svg class="app-door-logo" viewBox="0 0 64 64" aria-hidden="true"><path d="M16 53V11h32v42M12 53h40"/><g class="app-door-tools"><path d="M26 39l13-16M24 25l4-4 3 3-4 4M36 38l4 4M34 40l4 4"/><path d="M39 26l-3-3 4-4 3 3z"/></g><path class="app-door-leaf" d="M19 14h25v39H19z"/><circle cx="39" cy="34" r="1.2"/></svg></span><span class="app-brand">МОНТАЖИ <em>AA</em></span>');
+  const brand=element('app-brandbar','<span class="app-mark"><svg class="app-door-logo" viewBox="0 0 64 64" aria-hidden="true"><path d="M11 53V11h15l6 6 6-6h15v42M11 11l21 10 21-10M32 21v32"/></svg></span><span class="app-brand">MONTRA <em>ПАРТНЁРСТВО В РАБОТЕ</em></span>');
   const dock=element('app-dock');
   const nav=document.createElement('nav'); nav.className='app-nav'; nav.setAttribute('aria-label','Основная навигация');
   const indicator=element('app-nav-indicator'); indicator.setAttribute('aria-hidden','true'); nav.append(indicator);
