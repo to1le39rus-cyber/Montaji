@@ -39,13 +39,13 @@ export const renderToday = ({
   let attentionBlock;
   if(model.urgent.length){
     const attention=section('today-attention','<div class="attention-heading"><span class="attention-dot"></span><h2>На первом месте</h2><span>'+model.urgent.length+'</span></div>');
-    model.urgent.slice(0,2).forEach(note=>{
+    model.urgent.slice(0,3).forEach(note=>{
       const due=note.dueDate?note.dueDate<model.date?'Просрочено':note.dueDate===model.date?'Сегодня':formatDate(note.dueDate,{day:'numeric',month:'short'}):'Срочная задача';
       const row=document.createElement('div');row.className='task-row';
       if(onCompleteNote){const complete=document.createElement('button');complete.type='button';complete.className='task-complete';complete.setAttribute('aria-label','Выполнить задачу: '+(note.title||note.text));complete.innerHTML='<span>'+icon('check')+'</span>';complete.onclick=async()=>{complete.disabled=true;try{await onCompleteNote(note)}finally{complete.disabled=false}};row.append(complete)}
       const open=document.createElement('button');open.type='button';open.className='task-open';open.innerHTML='<span><strong>'+esc(note.title||note.text)+'</strong><small>'+due+(note.text&&note.title?' · '+esc(note.text):'')+'</small></span>'+icon('chevron');open.onclick=()=>onOpenNote(note);row.append(open);attention.append(row);
     });
-    if(model.urgent.length>2){const all=document.createElement('button');all.className='text-action';all.textContent='Все срочные задачи';all.onclick=onOpenNotes;attention.append(all)}
+    if(model.urgent.length>3){const all=document.createElement('button');all.className='text-action';all.textContent='Ещё '+(model.urgent.length-3)+' · Все срочные задачи';all.onclick=onOpenNotes;attention.append(all)}
     attentionBlock=attention;
   }
   const hero=section('today-hero');
