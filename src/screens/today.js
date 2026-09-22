@@ -13,7 +13,7 @@ export const buildTodayModel = ({state,date,notes=[]}) => {
   const day=period(date,date),week=period(weekStart(date),date),month=period(monthStart(date),date);
   const activeNotes=(Array.isArray(notes)?notes:[]).filter(n=>!n?.done&&!n?.archived);
   const completed=jobs.filter(isCompleted),unpaid=jobs.filter(isDebt);
-  const overdue=sortBySchedule(allJobs.filter(j=>j.date<date&&!isCompleted(j)&&!isCancelled(j)));
+  const overdue=sortBySchedule(allJobs.filter(j=>j.type==='Монтаж'&&j.date<date&&(!isCompleted(j)||j.paid===false)&&!isCancelled(j))).slice(0,3);
   const futureDates=[...new Set(allJobs.filter(j=>j.date>date&&!isCancelled(j)).map(j=>j.date))].sort().slice(0,5);
   return {
     date,jobs,montages:jobs.filter(j=>j.type==='Монтаж'),completed,unpaid,overdue,income:day.income,expense:day.expenses,net:day.net,debt:day.debt,
