@@ -20,7 +20,7 @@ test('production entry is deterministic', () => {
 });
 
 test('production root serves the canonical application', () => {
-  assert.deepEqual(vercel.rewrites, [{ source: '/', destination: '/canonical-app.html' }]);
+  assert.deepEqual(vercel.routes, [{ src: '^/$', dest: '/canonical-app.html' }]);
 });
 
 test('shared and notes use Firestore as source of truth', () => {

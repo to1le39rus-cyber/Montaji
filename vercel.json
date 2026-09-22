@@ -1,8 +1,8 @@
 {
-  "rewrites": [
+  "routes": [
     {
-      "source": "/",
-      "destination": "/canonical-app.html"
+      "src": "^/$",
+      "dest": "/canonical-app.html"
     }
   ]
 }
