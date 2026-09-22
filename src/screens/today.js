@@ -13,9 +13,10 @@ export const buildTodayModel = ({state,date,notes=[]}) => {
   const day=period(date,date),week=period(weekStart(date),date),month=period(monthStart(date),date);
   const activeNotes=(Array.isArray(notes)?notes:[]).filter(n=>!n?.done&&!n?.archived);
   const completed=jobs.filter(isCompleted),unpaid=jobs.filter(isDebt);
+  const overdue=sortBySchedule(allJobs.filter(j=>j.date<date&&!isCompleted(j)&&!isCancelled(j)));
   const futureDates=[...new Set(allJobs.filter(j=>j.date>date&&!isCancelled(j)).map(j=>j.date))].sort().slice(0,5);
   return {
-    date,jobs,montages:jobs.filter(j=>j.type==='Монтаж'),completed,unpaid,income:day.income,expense:day.expenses,net:day.net,debt:day.debt,
+    date,jobs,montages:jobs.filter(j=>j.type==='Монтаж'),completed,unpaid,overdue,income:day.income,expense:day.expenses,net:day.net,debt:day.debt,
     weekNet:week.net,monthNet:month.net,weekStart:weekStart(date),monthStart:monthStart(date),
     todayExpenses:periodFilter(expenses,date,date).filter(e=>!e.cancelled),
     urgent:activeNotes.filter(n=>n.urgent===true).sort((a,b)=>(a.dueDate||'9999').localeCompare(b.dueDate||'9999')),
@@ -30,7 +31,7 @@ const heading=(title,count,action='')=>'<div class="section-head"><h2>'+title+(c
 export const renderToday = ({
   root,model,onJobClick,onComplete,onPaid,onRoute,onMore,
   onOpenNote=()=>{},onOpenNotes=()=>{},onCompleteNote,onAddNote,onAddJob,onAddExpense,onOpenDay=()=>{},onMoney=()=>{},
-  activeNoteId,onNoteChange=()=>{}
+  activeNoteId,onNoteChange=()=>{},onOpenOverdue
 }) => {
   if(!root)return;
   root.replaceChildren();root.dataset.screen='today';
@@ -56,6 +57,11 @@ export const renderToday = ({
   const periods=section('today-periods','<button type="button" data-period="week"><span>Эта неделя</span><strong>'+money(model.weekNet)+'</strong>'+icon('chevron')+'</button><button type="button" data-period="month"><span>Этот месяц</span><strong>'+money(model.monthNet)+'</strong>'+icon('chevron')+'</button>');
   periods.querySelector('[data-period="week"]').onclick=()=>onMoney(model.weekStart,model.date);periods.querySelector('[data-period="month"]').onclick=()=>onMoney(model.monthStart,model.date);
   root.append(periods);
+  if(model.overdue?.length){
+    const overdue=document.createElement('button');overdue.type='button';overdue.className='today-overdue-alert';
+    overdue.innerHTML='<span class="overdue-alert-icon">'+icon('calendar')+'</span><span><strong>'+model.overdue.length+' '+plural(model.overdue.length,'просроченный выезд','просроченных выезда','просроченных выездов')+'</strong><small>Требуют внимания</small></span>'+icon('chevron');
+    overdue.onclick=()=>onOpenOverdue?.(model.overdue);root.append(overdue);
+  }
   if(attentionBlock)root.append(attentionBlock);
   const work=section('today-work',heading('Заявки на сегодня',model.jobs.length,onAddJob?'<button type="button" class="text-action" data-add-job>'+icon('plus')+'Заявка</button>':''));
   work.querySelector('[data-add-job]')?.addEventListener('click',onAddJob);
