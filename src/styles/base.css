@@ -73,3 +73,5 @@ h1,h2,h3,p { margin-top:0; }
 .sheet-is-open { position:fixed; left:0; right:0; overflow:hidden; }
 @media(min-width:720px) { .app-shell { padding-top:24px; padding-left:24px; padding-right:24px; } }
 @media(prefers-reduced-motion:reduce) { :root { --motion-instant:0s; --motion-fast:0s; --motion-base:0s; --motion-spatial:0s; } }
+
+.today-overdue-alert{width:100%;display:flex;align-items:center;gap:12px;margin:14px 0 4px;padding:13px 14px;border:1px solid color-mix(in srgb,var(--danger,#9b5049) 24%,transparent);border-radius:16px;background:color-mix(in srgb,var(--danger,#9b5049) 7%,transparent);color:inherit;text-align:left;font:inherit}.today-overdue-alert>span:nth-child(2){min-width:0;flex:1;display:grid;gap:2px}.today-overdue-alert strong{font-size:13px}.today-overdue-alert small{color:var(--muted,#758078);font-size:11px}.today-overdue-alert>svg{width:16px;height:16px;opacity:.55}.overdue-alert-icon{width:30px;height:30px;display:grid;place-items:center;border-radius:10px;background:color-mix(in srgb,var(--danger,#9b5049) 10%,transparent)}.overdue-alert-icon svg{width:16px;height:16px}
