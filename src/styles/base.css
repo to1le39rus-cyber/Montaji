@@ -28,10 +28,8 @@ h1,h2,h3,p { margin-top:0; }
 .app-content { min-width:0; min-height:65vh; }
 .app-brandbar { display:flex; align-items:center; gap:8px; margin:0 0 23px; min-height:30px; }
 .app-mark { display:grid; place-items:center; width:29px; height:29px; border-radius:9px; background:var(--accent-deep); color:#e5eecf; }
-.app-mark svg { width:20px; height:20px; overflow:visible; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
-.app-door-logo .app-door-leaf { fill:rgba(229,238,207,.09); }
-.app-door-logo circle { fill:#d3df9d; stroke:none; }
-.app-door-tools { opacity:.82; }
+.app-mark svg { width:22px; height:22px; overflow:visible; }
+.app-montra-mark .montra-panel { fill:currentColor; stroke:none; }
 .app-brand { font-size:12px; font-weight:800; letter-spacing:.13em; }
 .app-brand em { font-size:10px; color:var(--accent); font-style:normal; margin-left:3px; }
 .screen-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:20px; }
