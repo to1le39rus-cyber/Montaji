@@ -27,6 +27,7 @@ const paths={
  tools:'<path d="m14 6 4 4 3-3a6 6 0 0 1-8 7l-7 7-3-3 7-7a6 6 0 0 1 7-8l-3 3Z"/>',
  measure:'<path d="m3 16 13-13 5 5L8 21l-5-5Zm4-4 2 2m2-6 2 2m2-6 2 2"/>',
  truck:'<path d="M3 5h11v12H3V5Zm11 5h4l3 4v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>',
- refresh:'<path d="M20 4v6h-6M4 20v-6h6"/><path d="M5 8a8 8 0 0 1 13-3l2 5M4 14l2 5a8 8 0 0 0 13-3"/>'
+ refresh:'<path d="M20 4v6h-6M4 20v-6h6"/><path d="M5 8a8 8 0 0 1 13-3l2 5M4 14l2 5a8 8 0 0 0 13-3"/>',
+ bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/>'
 };
 export const icon=name=>`<svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true">${paths[name]||''}</svg>`;
