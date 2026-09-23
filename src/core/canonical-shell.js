@@ -17,6 +17,7 @@ import { icon } from '../ui/icons.js';
 import { montraMark } from '../ui/brand.js';
 import { esc, money, localISO, formatDate, addDays, shiftMonth, dateObject } from '../ui/format.js';
 import { JOB_TYPES, isCancelled, isCompleted, isDebt } from '../domain/jobs.js';
+import { createStoreMemberCommand, storeAccessSummary, STORE_ROLES } from '../domain/store-access.js';
 
 const element = (className, html = '') => { const el=document.createElement('div'); el.className=className; el.innerHTML=html; return el; };
 export const createCanonicalShell = ({
@@ -234,10 +235,32 @@ export const createCanonicalShell = ({
   }
   function openStores() {
     const body=element('sheet-choices');
-    if(storeService&&!readOnly)body.append(actionButton('Добавить магазин','plus',()=>openStoreEditor(null)));
-    for(const store of state.snapshot.state.stores||[])body.append(actionButton(store.name,'store',()=>openStoreEditor(store.id)));
+    if(storeService&&!readOnly)body.append(actionButton('Подключить магазин','plus',()=>openStoreEditor(null)));
+    for(const store of state.snapshot.state.stores||[]){
+      const access=storeAccessSummary(store),button=document.createElement('button');button.type='button';button.className='button store-access-row';
+      button.innerHTML=icon('store')+'<span><strong>'+esc(store.name)+'</strong><small>'+(access.members.length?access.members.length+' сотрудников · '+access.pending+' приглашений':'Доступ ещё не настроен')+'</small></span>'+icon('chevron');
+      button.onclick=()=>openStoreCard(store.id);body.append(button);
+    }
     if(!body.children.length)body.innerHTML='<p>Магазины пока не добавлены.</p>';
     sheet.open({title:'Магазины',body});
+  }
+  function openStoreCard(id) {
+    const store=(state.snapshot.state.stores||[]).find(s=>s.id===id);if(!store)return openStores();
+    const access=storeAccessSummary(store),body=element('store-access-card');
+    body.innerHTML='<section class="store-access-hero"><small>Партнёр MONTRA</small><h2>'+esc(store.name)+'</h2><p>'+esc(store.address||'Адрес не указан')+'</p></section><section class="store-access-summary"><article><b>'+access.members.length+'</b><span>сотрудников</span></article><article><b>'+access.active+'</b><span>активны</span></article><article><b>'+access.pending+'</b><span>приглашены</span></article></section><div class="section-row"><h3>Доступ сотрудников</h3></div>';
+    const list=element('store-member-list');
+    access.members.forEach(member=>{const row=element('store-member-row','<span><strong>'+esc(member.name)+'</strong><small>'+esc(member.email)+' · '+STORE_ROLES[member.role]+'</small></span><em>'+ (member.status==='active'?'Активен':'Приглашён') +'</em>');list.append(row)});
+    if(!access.members.length)list.innerHTML='<p class="section-caption">Пока никто не приглашён. Добавьте администратора или менеджера магазина.</p>';
+    body.append(list);
+    if(storeService&&!readOnly)body.append(actionButton('Пригласить сотрудника','plus',()=>openStoreInvite(id),true),actionButton('Редактировать магазин','edit',()=>openStoreEditor(id)));
+    sheet.open({title:'Магазин',body,onBack:openStores});
+  }
+  function openStoreInvite(id) {
+    const store=(state.snapshot.state.stores||[]).find(s=>s.id===id);if(!store)return;
+    const form=document.createElement('form');form.className='simple-form';
+    form.innerHTML='<label>Имя сотрудника<input name="name" required placeholder="Анна"></label><label>E-mail<input name="email" type="email" required placeholder="manager@example.ru"></label><label>Роль<select name="role"><option value="manager">Менеджер</option><option value="admin">Администратор магазина</option></select></label><p class="section-caption">Пока это безопасный preview доступа. Реальная отправка приглашения включится вместе с Auth и отдельными Firestore memberships.</p><button class="button primary" type="submit">Создать приглашение</button>';
+    form.onsubmit=async event=>{event.preventDefault();try{const member=createStoreMemberCommand(Object.fromEntries(new FormData(form)));const members=[...(store.members||[]),member];const next=await storeService.update(store.id,{members});const current=state.snapshot.state;state.setState({...current,stores:current.stores.map(s=>s.id===next.id?next:s)});notify('Приглашение создано');openStoreCard(id)}catch(e){notify(e.message||'Не удалось создать приглашение')}};
+    sheet.open({title:'Доступ к '+store.name,body:form,onBack:()=>openStoreCard(id)});
   }
   function openStoreEditor(id) {
     if(!storeService||readOnly)return;
