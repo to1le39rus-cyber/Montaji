@@ -27,7 +27,7 @@ export function createRequest(values,context){
     id:`request-${Date.now()}`, organizationId:context.organizationId, salonId:context.salonId,
     managerId:context.managerId, kind:values.kind||'measure', stage:REQUEST_STAGES.REVIEW,
     client:values.client.trim(), phone:values.phone.trim(), address:values.address.trim(),
-    desiredDate:values.desiredDate, windowId:values.windowId, managerComment:String(values.managerComment??values.comment??'').trim(),
+    schedulingMode:values.schedulingMode==='client_call'?'client_call':'preferred', desiredDate:values.schedulingMode==='client_call'?'':values.desiredDate, windowId:values.schedulingMode==='client_call'?'':values.windowId, managerComment:String(values.managerComment??values.comment??'').trim(),
     createdAt:new Date().toISOString(), timeline:[{ label:'Запрос отправлен', at:'только что' }]
   };
 }
