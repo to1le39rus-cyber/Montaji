@@ -2,7 +2,7 @@ import {icon} from '../ui/icons.js';
 import {partnerFixture} from './partner-fixture.js';
 import {WINDOWS,createRequest,nextAction,requestInstallation,visibleOrders} from './partner-domain.js';
 
-const state={screen:'home',orders:structuredClone(partnerFixture.orders),selected:null,filter:'all',prefill:{}};
+const state={screen:'home',orders:structuredClone(partnerFixture.orders),selected:null,filter:'all',prefill:{},analyticsMetric:'requests',analyticsPeriod:'month'};
 const root=document.querySelector('#partner-app');
 const money=value=>new Intl.NumberFormat('ru-RU').format(value)+' ₽';
 const logo=`<span class="partner-mark" aria-hidden="true"><svg viewBox="0 0 36 36"><path d="M8 30V6h19v24M8 6l12 5v19L8 30"/><path d="m13 17 3-3m-1 6 4-4"/><circle cx="17.5" cy="23" r="1"/></svg></span>`;
