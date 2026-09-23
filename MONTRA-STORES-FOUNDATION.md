@@ -120,3 +120,39 @@ No production data migration and no production Rules change until:
 - existing MONTRA job CRUD and financial calculations are regression-tested;
 - request → job linking is idempotent;
 - owner explicitly approves promotion.
+
+## Measurement workflow contract — entrance doors
+
+Measurement is a separate workflow, not a duplicate installation job.
+
+### Store creates measurement request
+- client name
+- phone
+- address
+- preferred date/time window
+- **managerComment** — original store-manager context (urgency, model wishes, callback notes, etc.)
+- optional opening photos
+
+### Installer records measurement result
+- opening dimensions (technical history, optional in UI when not needed)
+- recommended door size
+- handing / opening side
+- base installation price
+- zero or more additional works, each as a structured row: `{ id, title, price }`
+- installer comment
+- result photos
+- computed total of base installation + additional works
+
+Additional works are intentionally not a fixed enum. Common examples today include floor carry/lift, opening expansion, trim cutting, opening narrowing/thickening, but new work types must not require a schema change.
+
+### Measurement → installation conversion
+A measured request can create an installation request without retyping customer data. The conversion preserves:
+- organization/store/salon/manager identity
+- client, phone, address
+- original manager comment
+- measurement result and photos
+- recommended door size and handing
+- installation base price and additional works
+- source measurement request id for traceability
+
+The installation side must map through a shared domain contract compatible with MONTRA jobs. Partner Portal must not maintain a second incompatible installation model.
