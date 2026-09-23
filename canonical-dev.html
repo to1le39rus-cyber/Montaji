@@ -32,6 +32,8 @@ import {createExpenseService} from './src/domain/expense-service.js';
 import {createDevJobRepository,createDevStoreRepository,createDevNotesRepository,createDevExpenseRepository} from './src/data/dev-repository.js';
 import {loadFixture} from './src/data/fixture.js';
 import {localISO,addDays,dateObject} from './src/ui/format.js';
+import {createPartnerRequestService} from './src/services/partner-request-service.js';
+import {partnerFixture} from './src/partner/partner-fixture.js';
 
 const boot=document.querySelector('#boot');
 const root=document.querySelector('#app');
@@ -51,6 +53,8 @@ async function start(){
   const noteState={notes};
   const noteService=createNoteService({repository:createDevNotesRepository({state:noteState}),actor:{uid:'pages-dev',displayName:'DEV'}});
   const expenseService=createExpenseService({repository:createDevExpenseRepository({state:devState})});
+  const partnerRequests=partnerFixture.orders.map(order=>({...order,organizationName:partnerFixture.organization.name,managerName:partnerFixture.team.find(member=>member.id===order.managerId)?.name||''}));
+  const partnerRequestService=createPartnerRequestService({initial:partnerRequests});
   boot.remove();
   createCanonicalShell({
    root,
@@ -62,6 +66,7 @@ async function start(){
    storeService,
    noteService,
    expenseService,
+   partnerRequestService,
    today,
    demo:true,
    initialRoute:new URLSearchParams(location.search).get('screen')||'today',
