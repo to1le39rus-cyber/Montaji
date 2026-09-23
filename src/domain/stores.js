@@ -4,7 +4,8 @@ export const normalizeStore=(store={})=>({
  name:clean(store.name),
  address:clean(store.address),
  phone:clean(store.phone),
- contact:clean(store.contact)
+ contact:clean(store.contact),
+ members:Array.isArray(store.members)?store.members:[]
 });
 export const createStoreCommand=(input={})=>{
  const value=normalizeStore(input);
