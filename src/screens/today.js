@@ -59,7 +59,7 @@ export const renderToday = ({
   root.append(periods);
   if(model.overdue?.length){
     const overdue=document.createElement('button');overdue.type='button';overdue.className='today-overdue-alert';
-    overdue.innerHTML='<span class="overdue-alert-icon">'+icon('calendar')+'</span><span><strong>'+model.overdue.length+' '+plural(model.overdue.length,'просроченный выезд','просроченных выезда','просроченных выездов')+'</strong><small>Требуют внимания</small></span>'+icon('chevron');
+    overdue.innerHTML='<span class="overdue-alert-icon">'+icon('calendar')+'</span><span><strong>'+plural(model.overdue.length,'просроченный выезд','просроченных выезда','просроченных выездов')+'</strong><small>Требуют внимания</small></span>'+icon('chevron');
     overdue.onclick=()=>onOpenOverdue?.(model.overdue);root.append(overdue);
   }
   if(attentionBlock)root.append(attentionBlock);
