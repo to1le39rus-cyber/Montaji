@@ -80,6 +80,56 @@ service cloud.firestore {
       allow update: if isActiveUser() && isTeam();
       allow delete: if false;
     }
+    function isOperatorAccount() { return isOperator(); }
+    function memberPath(storeId) {
+      return /databases/$(database)/documents/storeMemberships/$(storeId + '_' + request.auth.uid);
+    }
+    function isStoreMember(storeId) {
+      return signedIn() && exists(memberPath(storeId))
+        && get(memberPath(storeId)).data.active == true;
+    }
+    function isStoreAdmin(storeId) {
+      return isStoreMember(storeId)
+        && get(memberPath(storeId)).data.role == 'admin';
+    }
+    match /storeMemberships/{membershipId} {
+      allow read: if signedIn() && (
+        isOperatorAccount() ||
+        resource.data.uid == request.auth.uid
+      );
+      allow create, update: if isOperatorAccount()
+        || isStoreAdmin(request.resource.data.storeId);
+      allow delete: if false;
+    }
+    match /storeRequests/{requestId} {
+      allow read: if isOperatorAccount()
+        || isStoreMember(resource.data.organizationId);
+      allow create: if isStoreMember(request.resource.data.organizationId)
+        && request.resource.data.managerId == request.auth.uid
+        && request.resource.data.stage == 'installer_review';
+      allow update: if isOperatorAccount()
+        || (
+          isStoreMember(resource.data.organizationId)
+          && request.resource.data.organizationId == resource.data.organizationId
+          && request.resource.data.managerId == resource.data.managerId
+        );
+      allow delete: if false;
+    }
+    match /events/{eventId} {
+      allow read: if signedIn() && (
+        isOperatorAccount()
+        || resource.data.recipientUid == request.auth.uid
+        || (resource.data.organizationId != null && isStoreMember(resource.data.organizationId))
+      );
+      allow create: if isOperatorAccount()
+        || (
+          isStoreMember(request.resource.data.organizationId)
+          && request.resource.data.actorUid == request.auth.uid
+        );
+      allow update: if signedIn()
+        && resource.data.recipientUid == request.auth.uid;
+      allow delete: if false;
+    }
     match /controls/{id} {
       allow read, write: if isActiveUser() && isTeam();
     }
