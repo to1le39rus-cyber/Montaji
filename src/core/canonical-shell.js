@@ -14,6 +14,7 @@ import { createFeedback } from '../components/feedback.js';
 import { enterScreen } from '../ui/motion.js';
 import { statusMarkup } from '../components/job-card.js';
 import { icon } from '../ui/icons.js';
+import { montraMark } from '../ui/brand.js';
 import { esc, money, localISO, formatDate, addDays, shiftMonth, dateObject } from '../ui/format.js';
 import { JOB_TYPES, isCancelled, isCompleted, isDebt } from '../domain/jobs.js';
 
@@ -26,7 +27,7 @@ export const createCanonicalShell = ({
   const state=createAppState();
   state.setState(initialState); state.setNotes(initialNotes); state.setUser(user);
   const content=element('app-content'); content.id='main-content'; content.setAttribute('role','main');
-  const brand=element('app-brandbar','<span class="app-mark"><svg class="app-door-logo" viewBox="0 0 64 64" aria-hidden="true"><path d="M16 53V11h32v42M12 53h40"/><g class="app-door-tools"><path d="M26 39l13-16M24 25l4-4 3 3-4 4M36 38l4 4M34 40l4 4"/><path d="M39 26l-3-3 4-4 3 3z"/></g><path class="app-door-leaf" d="M19 14h25v39H19z"/><circle cx="39" cy="34" r="1.2"/></svg></span><span class="app-brand">МОНТАЖИ <em>AA</em></span>');
+  const brand=element('app-brandbar','<span class="app-mark">'+montraMark({className:'app-montra-mark'})+'</span><span class="app-brand">MONTRA</span>');
   const dock=element('app-dock');
   const nav=document.createElement('nav'); nav.className='app-nav'; nav.setAttribute('aria-label','Основная навигация');
   const indicator=element('app-nav-indicator'); indicator.setAttribute('aria-hidden','true'); nav.append(indicator);
@@ -55,6 +56,7 @@ export const createCanonicalShell = ({
       root:content, model:buildTodayModel({state:state.snapshot.state,date:today,notes:state.snapshot.notes}), ...jobCallbacks,
       onOpenNote:openNote, onOpenNotes:()=>navigate('notes'), onCompleteNote:noteService&&!readOnly?completeNote:undefined,
       activeNoteId,onNoteChange:id=>activeNoteId=id,
+      onOpenOverdue:openOverdue,
       onAddNote:noteService&&!readOnly?()=>editNote({}):undefined, onAddJob:canJobs?()=>openJob({date:today}):undefined,
       onAddExpense:expenseService&&!readOnly?()=>openExpense(today):undefined,
       onOpenDay:date=>{selectedDate=date;navigate('schedule')},
@@ -116,6 +118,15 @@ export const createCanonicalShell = ({
   function actionButton(label, name, action, primary=false) {
     const button=document.createElement('button');button.type='button';button.className='button'+(primary?' primary':'');button.innerHTML=icon(name)+'<span>'+esc(label)+'</span>';
     button.onclick=async()=>{if(button.disabled)return;button.disabled=true;try{await action()}finally{button.disabled=false}};return button;
+  }
+  function openOverdue(jobs=[]) {
+    const body=element('sheet-choices');
+    jobs.forEach(job=>{
+      const button=document.createElement('button');button.type='button';button.className='button';
+      button.innerHTML='<span style="min-width:0;text-align:left"><strong>'+esc(job.client||'Без имени')+'</strong><small style="display:block;margin-top:4px">'+formatDate(job.date,{day:'numeric',month:'long'})+(job.address?' · '+esc(job.address):'')+'</small></span>'+icon('chevron');
+      button.onclick=()=>openJobCard(job,()=>openOverdue(jobs));body.append(button);
+    });
+    sheet.open({title:'Просроченные выезды',body});
   }
   function openJobCard(source, returnTo) {
     const job=currentJob(source), back=()=>openJobCard(source,returnTo);

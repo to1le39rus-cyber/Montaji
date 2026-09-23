@@ -28,10 +28,8 @@ h1,h2,h3,p { margin-top:0; }
 .app-content { min-width:0; min-height:65vh; }
 .app-brandbar { display:flex; align-items:center; gap:8px; margin:0 0 23px; min-height:30px; }
 .app-mark { display:grid; place-items:center; width:29px; height:29px; border-radius:9px; background:var(--accent-deep); color:#e5eecf; }
-.app-mark svg { width:20px; height:20px; overflow:visible; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
-.app-door-logo .app-door-leaf { fill:rgba(229,238,207,.09); }
-.app-door-logo circle { fill:#d3df9d; stroke:none; }
-.app-door-tools { opacity:.82; }
+.app-mark svg { width:22px; height:22px; overflow:visible; }
+.app-montra-mark .montra-panel { fill:currentColor; stroke:none; }
 .app-brand { font-size:12px; font-weight:800; letter-spacing:.13em; }
 .app-brand em { font-size:10px; color:var(--accent); font-style:normal; margin-left:3px; }
 .screen-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:20px; }
@@ -75,3 +73,5 @@ h1,h2,h3,p { margin-top:0; }
 .sheet-is-open { position:fixed; left:0; right:0; overflow:hidden; }
 @media(min-width:720px) { .app-shell { padding-top:24px; padding-left:24px; padding-right:24px; } }
 @media(prefers-reduced-motion:reduce) { :root { --motion-instant:0s; --motion-fast:0s; --motion-base:0s; --motion-spatial:0s; } }
+
+.today-overdue-alert{width:100%;display:flex;align-items:center;gap:12px;margin:18px 0 18px;padding:13px 14px;border:1px solid color-mix(in srgb,var(--danger,#9b5049) 24%,transparent);border-radius:16px;background:color-mix(in srgb,var(--danger,#9b5049) 7%,transparent);color:inherit;text-align:left;font:inherit}.today-overdue-alert>span:nth-child(2){min-width:0;flex:1;display:grid;gap:2px}.today-overdue-alert strong{font-size:13px}.today-overdue-alert small{color:var(--muted,#758078);font-size:11px}.today-overdue-alert>svg{width:16px;height:16px;opacity:.55}.overdue-alert-icon{width:30px;height:30px;display:grid;place-items:center;border-radius:10px;background:color-mix(in srgb,var(--danger,#9b5049) 10%,transparent)}.overdue-alert-icon svg{width:16px;height:16px}
