@@ -18,17 +18,20 @@ import { montraMark } from '../ui/brand.js';
 import { esc, money, localISO, formatDate, addDays, shiftMonth, dateObject } from '../ui/format.js';
 import { JOB_TYPES, isCancelled, isCompleted, isDebt } from '../domain/jobs.js';
 import { createStoreMemberCommand, storeAccessSummary, STORE_ROLES } from '../domain/store-access.js';
+import { partnerNotificationEvents, requestScheduleLabel } from '../domain/partner-requests.js';
+import { normalizeMeasurementResult } from '../domain/measurement.js';
 
 const element = (className, html = '') => { const el=document.createElement('div'); el.className=className; el.innerHTML=html; return el; };
 export const createCanonicalShell = ({
   root, initialState={jobs:[],expenses:[],stores:[],version:5}, initialNotes=[], user=null, readOnly=false,
   jobService=null, storeService=null, noteService=null, expenseService=null, actions={},
-  today=localISO(), demo=false, initialRoute='today'
+  today=localISO(), demo=false, initialRoute='today', partnerRequestService=null
 }) => {
   const state=createAppState();
   state.setState(initialState); state.setNotes(initialNotes); state.setUser(user);
   const content=element('app-content'); content.id='main-content'; content.setAttribute('role','main');
   const brand=element('app-brandbar','<span class="app-mark">'+montraMark({className:'app-montra-mark'})+'</span><span class="app-brand">MONTRA</span>');
+  const bell=document.createElement('button');bell.type='button';bell.className='notification-bell';bell.setAttribute('aria-label','Уведомления');bell.innerHTML='<span class="notification-bell-icon">'+icon('bell')+'</span><b hidden>0</b>';brand.append(bell);
   const dock=element('app-dock');
   const nav=document.createElement('nav'); nav.className='app-nav'; nav.setAttribute('aria-label','Основная навигация');
   const indicator=element('app-nav-indicator'); indicator.setAttribute('aria-hidden','true'); nav.append(indicator);
@@ -41,6 +44,9 @@ export const createCanonicalShell = ({
   let activeNoteId, disposeScreen;
   let moneyStart=today, moneyEnd=today, cacheStatus='none';
   let connectionTimer;
+  let partnerRequests=partnerRequestService?.list?.()||[];
+  const refreshBell=()=>{const count=partnerNotificationEvents(partnerRequests).length;const badge=bell.querySelector('b');badge.textContent=String(count);badge.hidden=!count;bell.classList.toggle('has-items',Boolean(count))};
+  refreshBell();
   const names=['today','schedule','money','clients','more'];
   const navItems=[['Сегодня','home'],['График','calendar'],['Деньги','money'],['Клиенты','user'],['Ещё','more']];
   const canJobs=!readOnly&&Boolean(jobService);
@@ -233,6 +239,54 @@ export const createCanonicalShell = ({
     if(noteService)body.append(actionButton('Заметка','note',()=>editNote({},openQuickAdd)));
     sheet.open({title:'Что добавить?',body});
   }
+  function openNotifications() {
+    const events=partnerNotificationEvents(partnerRequests),body=element('notification-list');
+    if(!events.length)body.innerHTML='<p class="section-caption">Новых событий нет.</p>';
+    events.forEach(event=>{const button=document.createElement('button');button.type='button';button.className='notification-row';button.innerHTML='<span class="notification-dot"></span><span><strong>'+esc(event.title)+'</strong><small>'+esc(event.body)+'</small></span>'+icon('chevron');button.onclick=()=>openPartnerRequest(event.requestId,openNotifications);body.append(button)});
+    sheet.open({title:'Уведомления',body});
+  }
+  function openPartnerRequests(returnTo) {
+    const body=element('partner-request-list');
+    partnerRequests.forEach(request=>{const button=document.createElement('button');button.type='button';button.className='partner-request-row';button.innerHTML='<span><small>'+(request.kind==='installation'?'МОНТАЖ':'ЗАМЕР')+'</small><strong>'+esc(request.client||'Без имени')+'</strong><em>'+esc(request.organizationName||request.storeName||'Магазин')+' · '+esc(requestScheduleLabel(request))+'</em></span>'+icon('chevron');button.onclick=()=>openPartnerRequest(request.id,()=>openPartnerRequests(returnTo));body.append(button)});
+    if(!partnerRequests.length)body.innerHTML='<p class="section-caption">Заявок магазинов пока нет.</p>';
+    sheet.open({title:'Заявки магазинов',body,onBack:returnTo});
+  }
+  function openPartnerRequest(id,returnTo) {
+    const request=partnerRequests.find(item=>item.id===id);if(!request)return openPartnerRequests(returnTo);
+    const body=element('partner-request-detail');
+    body.innerHTML='<section class="store-access-hero"><small>'+(request.kind==='installation'?'Монтаж':'Замер')+' · '+esc(request.organizationName||request.storeName||'Магазин')+'</small><h2>'+esc(request.client||'Без имени')+'</h2><p>'+esc(requestScheduleLabel(request))+'</p></section><section class="detail-facts">'+[
+      ['phone','Телефон',request.phone],['pin','Адрес',request.address],['note','Комментарий менеджера',request.managerComment]
+    ].filter(([, ,v])=>v).map(([name,label,value])=>'<div class="detail-fact"><span class="detail-fact-icon">'+icon(name)+'</span><span><small>'+label+'</small><strong>'+esc(value)+'</strong></span></div>').join('')+'</section>';
+    const controls=element('detail-actions');
+    if(request.phone){const link=document.createElement('a');link.className='button detail-primary';link.href='tel:'+String(request.phone).replace(/[^+\d]/g,'');link.innerHTML=icon('phone')+'Позвонить клиенту';controls.append(link)}
+    if(partnerRequestService&&request.stage==='installer_review')controls.append(actionButton(request.kind==='installation'?'Назначить монтаж':'Назначить замер','calendar',()=>openPartnerSchedule(request,()=>openPartnerRequest(id,returnTo)),true));
+    if(partnerRequestService&&request.kind==='measure'&&request.stage==='scheduled')controls.append(actionButton('Заполнить замер','measure',()=>openMeasurementEditor(request,()=>openPartnerRequest(id,returnTo)),true));
+    if(request.measurement){
+      const m=normalizeMeasurementResult(request.measurement);
+      const works=m.additionalWorks.map(w=>'<li>'+esc(w.title)+' <b>'+money(w.price)+'</b></li>').join('');
+      body.insertAdjacentHTML('beforeend','<section class="measurement-result-card"><small>РЕЗУЛЬТАТ ЗАМЕРА</small><h3>'+esc(m.doorSize||'Размер двери не указан')+(m.handing?' · '+esc(m.handing):'')+'</h3>'+(m.openingWidth&&m.openingHeight?'<p>Проём '+m.openingWidth+' × '+m.openingHeight+' мм</p>':'')+'<p>Монтаж '+money(m.installationPrice)+'</p>'+(works?'<ul>'+works+'</ul>':'')+'<strong>Итого '+money(m.total)+'</strong>'+(m.installerComment?'<p>'+esc(m.installerComment)+'</p>':'')+'</section>');
+      if(partnerRequestService&&request.kind==='measure'&&!request.installationRequestId)controls.append(actionButton('Создать монтаж','tools',()=>openInstallationFromMeasurement(request,()=>openPartnerRequest(id,returnTo)),true));
+    }
+    body.append(controls);sheet.open({title:'Заявка магазина',body,onBack:returnTo});
+  }
+  function openPartnerSchedule(request,returnTo) {
+    const form=document.createElement('form');form.className='simple-form';form.innerHTML='<label>Дата<input name="date" type="date" required></label><label>Время<input name="time" type="time"></label><p class="section-caption">После сохранения магазин увидит согласованную дату.</p><button class="button primary" type="submit">Сохранить дату</button>';
+    form.onsubmit=async e=>{e.preventDefault();try{const values=Object.fromEntries(new FormData(form));await partnerRequestService.assign(request.id,values);notify('Дата согласована');returnTo()}catch(error){notify(error.message)}};
+    sheet.open({title:request.kind==='installation'?'Назначить монтаж':'Назначить замер',body:form,onBack:returnTo});
+  }
+  function openMeasurementEditor(request,returnTo) {
+    const form=document.createElement('form');form.className='simple-form measurement-form';form.innerHTML='<div class="form-grid"><label>Ширина проёма, мм<input name="openingWidth" inputmode="numeric"></label><label>Высота, мм<input name="openingHeight" inputmode="numeric"></label></div><label>Рекомендуемая дверь<input name="doorSize" placeholder="860 × 2050"></label><label>Открывание<select name="handing"><option value="">Не указано</option><option>Левая</option><option>Правая</option></select></label><label>Монтаж, ₽<input name="installationPrice" inputmode="numeric" placeholder="0"></label><div class="additional-works"><div class="section-row"><h3>Дополнительные работы</h3><button type="button" class="button add-work">+ Работа</button></div><div class="work-rows"></div></div><label>Комментарий замерщика<textarea name="installerComment" rows="3"></textarea></label><p class="measurement-total">Итого: <strong>0 ₽</strong></p><button class="button primary" type="submit">Завершить замер</button>';
+    const rows=form.querySelector('.work-rows'),addWork=()=>{const row=element('work-row','<input data-work-title placeholder="Например, расширение проёма"><input data-work-price inputmode="numeric" placeholder="₽"><button type="button" aria-label="Удалить">×</button>');row.querySelector('button').onclick=()=>{row.remove();recalc()};row.querySelectorAll('input').forEach(i=>i.oninput=recalc);rows.append(row)};
+    const recalc=()=>{const base=Number(form.elements.installationPrice.value)||0;let total=base;rows.querySelectorAll('.work-row').forEach(r=>total+=Number(r.querySelector('[data-work-price]').value)||0);form.querySelector('.measurement-total strong').textContent=money(total)};
+    form.querySelector('.add-work').onclick=addWork;form.elements.installationPrice.oninput=recalc;addWork();
+    form.onsubmit=async e=>{e.preventDefault();try{const values=Object.fromEntries(new FormData(form));values.additionalWorks=[...rows.querySelectorAll('.work-row')].map((r,i)=>({id:'work-'+i,title:r.querySelector('[data-work-title]').value,price:r.querySelector('[data-work-price]').value}));await partnerRequestService.completeMeasurement(request.id,values);notify('Замер выполнен');returnTo()}catch(error){notify(error.message)}};
+    sheet.open({title:'Результат замера',body:form,onBack:returnTo});
+  }
+  function openInstallationFromMeasurement(request,returnTo) {
+    const form=document.createElement('form');form.className='simple-form';form.innerHTML='<p class="section-caption">Если дату уже согласовали с клиентом — назначьте её сейчас. Если нет, монтаж останется входящей заявкой.</p><label>Дата монтажа<input name="date" type="date"></label><label>Время<input name="time" type="time"></label><button class="button primary" type="submit">Создать монтаж</button>';
+    form.onsubmit=async e=>{e.preventDefault();try{await partnerRequestService.createInstallation(request.id,Object.fromEntries(new FormData(form)));notify('Монтаж создан');returnTo()}catch(error){notify(error.message)}};
+    sheet.open({title:'Создать монтаж',body:form,onBack:returnTo});
+  }
   function openStores() {
     const body=element('sheet-choices');
     if(storeService&&!readOnly)body.append(actionButton('Подключить магазин','plus',()=>openStoreEditor(null)));
@@ -275,12 +329,14 @@ export const createCanonicalShell = ({
     }));
     sheet.open({title:store?'Редактировать магазин':'Новый магазин',body:form,onBack:openStores});
   }
+  bell.onclick=openNotifications;
   add.onclick=openQuickAdd;
   names.forEach((name,i)=>{
     const button=document.createElement('button');button.type='button';button.dataset.route=name;button.setAttribute('aria-label',navItems[i][0]);
     button.innerHTML='<span class="app-nav-icon">'+icon(navItems[i][1])+'</span><span class="app-nav-label">'+navItems[i][0]+'</span>';
     button.onclick=()=>navigate(name);nav.append(button);
   });
+  const disposePartner=partnerRequestService?.subscribe?.(requests=>{partnerRequests=requests;refreshBell()});
   let previous=state.snapshot, queued=false;
   state.subscribe(snapshot=>{
     paintConnection(snapshot.dataStatus);
@@ -289,5 +345,5 @@ export const createCanonicalShell = ({
   });
   state.setDataStatus(demo?'ready':'idle');
   router.render([...names,'notes'].includes(initialRoute)?initialRoute:'today').then(()=>enterScreen(content));
-  return {state,router,root,openJob,setCacheStatus(value){cacheStatus=value;if(router.current==='more')renderRoute('more')}};
+  return {state,router,root,openJob,openPartnerRequests,setCacheStatus(value){cacheStatus=value;if(router.current==='more')renderRoute('more')}};
 };
