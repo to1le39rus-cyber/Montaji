@@ -36,11 +36,15 @@ import { normalizeShared, normalizeNotes } from './src/domain/normalize.js';
 import { createCanonicalShell } from './src/core/canonical-shell.js';
 import { loadLocalSnapshot, saveLocalSnapshot, clearLocalCache } from './src/data/local-cache.js';
 import { firebaseConfig } from './firebase-config.js';
+import { createPartnerRequestRepository } from './src/data/partner-request-repository.js';
+import { createRealtimePartnerRequestService } from './src/services/realtime-partner-request-service.js';
 const gate=document.querySelector('#gate'), appRoot=document.querySelector('#app'), status=document.querySelector('#status'), error=document.querySelector('#error');
 const email=document.querySelector('#email'), password=document.querySelector('#password');
 const fb=createFirebase(firebaseConfig);
 const shared=createSharedRepository({firestore:fb.firestore,...fb.firestoreApi});
 const notes=createNotesRepository({firestore:fb.firestore,...fb.firestoreApi});
+const partnerRepository=createPartnerRequestRepository({firestore:fb.firestore,...fb.firestoreApi});
+const partnerRequestService=createRealtimePartnerRequestService({repository:partnerRepository,mode:'installer'});
 let shell=null, sharedUnsub=null, notesUnsub=null, openedUid='';
 function showError(e){error.textContent=e?.message||String(e)}
 function stopRealtime(){sharedUnsub?.();notesUnsub?.();sharedUnsub=null;notesUnsub=null}
@@ -61,6 +65,7 @@ async function open(user){
    initialNotes:normalizeNotes({notes:cached.notes}),
    user,
    readOnly:true,
+   partnerRequestService,
    actions:{clearCache:resetLocalCache,signOut:()=>fb.authApi.signOut(fb.auth)}
   });
   shell.state.setDataStatus('cache');
@@ -85,6 +90,7 @@ async function open(user){
     initialNotes:normalizedNotes,
     user,
     readOnly:true,
+    partnerRequestService,
     actions:{clearCache:resetLocalCache,signOut:()=>fb.authApi.signOut(fb.auth)}
    });
   }else{
