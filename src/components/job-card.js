@@ -2,6 +2,8 @@ import { icon } from '../ui/icons.js';
 import { esc, money } from '../ui/format.js';
 import { isCompleted, isCancelled, isDebt } from '../domain/jobs.js';
 
+const slotLabel=slot=>({'1':'Первая половина дня','2':'Вторая половина дня','3':'Вечерняя половина','4':'По запросу'}[String(slot)]||'По запросу');
+
 export const statusKey = status => ({'Запланировано':'planned','Выполнен':'done','Перенесен':'moved','Отменен':'cancelled'}[status] || 'neutral');
 export const statusMarkup = job => '<span class="job-status" data-status="'+statusKey(job.status)+'">'+icon(isCompleted(job)?'check':isCancelled(job)?'close':job.status==='Перенесен'?'refresh':'clock')+esc(job.status)+'</span>';
 export const createJobCard = ({job,onOpen=()=>{},onComplete,onPaid,onRoute,onShare,onMore}) => {
