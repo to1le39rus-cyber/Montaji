@@ -106,3 +106,8 @@
 @media(max-width:359px) { .detail-hero { padding:16px; } .detail-title h1 { font-size:27px; } .detail-value>strong { font-size:30px; } .detail-facts { grid-template-columns:1fr; } .detail-fact,.detail-fact[data-kind="pin"],.detail-fact[data-kind="note"] { grid-column:1; } }
 @media(prefers-reduced-motion:no-preference) { .canonical-modal-panel { animation:sheet-in var(--motion-spatial) var(--ease-out); } @keyframes sheet-in { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:none; } } }
 @media(min-width:700px) { .canonical-modal { place-items:center; padding:24px; } .canonical-modal-panel { max-height:90dvh; border-radius:28px; } }
+
+.quick-store-add{display:grid;gap:8px;margin-top:8px;padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--surface-strong)}.quick-store-add[hidden]{display:none}.quick-store-add>div{display:flex;justify-content:flex-end;gap:7px}.quick-store-add button{min-height:40px;padding:0 12px;border:1px solid var(--line);border-radius:11px;background:var(--surface);font-weight:700}.quick-store-add button[data-quick-store-save]{background:var(--accent-deep);border-color:var(--accent-deep);color:var(--accent-ink)}
+.detail-secondary .payment-action.primary{background:var(--accent-deep);border-color:var(--accent-deep);color:var(--accent-ink);opacity:1}.detail-secondary .payment-action.primary svg,.detail-secondary .payment-action.primary span{color:inherit}
+
+.job-card-source{display:flex;align-items:center;gap:6px;margin:9px 0 0;color:var(--accent-deep);font-size:11px;font-weight:720}.job-card-source svg{width:14px;height:14px}.job-card-source span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
