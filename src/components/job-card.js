@@ -2,6 +2,8 @@ import { icon } from '../ui/icons.js';
 import { esc, money } from '../ui/format.js';
 import { isCompleted, isCancelled, isDebt } from '../domain/jobs.js';
 
+const slotLabel=slot=>({'1':'Первая половина дня','2':'Вторая половина дня','3':'Вечерняя половина','4':'По запросу'}[String(slot)]||'По запросу');
+
 export const statusKey = status => ({'Запланировано':'planned','Выполнен':'done','Перенесен':'moved','Отменен':'cancelled'}[status] || 'neutral');
 export const statusMarkup = job => '<span class="job-status" data-status="'+statusKey(job.status)+'">'+icon(isCompleted(job)?'check':isCancelled(job)?'close':job.status==='Перенесен'?'refresh':'clock')+esc(job.status)+'</span>';
 export const createJobCard = ({job,onOpen=()=>{},onComplete,onPaid,onRoute,onShare,onMore}) => {
@@ -12,9 +14,9 @@ export const createJobCard = ({job,onOpen=()=>{},onComplete,onPaid,onRoute,onSha
   const payment=job.paid===true?'Оплачено':isDebt(job)?'Долг':'Не оплачено';
   card.innerHTML=`
     <button class="job-card-main" type="button" aria-label="Открыть заявку: ${esc(job.client||'Без имени')}">
-      <div class="job-card-kicker"><span>${esc(job.type)}<i></i>Слот ${esc(job.slot||'1')}</span>${job.time?'<time>'+esc(job.time)+'</time>':''}</div>
+      <div class="job-card-kicker"><span>${esc(job.type)}${job.type==='Доп. доход'?'':'<i></i>'+esc(slotLabel(job.slot||'1'))}</span>${job.time?'<time>'+esc(job.time)+'</time>':''}</div>
       <div class="job-card-identity"><h3>${esc(job.client||'Без имени')}</h3><strong>${money(job.type==='Замер'?(job.measurePrice||job.price):job.price)}</strong></div>
-      ${job.address?'<p class="job-card-address">'+icon('pin')+'<span>'+esc(job.address)+'</span></p>':''}
+      ${job.source?'<p class="job-card-source">'+icon('store')+'<span>'+esc(job.source)+'</span></p>':''}${job.address?'<p class="job-card-address">'+icon('pin')+'<span>'+esc(job.address)+'</span></p>':''}
       ${job.comment?'<p class="job-card-comment">'+icon('note')+'<span>'+esc(job.comment)+'</span></p>':''}
       <div class="job-card-state">${statusMarkup(job)}${!cancelled?'<span class="job-payment'+(isDebt(job)?' is-debt':'')+'">'+(job.paid===true?icon('check'):'')+payment+'</span>':''}</div>
     </button>
