@@ -21,6 +21,7 @@ import { createStoreMemberCommand, storeAccessSummary, STORE_ROLES } from '../do
 import { partnerNotificationEvents, requestScheduleLabel } from '../domain/partner-requests.js';
 import { normalizeMeasurementResult } from '../domain/measurement.js';
 
+const slotLabel=slot=>({'1':'Первая половина дня','2':'Вторая половина дня','3':'Вечерняя половина','4':'По запросу'}[String(slot)]||('По запросу · '+String(slot||'')));
 const element = (className, html = '') => { const el=document.createElement('div'); el.className=className; el.innerHTML=html; return el; };
 export const createCanonicalShell = ({
   root, initialState={jobs:[],expenses:[],stores:[],version:5}, initialNotes=[], user=null, readOnly=false,
