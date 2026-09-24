@@ -18,6 +18,7 @@ import { montraMark } from '../ui/brand.js';
 import { esc, money, localISO, formatDate, addDays, shiftMonth, dateObject } from '../ui/format.js';
 import { JOB_TYPES, isCancelled, isCompleted, isDebt } from '../domain/jobs.js';
 
+const slotLabel=slot=>({'1':'Первая половина дня','2':'Вторая половина дня','3':'Вечерняя половина','4':'По запросу'}[String(slot)]||('По запросу · '+String(slot||'')));
 const element = (className, html = '') => { const el=document.createElement('div'); el.className=className; el.innerHTML=html; return el; };
 export const createCanonicalShell = ({
   root, initialState={jobs:[],expenses:[],stores:[],version:5}, initialNotes=[], user=null, readOnly=false,
@@ -132,7 +133,7 @@ export const createCanonicalShell = ({
     const job=currentJob(source), back=()=>openJobCard(source,returnTo);
     const body=element('job-detail');
     const payment=job.paid?'Оплачено':isDebt(job)?'Долг':'Не оплачено';
-    body.innerHTML='<section class="detail-hero"><div class="detail-eyebrow"><span>'+esc(job.type)+'</span><i></i><span>Слот '+esc(job.slot||'1')+'</span><time>'+formatDate(job.date,{day:'numeric',month:'long'})+'</time></div><div class="detail-title"><h1>'+esc(job.client||'Без имени')+'</h1>'+statusMarkup(job)+'</div><div class="detail-value"><strong>'+money(job.type==='Замер'?(job.measurePrice||job.price):job.price)+'</strong><span class="job-payment'+(isDebt(job)?' is-debt':'')+'">'+payment+'</span></div></section><section class="detail-facts">'+[
+    body.innerHTML='<section class="detail-hero"><div class="detail-eyebrow"><span>'+esc(job.type)+'</span><i></i><span>'+esc(slotLabel(job.slot||'1'))+'</span><time>'+formatDate(job.date,{day:'numeric',month:'long'})+'</time></div><div class="detail-title"><h1>'+esc(job.client||'Без имени')+'</h1>'+statusMarkup(job)+'</div><div class="detail-value"><strong>'+money(job.type==='Замер'?(job.measurePrice||job.price):job.price)+'</strong><span class="job-payment'+(isDebt(job)?' is-debt':'')+'">'+payment+'</span></div></section><section class="detail-facts">'+[
       ['pin','Адрес',job.address],['phone','Телефон',job.phone],['store','Источник',job.source],['note','Комментарий',job.comment]
     ].filter(([, ,value])=>value).map(([name,label,value])=>'<div class="detail-fact" data-kind="'+name+'"><span class="detail-fact-icon">'+icon(name)+'</span><span><small>'+label+'</small><strong>'+esc(value)+'</strong></span></div>').join('')+'</section>';
     const controls=element('detail-actions');
@@ -144,7 +145,7 @@ export const createCanonicalShell = ({
       secondary.append(actionButton('Изменить','edit',()=>openJob(job,back)));
       if(!isCancelled(job)){
         if(!isCompleted(job))secondary.append(actionButton('Выполнить','check',async()=>{if(await mutateJob(job.id,()=>jobService.complete(job.id),'Заявка выполнена'))back()}));
-        secondary.append(actionButton(job.paid?'Снять оплату':'Оплатить','money',async()=>{if(await mutateJob(job.id,()=>job.paid?jobService.markUnpaid(job.id):jobService.markPaid(job.id),'Оплата обновлена'))back()},isDebt(job)));
+        {const paymentAction=actionButton(job.paid?'Снять оплату':'Оплатить','money',async()=>{if(await mutateJob(job.id,()=>job.paid?jobService.markUnpaid(job.id):jobService.markPaid(job.id),'Оплата обновлена'))back()},isDebt(job));paymentAction.classList.add('payment-action');secondary.append(paymentAction)}
         secondary.append(actionButton('Перенести','calendar',()=>openReschedule(job,back)));
         const cancel=actionButton('Отменить заявку','close',()=>{
           const confirmation=element('simple-form','<p>Заявка останется в истории со статусом «Отменен» и перестанет учитываться в доходе.</p>');
@@ -160,7 +161,7 @@ export const createCanonicalShell = ({
     if(!canJobs)return;
     const job=input.id?currentJob(input):{date:selectedDate,type:'Монтаж',slot:'1',status:'Запланировано',paid:false,...input};
     const close=returnTo||sheet.close;
-    const form=createJobForm({job,stores:state.snapshot.state.stores||[],onCancel:close,onSubmit:async patch=>{
+    const form=createJobForm({job,stores:state.snapshot.state.stores||[],onCancel:close,onQuickAddStore:storeService?async name=>{try{const created=await storeService.create({name});const current=state.snapshot.state;state.setState({...current,stores:[...(current.stores||[]),created]});notify('Магазин добавлен');return created}catch(e){notify(e.message||'Не удалось добавить магазин');return null}}:null,onSubmit:async patch=>{
       if(job.id){if(!Object.keys(patch).length){close();return}if(await mutateJob(job.id,()=>jobService.update(job.id,patch),'Заявка сохранена'))close()}
       else try{const created=await jobService.create(patch);const current=state.snapshot.state;state.setState({...current,jobs:[...current.jobs,created]});notify('Заявка добавлена');close()}catch(e){notify(e.message||'Не удалось создать заявку')}
     }});
