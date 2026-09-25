@@ -92,7 +92,7 @@
 .quick-create .button { min-height:80px; flex-direction:column; gap:9px; background:var(--surface); }
 .simple-form { display:grid; gap:16px; min-width:0; }
 .simple-form label { display:grid; gap:7px; font-size:12px; color:var(--muted); }
-.simple-form input,.simple-form textarea,.simple-form select { width:100%; min-width:0; min-height:48px; padding:12px; border:1px solid var(--line-strong); border-radius:12px; background:var(--surface); font-size:16px; color:var(--ink); }
+.simple-form input,.simple-form textarea,.simple-form select { box-sizing:border-box; display:block; width:100%; max-width:100%; min-width:0; min-height:48px; padding:12px; border:1px solid var(--line-strong); border-radius:12px; background:var(--surface); font-size:16px; color:var(--ink); }
 .simple-form textarea { min-height:126px; resize:vertical; }
 .simple-form .toggle-row { display:flex; align-items:center; justify-content:space-between; font-size:14px; color:var(--ink); }
 .toggle-control { width:50px; height:44px; border:0; padding:8px 0; background:none; }
@@ -101,7 +101,7 @@
 .toggle-control[aria-checked="true"]>span { background:var(--accent); }
 .toggle-control[aria-checked="true"]>span::before { transform:translateX(22px); }
 .reschedule-field { display:grid; gap:8px; font-size:13px; }
-.reschedule-field input { width:100%; min-width:0; min-height:48px; padding:10px; border:1px solid var(--line); border-radius:12px; background:var(--surface); }
+.reschedule-field input { box-sizing:border-box; display:block; width:100%; max-width:100%; min-width:0; min-height:48px; padding:10px; border:1px solid var(--line); border-radius:12px; background:var(--surface); }
 @media(max-width:560px) { .job-form-grid { grid-template-columns:minmax(0,1fr); } .job-form-wide { grid-column:auto; } .job-form-section { padding:14px; min-width:0; } .job-form-actions button[type="submit"] { flex:1; } }
 @media(max-width:359px) { .detail-hero { padding:16px; } .detail-title h1 { font-size:27px; } .detail-value>strong { font-size:30px; } .detail-facts { grid-template-columns:1fr; } .detail-fact,.detail-fact[data-kind="pin"],.detail-fact[data-kind="note"] { grid-column:1; } }
 @media(prefers-reduced-motion:no-preference) { .canonical-modal-panel { animation:sheet-in var(--motion-spatial) var(--ease-out); } @keyframes sheet-in { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:none; } } }
@@ -111,3 +111,7 @@
 .detail-secondary .payment-action.primary{background:var(--accent-deep);border-color:var(--accent-deep);color:var(--accent-ink);opacity:1}.detail-secondary .payment-action.primary svg,.detail-secondary .payment-action.primary span{color:inherit}
 
 .job-card-source{display:flex;align-items:center;gap:6px;margin:9px 0 0;color:var(--accent-deep);font-size:11px;font-weight:720}.job-card-source svg{width:14px;height:14px}.job-card-source span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* iOS Safari can size native date/time controls wider than their grid container. Keep every modal field inside the sheet. */
+.canonical-modal label,.canonical-modal form,.canonical-modal .form-grid>*{min-width:0;max-width:100%}
+.canonical-modal input[type="date"],.canonical-modal input[type="time"],.canonical-modal input[type="datetime-local"]{box-sizing:border-box;width:100%;max-width:100%;min-width:0;-webkit-appearance:none;appearance:none}
