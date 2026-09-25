@@ -3,3 +3,6 @@
 .schedule-choice{display:grid;gap:8px;margin:0;padding:0;border:0}.schedule-choice legend{margin-bottom:2px;font-weight:800}.schedule-choice label{display:flex;align-items:center;gap:10px;min-width:0;padding:12px 13px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,252,.55)}.schedule-choice input{width:18px;height:18px;flex:0 0 auto;accent-color:var(--accent)}.schedule-choice span{display:grid;gap:2px}.schedule-choice b{font-size:12px}.schedule-choice small{color:var(--muted);font-size:9px;line-height:1.35}[data-preferred-time][hidden]{display:none!important}
 
 [data-preferred-date][hidden]{display:none!important}
+
+.partner-form input,.partner-form select,.partner-form textarea{box-sizing:border-box;max-width:100%;min-width:0}
+.partner-form input[type="date"],.partner-form input[type="time"],.partner-form input[type="datetime-local"]{display:block;width:100%;max-width:100%;min-width:0;-webkit-appearance:none;appearance:none}
