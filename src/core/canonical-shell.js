@@ -337,7 +337,24 @@ export const createCanonicalShell = ({
     button.innerHTML='<span class="app-nav-icon">'+icon(navItems[i][1])+'</span><span class="app-nav-label">'+navItems[i][0]+'</span>';
     button.onclick=()=>navigate(name);nav.append(button);
   });
-  const disposePartner=partnerRequestService?.subscribe?.(requests=>{partnerRequests=requests;refreshBell()});
+  const partnerJobSyncing=new Set();
+  const syncScheduledPartnerJobs=async requests=>{
+    if(!canJobs)return;
+    for(const request of requests){
+      if(request.stage!=='scheduled'||!request.scheduledDate)continue;
+      const requestId=request.id;
+      if(partnerJobSyncing.has(requestId)||state.snapshot.state.jobs.some(job=>job.storeRequestId===requestId))continue;
+      partnerJobSyncing.add(requestId);
+      try{
+        const created=await jobService.create({date:request.scheduledDate,time:request.scheduledTime||'',type:request.kind==='installation'?'Монтаж':'Замер',slot:'4',status:'Запланировано',paid:false,client:request.client,phone:request.phone,address:request.address,source:request.organizationName||request.storeName||'Магазин',comment:request.managerComment||'',storeRequestId:requestId,storeId:request.organizationId||'',storeNameSnapshot:request.organizationName||request.storeName||''});
+        const current=state.snapshot.state;
+        if(!current.jobs.some(job=>job.id===created.id||job.storeRequestId===requestId))state.setState({...current,jobs:[...current.jobs,created]});
+      }catch(error){
+        if(!String(error?.message||'').includes('уже существует'))console.error('Partner job sync failed',requestId,error);
+      }finally{partnerJobSyncing.delete(requestId)}
+    }
+  };
+  const disposePartner=partnerRequestService?.subscribe?.(requests=>{partnerRequests=requests;refreshBell();syncScheduledPartnerJobs(requests)});
   let previous=state.snapshot, queued=false;
   state.subscribe(snapshot=>{
     paintConnection(snapshot.dataStatus);
