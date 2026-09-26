@@ -138,6 +138,7 @@ export const createCanonicalShell = ({
   }
   function openJobCard(source, returnTo) {
     const job=currentJob(source), back=()=>openJobCard(source,returnTo);
+    if(job.storeRequestId&&partnerRequestService){const linked=partnerRequests.find(item=>item.id===job.storeRequestId);if(linked)return openPartnerRequest(linked.id,returnTo);}
     const body=element('job-detail');
     const payment=job.paid?'Оплачено':isDebt(job)?'Долг':'Не оплачено';
     body.innerHTML='<section class="detail-hero"><div class="detail-eyebrow"><span>'+esc(job.type)+'</span><i></i><span>'+esc(slotLabel(job.slot||'1'))+'</span><time>'+formatDate(job.date,{day:'numeric',month:'long'})+'</time></div><div class="detail-title"><h1>'+esc(job.client||'Без имени')+'</h1>'+statusMarkup(job)+'</div><div class="detail-value"><strong>'+money(job.type==='Замер'?(job.measurePrice||job.price):job.price)+'</strong><span class="job-payment'+(isDebt(job)?' is-debt':'')+'">'+payment+'</span></div></section><section class="detail-facts">'+[
