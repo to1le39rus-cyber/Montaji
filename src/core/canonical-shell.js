@@ -67,6 +67,7 @@ export const createCanonicalShell = ({
       onOpenOverdue:openOverdue,
       onAddNote:noteService&&!readOnly?()=>editNote({}):undefined, onAddJob:canJobs?()=>openJob({date:today}):undefined,
       onAddExpense:expenseService&&!readOnly?()=>openExpense(today):undefined,
+      onExpenseClick:expenseService&&!readOnly?openExpenseDetail:undefined,
       onOpenDay:date=>{selectedDate=date;navigate('schedule')},
       onMoney:(start,end)=>{moneyStart=start;moneyEnd=end;navigate('money')}
     });
@@ -84,7 +85,7 @@ export const createCanonicalShell = ({
       onSearch:query=>scheduleQuery=query, onFilter:filter=>scheduleFilter=filter,
       onAddJob:canJobs?()=>openJob({date:selectedDate}):undefined
     });
-    else if(name==='money') renderMoney({root:content,model:buildMoneyModel({state:state.snapshot.state,start:moneyStart,end:moneyEnd}),onJobClick:job=>openJobCard(job),onAddExpense:expenseService&&!readOnly?date=>openExpense(date):undefined,onPeriodChange:(key,value,endValue)=>{
+    else if(name==='money') renderMoney({root:content,model:buildMoneyModel({state:state.snapshot.state,start:moneyStart,end:moneyEnd}),onJobClick:job=>openJobCard(job),onAddExpense:expenseService&&!readOnly?date=>openExpense(date):undefined,onExpenseClick:expenseService&&!readOnly?openExpenseDetail:undefined,onPeriodChange:(key,value,endValue)=>{
       if(key==='range'){moneyStart=value;moneyEnd=endValue||value}else if(key==='start')moneyStart=value;else moneyEnd=value;
       if(moneyEnd<moneyStart)moneyEnd=moneyStart;renderRoute('money');
     }});
@@ -222,6 +223,26 @@ export const createCanonicalShell = ({
       try{state.setNotes(note.id?await noteService.update(note.id,patch):await noteService.create(patch));notify('Заметка сохранена');(returnTo||sheet.close)()}catch(e){notify(e.message)}
     }});
     sheet.open({title:note.id?'Редактировать заметку':'Новая заметка',body:form,onBack:returnTo});
+  }
+  function openExpenseDetail(source) {
+    if(!expenseService||readOnly)return;
+    const expense=state.snapshot.state.expenses.find(item=>item.id===source.id&&!item.cancelled);
+    if(!expense){notify('Расход не найден');return}
+    const form=document.createElement('form');form.className='simple-form';
+    form.innerHTML='<label>Сумма, ₽<input name="amount" inputmode="decimal" required></label><label>Категория<select name="category">'+['Материалы','Топливо','Аренда','Обед','Прочее'].map(name=>'<option>'+name+'</option>').join('')+'</select></label><label>Дата<input name="date" type="date" required></label><label>Комментарий<input name="comment"></label><button class="button primary" type="submit">Сохранить изменения</button>';
+    form.elements.amount.value=expense.amount;
+    if(![...form.elements.category.options].some(option=>option.value===expense.category)){const option=document.createElement('option');option.value=expense.category;option.textContent=expense.category;form.elements.category.append(option)}
+    form.elements.category.value=expense.category;
+    form.elements.date.value=expense.date;
+    form.elements.comment.value=expense.comment||'';
+    form.onsubmit=async event=>{event.preventDefault();const button=form.querySelector('[type="submit"]');button.disabled=true;try{const patch=Object.fromEntries(new FormData(form));patch.amount=String(patch.amount).replace(/\s/g,'');state.setState(await expenseService.update(expense.id,patch));sheet.close();notify('Расход изменён')}catch(error){notify(error.message||'Не удалось изменить расход')}finally{button.disabled=false}};
+    const remove=actionButton('Удалить расход','close',()=>{
+      const confirm=element('simple-form','<p>Расход исчезнет из расчётов и списков, но сохранится в истории данных.</p>');
+      confirm.append(actionButton('Удалить расход','close',async()=>{try{state.setState(await expenseService.remove(expense.id));sheet.close();notify('Расход удалён')}catch(error){notify(error.message||'Не удалось удалить расход')}}));
+      sheet.open({title:'Удалить расход?',body:confirm,onBack:()=>openExpenseDetail(expense)});
+    });
+    remove.classList.add('danger','detail-cancel');form.append(remove);
+    sheet.open({title:'Редактировать расход',body:form});
   }
   function openExpense(date=today) {
     if(!expenseService||readOnly)return;
