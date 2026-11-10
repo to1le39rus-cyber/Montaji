@@ -30,7 +30,7 @@ const heading=(title,count,action='')=>'<div class="section-head"><h2>'+title+(c
 
 export const renderToday = ({
   root,model,onJobClick,onComplete,onPaid,onRoute,onMore,
-  onOpenNote=()=>{},onOpenNotes=()=>{},onCompleteNote,onAddNote,onAddJob,onAddExpense,onOpenDay=()=>{},onMoney=()=>{},
+  onOpenNote=()=>{},onOpenNotes=()=>{},onCompleteNote,onAddNote,onAddJob,onAddExpense,onOpenDay=()=>{},onMoney=()=>{},onExpenseClick,
   activeNoteId,onNoteChange=()=>{},onOpenOverdue
 }) => {
   if(!root)return;
@@ -73,7 +73,7 @@ export const renderToday = ({
   expenses.querySelector('button')?.addEventListener('click',onAddExpense);
   if(model.todayExpenses.length){
     const rows=section('expense-receipt');
-    model.todayExpenses.forEach(e=>{const row=document.createElement('div');row.className='expense-line';row.innerHTML='<span class="expense-icon">'+icon('receipt')+'</span><div><strong>'+esc(e.category)+'</strong><small>'+esc(e.comment||'Без комментария')+'</small></div><b>−'+money(e.amount)+'</b>';rows.append(row)});
+    model.todayExpenses.forEach(e=>{const row=document.createElement(onExpenseClick?'button':'div');if(onExpenseClick){row.type='button';row.onclick=()=>onExpenseClick(e)}row.className='expense-line';row.innerHTML='<span class="expense-icon">'+icon('receipt')+'</span><div><strong>'+esc(e.category)+'</strong><small>'+esc(e.comment||'Без комментария')+'</small></div><b>−'+money(e.amount)+'</b>';rows.append(row)});
     expenses.append(rows);
   }else expenses.insertAdjacentHTML('beforeend','<p class="quiet-empty">Расходов пока нет</p>');
   root.append(expenses);
