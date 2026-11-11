@@ -20,7 +20,7 @@ body{background:#f6f7f5;color:#171914}.live-gate{max-width:560px;margin:8vh auto
 <body>
 <section id="gate" class="live-gate">
 <h1>Canonical Live Preview</h1>
-<p>Canonical Live. Здесь новый runtime читает текущую общую базу Montaji. Режим чтения. Запись здесь отключена.</p>
+<p>Canonical Live. Здесь новый runtime читает текущую общую базу Montaji. Тестовая версия MONTRA с подключением к общей базе. Изменения сохраняются.</p>
 <label>Email<input id="email" type="email" autocomplete="username"></label>
 <label>Пароль<input id="password" type="password" autocomplete="current-password"></label>
 <button id="login" type="button">Войти</button>
@@ -40,6 +40,7 @@ import { createPartnerRequestRepository } from './src/data/partner-request-repos
 import { createRealtimePartnerRequestService } from './src/services/realtime-partner-request-service.js';
 import { createJobRepository } from './src/data/job-repository.js';
 import { createJobService } from './src/domain/job-service.js';
+import { createExpenseService } from './src/domain/expense-service.js';
 const gate=document.querySelector('#gate'), appRoot=document.querySelector('#app'), status=document.querySelector('#status'), error=document.querySelector('#error');
 const email=document.querySelector('#email'), password=document.querySelector('#password');
 const fb=createFirebase(firebaseConfig);
@@ -49,6 +50,7 @@ const partnerRepository=createPartnerRequestRepository({firestore:fb.firestore,.
 const partnerRequestService=createRealtimePartnerRequestService({repository:partnerRepository,mode:'installer'});
 const jobRepository=createJobRepository({firestore:fb.firestore,...fb.firestoreApi,actorId:'montra-installer'});
 const jobService=createJobService({repository:jobRepository});
+const expenseService=createExpenseService({repository:shared});
 let shell=null, sharedUnsub=null, notesUnsub=null, openedUid='';
 function showError(e){error.textContent=e?.message||String(e)}
 function stopRealtime(){sharedUnsub?.();notesUnsub?.();sharedUnsub=null;notesUnsub=null}
@@ -70,6 +72,7 @@ async function open(user){
    user,
    readOnly:false,
    jobService,
+   expenseService,
    partnerRequestService,
    actions:{clearCache:resetLocalCache,signOut:()=>fb.authApi.signOut(fb.auth)}
   });
@@ -96,6 +99,7 @@ async function open(user){
     user,
     readOnly:false,
     jobService,
+    expenseService,
     partnerRequestService,
     actions:{clearCache:resetLocalCache,signOut:()=>fb.authApi.signOut(fb.auth)}
    });
