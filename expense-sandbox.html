@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>MONTRA · Песочница расходов</title>
+<link rel="stylesheet" href="./src/styles/base.css"><link rel="stylesheet" href="./src/styles/today.css"><link rel="stylesheet" href="./src/styles/schedule.css"><link rel="stylesheet" href="./src/styles/money.css"><link rel="stylesheet" href="./src/styles/clients.css"><link rel="stylesheet" href="./src/styles/notes-more.css"><link rel="stylesheet" href="./src/styles/job-components.css"><link rel="stylesheet" href="./src/styles/carousel.css"><link rel="stylesheet" href="./src/styles/motion.css">
+<style>.sandbox-banner{position:relative;z-index:4;padding:10px 18px;background:#e9eee2;color:#244535;font:600 13px system-ui;text-align:center}.sandbox-banner button{border:0;background:transparent;color:inherit;text-decoration:underline;font:inherit}</style></head>
+<body><div class="sandbox-banner">ПЕСОЧНИЦА · Только тестовые расходы · Рабочая база не подключена <button id="reset-sandbox">Очистить тестовые данные</button></div><div id="app"></div>
+<script type="module">
+import { createCanonicalShell } from './src/core/canonical-shell.js';
+import { createExpenseService } from './src/domain/expense-service.js';
+import { normalizeShared } from './src/domain/normalize.js';
+const KEY='montra-expense-sandbox-v1';
+const empty=()=>({jobs:[],expenses:[],stores:[],version:5});
+const read=()=>{try{return normalizeShared(JSON.parse(localStorage.getItem(KEY))||empty())}catch{return empty()}};
+const repository={async transact(mutator,normalize){const next=normalize(await mutator(read()));localStorage.setItem(KEY,JSON.stringify(next));return next}};
+const expenseService=createExpenseService({repository});
+const shell=createCanonicalShell({root:document.querySelector('#app'),initialState:read(),expenseService,initialRoute:'today',actions:{}});
+shell.state.setDataStatus('ready');
+document.querySelector('#reset-sandbox').onclick=()=>{if(confirm('Удалить все тестовые расходы из этой песочницы?')){localStorage.removeItem(KEY);location.reload()}};
+</script></body></html>
